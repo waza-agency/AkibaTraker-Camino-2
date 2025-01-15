@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { RefreshCw } from "lucide-react";
 
 const MUSIC_OPTIONS = [
   { id: "epic", name: "Epic Orchestra", file: "epic.mp3", color: "bg-red-500" },
@@ -11,6 +12,8 @@ const MUSIC_OPTIONS = [
   { id: "classical", name: "Classical", file: "classical.mp3", color: "bg-yellow-500" },
 ];
 
+const DEFAULT_TRACK = "epic.mp3";
+
 interface MusicSelectorProps {
   selected: string;
   onSelect: (file: string) => void;
@@ -19,6 +22,10 @@ interface MusicSelectorProps {
 const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
   const radius = 150; // Radius of the circle
   const totalItems = MUSIC_OPTIONS.length;
+
+  const handleReset = () => {
+    onSelect(DEFAULT_TRACK);
+  };
 
   return (
     <div className="relative w-[400px] h-[400px] mx-auto my-8">
@@ -53,9 +60,17 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
         );
       })}
 
-      {/* Center circle */}
-      <div className="absolute left-1/2 top-1/2 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 retro-container flex items-center justify-center">
+      {/* Center circle with reset button */}
+      <div className="absolute left-1/2 top-1/2 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 retro-container flex flex-col items-center justify-center gap-2">
         <span className="text-sm font-bold text-primary glow-text">Select Track</span>
+        <motion.button
+          onClick={handleReset}
+          className="p-2 rounded-full hover:bg-primary/30 transition-colors"
+          whileHover={{ rotate: 180 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <RefreshCw className="w-4 h-4 text-primary" />
+        </motion.button>
       </div>
     </div>
   );
