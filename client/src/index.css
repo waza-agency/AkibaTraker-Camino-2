@@ -13,9 +13,8 @@
     background: 
       linear-gradient(0deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-      linear-gradient(rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.97)),
-      url('/images/background.jpg');
-    background-size: 20px 20px, 20px 20px, cover, cover;
+      linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.99));
+    background-size: 20px 20px, 20px 20px, cover;
     background-position: center center;
     background-attachment: fixed;
     backdrop-filter: blur(10px);
