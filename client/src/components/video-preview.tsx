@@ -6,8 +6,13 @@ import { Download } from "lucide-react";
 import type { SelectVideo } from "@db/schema";
 
 export default function VideoPreview() {
-  const { data: videos } = useQuery<SelectVideo[]>({
+  const { data: videos, refetch } = useQuery<SelectVideo[]>({
     queryKey: ["/api/videos"],
+    // Poll for updates every 2 seconds while a video is pending
+    refetchInterval: (data) => {
+      const latestVideo = data?.[0];
+      return latestVideo?.status === "pending" ? 2000 : false;
+    },
   });
 
   if (!videos?.length) {
@@ -17,13 +22,13 @@ export default function VideoPreview() {
   const latestVideo = videos[0];
 
   return (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-4">Preview</h2>
-      
+    <Card className="p-6 retro-container">
+      <h2 className="text-lg font-semibold mb-4 glow-text">Preview</h2>
+
       {latestVideo.status === "pending" && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">Generating your AMV...</p>
-          <Progress value={30} />
+          <Progress value={30} className="pixel-borders" />
         </div>
       )}
 
@@ -32,9 +37,12 @@ export default function VideoPreview() {
           <video
             src={latestVideo.outputUrl}
             controls
-            className="w-full rounded-lg"
+            className="w-full rounded-lg pixel-borders"
           />
-          <Button className="w-full">
+          <Button 
+            className="w-full retro-btn"
+            onClick={() => window.open(latestVideo.outputUrl, '_blank')}
+          >
             <Download className="mr-2 h-4 w-4" />
             Download AMV
           </Button>
@@ -42,9 +50,18 @@ export default function VideoPreview() {
       )}
 
       {latestVideo.status === "failed" && (
-        <p className="text-sm text-destructive">
-          Failed to generate video. Please try again.
-        </p>
+        <div className="space-y-2">
+          <p className="text-sm text-destructive">
+            Failed to generate video. Please try again.
+          </p>
+          <Button 
+            variant="outline" 
+            className="w-full retro-btn"
+            onClick={() => refetch()}
+          >
+            Retry
+          </Button>
+        </div>
       )}
     </Card>
   );
