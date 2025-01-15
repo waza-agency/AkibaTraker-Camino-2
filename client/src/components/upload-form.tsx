@@ -3,22 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Image } from "lucide-react";
+import StyleSelector from "./style-selector";
+import { useState } from "react";
 
 interface UploadFormProps {
-  onSubmit: (prompt: string) => void;
+  onSubmit: (data: { prompt: string; style: string }) => void;
   isLoading: boolean;
 }
 
 export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
+  const [selectedStyle, setSelectedStyle] = useState("dramatic");
+
   const form = useForm({
     defaultValues: {
       prompt: "",
     },
   });
 
+  const handleSubmit = (data: { prompt: string }) => {
+    onSubmit({ ...data, style: selectedStyle });
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => onSubmit(data.prompt))}>
+      <form onSubmit={form.handleSubmit(handleSubmit)}>
         <FormField
           control={form.control}
           name="prompt"
@@ -37,9 +45,17 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
           )}
         />
 
+        <div className="mt-6">
+          <FormLabel>Visual Style</FormLabel>
+          <StyleSelector
+            selected={selectedStyle}
+            onSelect={setSelectedStyle}
+          />
+        </div>
+
         <Button
           type="submit"
-          className="w-full mt-4"
+          className="w-full mt-6"
           disabled={isLoading}
         >
           <Image className="mr-2 h-4 w-4" />

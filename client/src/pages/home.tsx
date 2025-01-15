@@ -6,16 +6,21 @@ import VideoPreview from "@/components/video-preview";
 import VideoGallery from "@/components/video-gallery";
 import { useToast } from "@/hooks/use-toast";
 
+interface GenerateVideoParams {
+  prompt: string;
+  style: string;
+}
+
 export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const createVideo = useMutation({
-    mutationFn: async (prompt: string) => {
+    mutationFn: async ({ prompt, style }: GenerateVideoParams) => {
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, style }),
       });
       if (!res.ok) throw new Error("Failed to create video");
       return res.json();
@@ -36,8 +41,8 @@ export default function Home() {
     },
   });
 
-  const handleSubmit = async (prompt: string) => {
-    await createVideo.mutate(prompt);
+  const handleSubmit = async (data: GenerateVideoParams) => {
+    await createVideo.mutate(data);
   };
 
   return (

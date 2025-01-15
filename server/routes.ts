@@ -18,7 +18,7 @@ export function registerRoutes(app: Express): Server {
 
   // Create new video generation
   app.post("/api/videos", async (req, res) => {
-    const { prompt } = req.body;
+    const { prompt, style } = req.body;
     const musicFile = getRandomMusic();
 
     try {
@@ -27,6 +27,7 @@ export function registerRoutes(app: Express): Server {
         .values({
           prompt,
           musicFile,
+          style,
           status: "pending",
           metadata: {}
         })
