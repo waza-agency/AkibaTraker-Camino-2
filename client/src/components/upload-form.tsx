@@ -4,15 +4,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Image } from "lucide-react";
 import StyleSelector from "./style-selector";
+import MusicSelector from "./music-selector";
 import { useState } from "react";
 
 interface UploadFormProps {
-  onSubmit: (data: { prompt: string; style: string }) => void;
+  onSubmit: (data: { prompt: string; style: string; music: string }) => void;
   isLoading: boolean;
 }
 
 export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
   const [selectedStyle, setSelectedStyle] = useState("dramatic");
+  const [selectedMusic, setSelectedMusic] = useState("epic.mp3");
 
   const form = useForm({
     defaultValues: {
@@ -21,12 +23,16 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
   });
 
   const handleSubmit = (data: { prompt: string }) => {
-    onSubmit({ ...data, style: selectedStyle });
+    onSubmit({ 
+      ...data, 
+      style: selectedStyle,
+      music: selectedMusic
+    });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="prompt"
@@ -45,7 +51,15 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
           )}
         />
 
-        <div className="mt-6">
+        <div>
+          <FormLabel>Music Track</FormLabel>
+          <MusicSelector
+            selected={selectedMusic}
+            onSelect={setSelectedMusic}
+          />
+        </div>
+
+        <div>
           <FormLabel>Visual Style</FormLabel>
           <StyleSelector
             selected={selectedStyle}
@@ -55,7 +69,7 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
 
         <Button
           type="submit"
-          className="w-full mt-6 retro-btn"
+          className="w-full retro-btn"
           disabled={isLoading}
         >
           <Image className="mr-2 h-4 w-4" />

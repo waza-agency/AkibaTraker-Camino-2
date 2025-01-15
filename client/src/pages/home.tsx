@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 interface GenerateVideoParams {
   prompt: string;
   style: string;
+  music: string;
 }
 
 export default function Home() {
@@ -18,11 +19,11 @@ export default function Home() {
   const queryClient = useQueryClient();
 
   const createVideo = useMutation({
-    mutationFn: async ({ prompt, style }: GenerateVideoParams) => {
+    mutationFn: async ({ prompt, style, music }: GenerateVideoParams) => {
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, style }),
+        body: JSON.stringify({ prompt, style, music }),
       });
       if (!res.ok) throw new Error("Failed to create video");
       return res.json();
