@@ -19,12 +19,16 @@ export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [googleApiKey, setGoogleApiKey] = useState<string | null>(null);
+  const [falApiKey, setFalApiKey] = useState<string | null>(null);
 
   const createVideo = useMutation({
     mutationFn: async ({ prompt, style, music }: GenerateVideoParams) => {
       const res = await fetch("/api/videos", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-fal-api-key": falApiKey || ""
+        },
         body: JSON.stringify({ prompt, style, music }),
       });
       if (!res.ok) throw new Error("Failed to create video");
@@ -50,11 +54,19 @@ export default function Home() {
     await createVideo.mutate(data);
   };
 
-  const handleApiKeySubmit = (apiKey: string) => {
+  const handleGoogleApiKeySubmit = (apiKey: string) => {
     setGoogleApiKey(apiKey);
     toast({
       title: "Success",
       description: "Google API key saved",
+    });
+  };
+
+  const handleFalApiKeySubmit = (apiKey: string) => {
+    setFalApiKey(apiKey);
+    toast({
+      title: "Success",
+      description: "FAL.ai API key saved",
     });
   };
 
@@ -75,7 +87,12 @@ export default function Home() {
           <Card className="p-6 pixel-borders">
             <div>
               <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
-              <UploadForm onSubmit={handleSubmit} isLoading={createVideo.isPending} />
+              <UploadForm 
+                onSubmit={handleSubmit} 
+                isLoading={createVideo.isPending}
+                isAuthenticated={!!falApiKey}
+                onApiKeySubmit={handleFalApiKeySubmit}
+              />
             </div>
           </Card>
 

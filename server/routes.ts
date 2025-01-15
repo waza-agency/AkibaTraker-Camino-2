@@ -86,7 +86,12 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
   // Create new video generation
   app.post("/api/videos", async (req, res) => {
     const { prompt, style } = req.body;
+    const falApiKey = req.headers['x-fal-api-key'] as string;
     const musicFile = getRandomMusic();
+
+    if (!falApiKey) {
+      return res.status(401).json({ error: "FAL.ai API key is required" });
+    }
 
     try {
       // First create a pending video entry
@@ -100,8 +105,8 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
         })
         .returning();
 
-      // Simulate video generation in the background
-      generateVideo(prompt)
+      // Generate video with FAL.ai
+      generateVideo(prompt, falApiKey)
         .then(async (outputUrl) => {
           await db
             .update(videos)

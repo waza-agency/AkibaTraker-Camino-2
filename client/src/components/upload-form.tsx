@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Image } from "lucide-react";
 import StyleSelector from "./style-selector";
@@ -10,11 +11,14 @@ import { useState } from "react";
 interface UploadFormProps {
   onSubmit: (data: { prompt: string; style: string; music: string }) => void;
   isLoading: boolean;
+  isAuthenticated: boolean;
+  onApiKeySubmit: (apiKey: string) => void;
 }
 
-export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
+export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApiKeySubmit }: UploadFormProps) {
   const [selectedStyle, setSelectedStyle] = useState("dramatic");
   const [selectedMusic, setSelectedMusic] = useState("epic.mp3");
+  const [apiKey, setApiKey] = useState("");
 
   const form = useForm({
     defaultValues: {
@@ -29,6 +33,37 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
       music: selectedMusic
     });
   };
+
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!apiKey.trim()) return;
+    onApiKeySubmit(apiKey);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-bold glow-text">FAL.ai API Key Required</h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            To generate AMVs, you'll need a FAL.ai API key.
+          </p>
+        </div>
+        <form onSubmit={handleApiKeySubmit} className="space-y-4">
+          <Input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter your FAL.ai API key"
+            className="pixel-borders"
+          />
+          <Button type="submit" className="w-full retro-btn">
+            Start Creating
+          </Button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
