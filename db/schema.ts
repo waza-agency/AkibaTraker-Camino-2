@@ -22,6 +22,22 @@ export const videos = pgTable("videos", {
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
+// Drop and recreate the table to ensure schema consistency
+export const migrateVideos = `
+DROP TABLE IF EXISTS videos CASCADE;
+CREATE TABLE IF NOT EXISTS videos (
+  id SERIAL PRIMARY KEY,
+  prompt TEXT NOT NULL,
+  music_file TEXT NOT NULL,
+  output_url TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  style TEXT NOT NULL DEFAULT 'dramatic',
+  metadata JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+`;
+
 export const insertVideoSchema = createInsertSchema(videos);
 export const selectVideoSchema = createSelectSchema(videos);
 export type InsertVideo = typeof videos.$inferInsert;
