@@ -1,22 +1,14 @@
-const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY;
+const MOCK_VIDEOS = [
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+];
 
 export async function generateVideo(prompt: string): Promise<string> {
-  const response = await fetch("https://fal.ai/api/v1/video", {
-    method: "POST",
-    headers: {
-      "Authorization": `Key ${FAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prompt,
-      duration: 15,
-    }),
-  });
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
-  if (!response.ok) {
-    throw new Error("Failed to generate video");
-  }
-
-  const data = await response.json();
-  return data.url;
+  // Return a random sample video
+  const randomVideo = MOCK_VIDEOS[Math.floor(Math.random() * MOCK_VIDEOS.length)];
+  return randomVideo;
 }

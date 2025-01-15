@@ -1,24 +1,20 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import UploadForm from "@/components/upload-form";
 import VideoPreview from "@/components/video-preview";
-import MusicSelector from "@/components/music-selector";
-import { type VideoMetadata } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const [selectedMusic, setSelectedMusic] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const createVideo = useMutation({
-    mutationFn: async (data: { prompt: string; musicFile: string }) => {
+    mutationFn: async (prompt: string) => {
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ prompt }),
       });
       if (!res.ok) throw new Error("Failed to create video");
       return res.json();
@@ -40,16 +36,7 @@ export default function Home() {
   });
 
   const handleSubmit = async (prompt: string) => {
-    if (!selectedMusic) {
-      toast({
-        title: "Error",
-        description: "Please select background music",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    await createVideo.mutate({ prompt, musicFile: selectedMusic });
+    await createVideo.mutate(prompt);
   };
 
   return (
@@ -65,19 +52,9 @@ export default function Home() {
         </div>
 
         <Card className="p-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h2 className="text-lg font-semibold mb-4">1. Upload Content</h2>
-              <UploadForm onSubmit={handleSubmit} isLoading={createVideo.isPending} />
-            </div>
-            <Separator className="md:hidden" />
-            <div>
-              <h2 className="text-lg font-semibold mb-4">2. Select Music</h2>
-              <MusicSelector
-                selected={selectedMusic}
-                onSelect={setSelectedMusic}
-              />
-            </div>
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
+            <UploadForm onSubmit={handleSubmit} isLoading={createVideo.isPending} />
           </div>
         </Card>
 
