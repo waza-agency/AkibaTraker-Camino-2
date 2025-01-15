@@ -94,6 +94,8 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     }
 
     try {
+      console.log("Creating video with prompt:", prompt);
+
       // First create a pending video entry
       const [video] = await db.insert(videos)
         .values({
@@ -105,9 +107,12 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
         })
         .returning();
 
-      // Generate video with FAL.ai
+      console.log("Created pending video entry:", video);
+
+      // Generate video with FAL.ai in the background
       generateVideo(prompt, falApiKey)
         .then(async (outputUrl) => {
+          console.log("Video generated successfully:", outputUrl);
           await db
             .update(videos)
             .set({
@@ -117,7 +122,8 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
             })
             .where(eq(videos.id, video.id));
         })
-        .catch(async () => {
+        .catch(async (error) => {
+          console.error("Failed to generate video:", error);
           await db
             .update(videos)
             .set({
@@ -129,7 +135,11 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
       res.json(video);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create video" });
+      console.error("Failed to create video:", error);
+      res.status(500).json({ 
+        error: "Failed to create video",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
@@ -148,6 +158,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
       res.json(video);
     } catch (error) {
+      console.error("Failed to get video:", error);
       res.status(500).json({ error: "Failed to get video" });
     }
   });
@@ -160,6 +171,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
       });
       res.json(allVideos);
     } catch (error) {
+      console.error("Failed to get videos:", error);
       res.status(500).json({ error: "Failed to get videos" });
     }
   });
