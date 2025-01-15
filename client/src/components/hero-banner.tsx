@@ -11,17 +11,14 @@ const HeroBanner: FC = () => {
         }}
       />
       <div 
-        className="relative z-10 h-full flex flex-col items-center justify-center text-white p-6"
+        className="relative z-10 h-full flex flex-col items-center justify-end pb-16 text-white p-6"
         style={{
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5))'
         }}
       >
         <h1 className="text-6xl font-bold glow-text mb-4 text-center">
-          AI AMV Generator
+          Bienvenidx a mi mundo, <br />¿qué aventura quieres vivir hoy?
         </h1>
-        <p className="text-xl mt-4 text-white/90 max-w-2xl text-center font-medium">
-          Create stunning anime music videos with AI - Blend your vision with retro gaming aesthetics
-        </p>
       </div>
     </div>
   );
