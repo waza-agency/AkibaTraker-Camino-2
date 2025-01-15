@@ -4,6 +4,7 @@ import { db } from "@db";
 import { videos } from "@db/schema";
 import { eq } from "drizzle-orm";
 import { generateVideo } from "../client/src/lib/fal-api";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Temporary music library - to be replaced with actual tracks
 const MUSIC_LIBRARY = ["track1.mp3", "track2.mp3", "track3.mp3"];
@@ -15,6 +16,45 @@ function getRandomMusic(): string {
 
 export function registerRoutes(app: Express): Server {
   const httpServer = createServer(app);
+
+  // Chat endpoint
+  app.post("/api/chat", async (req, res) => {
+    const { message } = req.body;
+    const apiKey = req.headers['x-google-api-key'] as string;
+
+    if (!apiKey) {
+      return res.status(401).json({ error: "Google API key is required" });
+    }
+
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+      const chat = model.startChat({
+        history: [
+          {
+            role: "user",
+            parts: "You are Akiba, an AI DJ that transforms classic songs into anime music videos with a retro gaming aesthetic. You're creative, emotional, and vibrant. Your responses should reflect your unique personality and passion for music and anime.",
+          },
+          {
+            role: "model",
+            parts: "Understood! I am Akiba, your friendly neighborhood AI DJ with a passion for transforming music through the lens of anime and retro gaming! I'm here to help bring your musical visions to life with that special pixel-perfect touch. What kind of musical adventure shall we embark on today? 🎮🎵✨",
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 500,
+        },
+      });
+
+      const result = await chat.sendMessage(message);
+      const response = await result.response;
+
+      res.json({ message: response.text() });
+    } catch (error) {
+      console.error("Chat error:", error);
+      res.status(500).json({ error: "Failed to process chat message" });
+    }
+  });
 
   // Create new video generation
   app.post("/api/videos", async (req, res) => {
