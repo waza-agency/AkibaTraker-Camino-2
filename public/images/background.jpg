@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#000" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+    <radialGradient id="pixel-glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background with subtle grid -->
+  <rect width="100%" height="100%" fill="#f8f9fa"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  
+  <!-- Retro pixel art patterns -->
+  <g opacity="0.05">
+    <!-- Pixel art mountains -->
+    <path d="M0 800 L300 400 L600 700 L900 300 L1200 600 L1500 200 L1920 500 L1920 1080 L0 1080 Z" 
+          fill="#2d3748"/>
+    <!-- Random pixel squares for texture -->
+    <rect x="100" y="100" width="20" height="20" fill="#6366f1"/>
+    <rect x="500" y="200" width="30" height="30" fill="#6366f1"/>
+    <rect x="1200" y="300" width="25" height="25" fill="#6366f1"/>
+    <rect x="1600" y="150" width="15" height="15" fill="#6366f1"/>
+  </g>
+  
+  <!-- Subtle glow effects -->
+  <circle cx="960" cy="540" r="400" fill="url(#pixel-glow)"/>
+</svg>
