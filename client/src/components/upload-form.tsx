@@ -36,7 +36,7 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
               <FormControl>
                 <Textarea
                   placeholder="Describe your AMV scene or paste an image URL..."
-                  className="h-32 resize-none"
+                  className="h-32 resize-none pixel-borders"
                   {...field}
                 />
               </FormControl>
@@ -55,11 +55,15 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
 
         <Button
           type="submit"
-          className="w-full mt-6"
+          className="w-full mt-6 retro-btn"
           disabled={isLoading}
         >
           <Image className="mr-2 h-4 w-4" />
-          {isLoading ? "Generating..." : "Generate AMV"}
+          {isLoading ? (
+            <span className="retro-loading">Generating...</span>
+          ) : (
+            "Generate AMV"
+          )}
         </Button>
       </form>
     </Form>

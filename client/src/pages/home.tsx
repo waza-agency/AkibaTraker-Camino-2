@@ -46,10 +46,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 retro-container">
+      <div className="max-w-6xl mx-auto space-y-8 p-6">
         <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold glow-text bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             AI AMV Generator
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -57,7 +57,7 @@ export default function Home() {
           </p>
         </div>
 
-        <Card className="p-6">
+        <Card className="p-6 pixel-borders">
           <div>
             <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
             <UploadForm onSubmit={handleSubmit} isLoading={createVideo.isPending} />
