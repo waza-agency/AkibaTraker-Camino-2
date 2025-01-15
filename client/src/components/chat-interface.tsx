@@ -15,6 +15,8 @@ interface Message {
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -32,15 +34,18 @@ export default function ChatInterface() {
     mutationFn: async (message: string) => {
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-google-api-key": apiKey
+        },
         body: JSON.stringify({ message }),
       });
-      
+
       if (!res.ok) {
         const error = await res.text();
         throw new Error(error);
       }
-      
+
       return res.json();
     },
     onSuccess: (data) => {
@@ -67,6 +72,42 @@ export default function ChatInterface() {
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     await sendMessage.mutate(userMessage);
   };
+
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!apiKey.trim()) return;
+
+    setIsAuthenticated(true);
+    toast({
+      title: "Success",
+      description: "API Key saved! You can now chat with Akiba",
+    });
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto retro-container p-6">
+        <div className="text-center space-y-4">
+          <h3 className="text-lg font-bold glow-text">Google API Key Required</h3>
+          <p className="text-sm text-muted-foreground">
+            To chat with Akiba, you'll need a Google API key for the Gemini model.
+          </p>
+          <form onSubmit={handleApiKeySubmit} className="space-y-4">
+            <Input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Enter your Google API key"
+              className="pixel-borders"
+            />
+            <Button type="submit" className="w-full retro-btn">
+              Start Chatting
+            </Button>
+          </form>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-2xl mx-auto retro-container p-4">

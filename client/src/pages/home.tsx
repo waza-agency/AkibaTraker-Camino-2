@@ -8,9 +8,6 @@ import HeroBanner from "@/components/hero-banner";
 import CharacterCard from "@/components/character-card";
 import ChatInterface from "@/components/chat-interface";
 import { useToast } from "@/hooks/use-toast";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
 
 interface GenerateVideoParams {
   prompt: string;
@@ -68,6 +65,12 @@ export default function Home() {
 
         <CharacterCard />
 
+        {/* Chat Section */}
+        <div className="my-8">
+          <h2 className="text-2xl font-bold glow-text mb-4 text-center">Chat with Akiba</h2>
+          <ChatInterface />
+        </div>
+
         <div className="space-y-8">
           <Card className="p-6 pixel-borders">
             <div>
@@ -79,22 +82,6 @@ export default function Home() {
           <VideoPreview />
 
           <VideoGallery />
-
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button className="fixed bottom-6 right-6 h-16 w-16 rounded-full retro-btn">
-                <MessageSquare className="h-6 w-6" />
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="h-[80vh]">
-              <div className="mx-auto w-full max-w-4xl p-6">
-                <ChatInterface
-                  googleApiKey={googleApiKey}
-                  onApiKeySubmit={handleApiKeySubmit}
-                />
-              </div>
-            </DrawerContent>
-          </Drawer>
         </div>
       </div>
     </div>
