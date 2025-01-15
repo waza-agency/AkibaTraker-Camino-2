@@ -5,6 +5,7 @@ import UploadForm from "@/components/upload-form";
 import VideoPreview from "@/components/video-preview";
 import VideoGallery from "@/components/video-gallery";
 import HeroBanner from "@/components/hero-banner";
+import CharacterCard from "@/components/character-card";
 import { useToast } from "@/hooks/use-toast";
 
 interface GenerateVideoParams {
@@ -50,6 +51,8 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 retro-container">
       <div className="max-w-6xl mx-auto p-6">
         <HeroBanner />
+
+        <CharacterCard />
 
         <div className="space-y-8">
           <Card className="p-6 pixel-borders">
