@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import UploadForm from "@/components/upload-form";
 import VideoPreview from "@/components/video-preview";
 import VideoGallery from "@/components/video-gallery";
+import HeroBanner from "@/components/hero-banner";
 import { useToast } from "@/hooks/use-toast";
 
 interface GenerateVideoParams {
@@ -47,26 +48,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 retro-container">
-      <div className="max-w-6xl mx-auto space-y-8 p-6">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold glow-text bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            AI AMV Generator
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Create stunning anime music videos with AI
-          </p>
+      <div className="max-w-6xl mx-auto p-6">
+        <HeroBanner />
+
+        <div className="space-y-8">
+          <Card className="p-6 pixel-borders">
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
+              <UploadForm onSubmit={handleSubmit} isLoading={createVideo.isPending} />
+            </div>
+          </Card>
+
+          <VideoPreview />
+
+          <VideoGallery />
         </div>
-
-        <Card className="p-6 pixel-borders">
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
-            <UploadForm onSubmit={handleSubmit} isLoading={createVideo.isPending} />
-          </div>
-        </Card>
-
-        <VideoPreview />
-
-        <VideoGallery />
       </div>
     </div>
   );
