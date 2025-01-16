@@ -51,7 +51,10 @@ export default function VideoGallery() {
     );
   }
 
-  if (!videos?.length) {
+  // Filter out failed videos and check for remaining videos
+  const successfulVideos = videos?.filter(video => video.status !== "failed") ?? [];
+
+  if (!successfulVideos.length) {
     return (
       <Card className="p-4 text-center text-muted-foreground">
         No videos generated yet. Try creating one!
@@ -63,7 +66,7 @@ export default function VideoGallery() {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Your Generated Videos</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {videos.map((video) => (
+        {successfulVideos.map((video) => (
           <Card key={video.id} className="p-4 space-y-3 overflow-hidden">
             {video.status === "pending" && (
               <div className="space-y-2">
@@ -113,12 +116,6 @@ export default function VideoGallery() {
                   </Button>
                 </div>
               </div>
-            )}
-
-            {video.status === "failed" && (
-              <p className="text-sm text-destructive">
-                Failed to generate video
-              </p>
             )}
 
             <div data-video-id={video.id}>
