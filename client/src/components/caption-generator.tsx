@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Wand2 } from "lucide-react";
+import { Wand2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 
@@ -30,26 +30,29 @@ export default function CaptionGenerator({
           "x-google-api-key": apiKey || ""
         },
         body: JSON.stringify({ prompt }),
+        credentials: "include"
       });
 
       if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error);
+        const errorText = await res.text();
+        throw new Error(errorText);
       }
 
-      return res.json();
+      const data = await res.json();
+      return data.caption;
     },
-    onSuccess: (data) => {
-      onCaptionGenerated?.(data.caption);
+    onSuccess: (caption) => {
+      onCaptionGenerated?.(caption);
       toast({
-        title: "Success",
-        description: "Caption generated successfully!",
+        title: "¡Éxito!",
+        description: "¡Subtítulo generado correctamente!",
       });
+      setShowDialog(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Error al generar el subtítulo",
         variant: "destructive",
       });
     },
@@ -66,7 +69,6 @@ export default function CaptionGenerator({
   const handleApiKeySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!apiKey) return;
-    setShowDialog(false);
     generateCaption.mutate();
   };
 
@@ -75,20 +77,24 @@ export default function CaptionGenerator({
       <Button
         variant="ghost"
         size="sm"
-        className="gap-2"
+        className="bg-background/80 backdrop-blur-sm hover:bg-background/90 gap-2"
         onClick={handleGenerateCaption}
         disabled={disabled || generateCaption.isPending}
       >
-        <Wand2 className="w-4 h-4" />
-        {generateCaption.isPending ? "Generating..." : "Generate Caption"}
+        {generateCaption.isPending ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Wand2 className="w-4 h-4" />
+        )}
+        {generateCaption.isPending ? "Generando..." : "Generar Subtítulo"}
       </Button>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Enter Google API Key</DialogTitle>
+            <DialogTitle>Ingresa tu API Key de Google</DialogTitle>
             <DialogDescription>
-              To generate captions with Akiba's style, you'll need a Google API key for the Gemini model.
+              Para generar subtítulos con el estilo de Akiba, necesitas una API key de Google para el modelo Gemini.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleApiKeySubmit} className="space-y-4">
@@ -96,11 +102,22 @@ export default function CaptionGenerator({
               type="password"
               value={apiKey || ""}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Enter your Google API key"
+              placeholder="Ingresa tu API key de Google"
               className="w-full"
             />
-            <Button type="submit" className="w-full">
-              Generate Caption
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={generateCaption.isPending}
+            >
+              {generateCaption.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Generando...
+                </>
+              ) : (
+                "Generar Subtítulo"
+              )}
             </Button>
           </form>
         </DialogContent>

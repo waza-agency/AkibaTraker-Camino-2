@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -9,10 +10,15 @@ import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import ShareButton from "./share-button";
 import CaptionGenerator from "./caption-generator";
 
+interface VideoWithCaption extends SelectVideo {
+  caption?: string;
+}
+
 export default function VideoGallery() {
   const { data: videos, isLoading } = useQuery<SelectVideo[]>({
     queryKey: ["/api/videos"],
   });
+  const [videoCaptions, setVideoCaptions] = useState<Record<number, string>>({});
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -76,7 +82,6 @@ export default function VideoGallery() {
     );
   }
 
-  // Filter and check for videos
   const allVideos = videos ?? [];
 
   if (!allVideos.length) {
@@ -86,6 +91,13 @@ export default function VideoGallery() {
       </Card>
     );
   }
+
+  const handleCaptionGenerated = (videoId: number, caption: string) => {
+    setVideoCaptions(prev => ({
+      ...prev,
+      [videoId]: caption
+    }));
+  };
 
   return (
     <div className="space-y-4">
@@ -103,24 +115,6 @@ export default function VideoGallery() {
               </div>
             )}
 
-            {video.status === "failed" && (
-              <div className="space-y-2">
-                <p className="text-sm text-red-500">Error al generar el video</p>
-                <p className="text-xs text-muted-foreground">
-                  {video.metadata?.error || "Error desconocido"}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => retryGeneration.mutate(video.id)}
-                  disabled={retryGeneration.isPending}
-                  className="w-full"
-                >
-                  Reintentar Generación
-                </Button>
-              </div>
-            )}
-
             {video.status === "completed" && video.outputUrl && (
               <div className="relative group">
                 <VideoPreviewThumbnail
@@ -134,21 +128,7 @@ export default function VideoGallery() {
                 <div className="absolute top-2 right-2 flex gap-2">
                   <CaptionGenerator
                     prompt={video.prompt}
-                    onCaptionGenerated={(caption) => {
-                      const captionElement = document.createElement('p');
-                      captionElement.className = 'text-sm mt-2 italic text-muted-foreground';
-                      captionElement.textContent = caption;
-
-                      const promptElement = document.querySelector(`[data-video-id="${video.id}"] .video-prompt`);
-                      if (promptElement) {
-                        const existingCaption = promptElement.nextElementSibling;
-                        if (existingCaption?.classList.contains('video-caption')) {
-                          existingCaption.textContent = caption;
-                        } else {
-                          promptElement.insertAdjacentElement('afterend', captionElement);
-                        }
-                      }
-                    }}
+                    onCaptionGenerated={(caption) => handleCaptionGenerated(video.id, caption)}
                   />
                   <Button
                     variant="ghost"
@@ -164,11 +144,16 @@ export default function VideoGallery() {
               </div>
             )}
 
-            <div data-video-id={video.id}>
-              <p className="text-sm truncate video-prompt" title={video.prompt}>
+            <div>
+              <p className="text-sm truncate" title={video.prompt}>
                 {video.prompt}
               </p>
-              <p className="text-xs text-muted-foreground">
+              {videoCaptions[video.id] && (
+                <p className="text-sm mt-2 italic text-muted-foreground">
+                  {videoCaptions[video.id]}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
                 {new Date(video.createdAt).toLocaleString()}
               </p>
             </div>
