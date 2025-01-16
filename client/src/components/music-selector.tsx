@@ -13,7 +13,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const MUSIC_OPTIONS = {
+interface MusicOption {
+  id: string;
+  name: string;
+  file: string;
+  color: string;
+}
+
+interface MusicOptions {
+  [key: string]: MusicOption[];
+}
+
+const MUSIC_OPTIONS: MusicOptions = {
   "Anime & J-Pop": [
     {
       id: "jpop-1",
@@ -180,28 +191,30 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
   }, [selected]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" onClick={(e) => e.stopPropagation()}>
       {/* Genre Selector */}
-      <Select
-        value={currentGenre}
-        onValueChange={(value) => {
-          setCurrentGenre(value);
-          // Select first track of the new genre by default
-          const firstTrack = MUSIC_OPTIONS[value][0].file;
-          onSelect(firstTrack);
-        }}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a genre" />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.keys(MUSIC_OPTIONS).map((genre) => (
-            <SelectItem key={genre} value={genre}>
-              {genre}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="relative z-20">
+        <Select
+          value={currentGenre}
+          onValueChange={(value) => {
+            setCurrentGenre(value);
+            // Select first track of the new genre by default
+            const firstTrack = MUSIC_OPTIONS[value][0].file;
+            onSelect(firstTrack);
+          }}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a genre" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.keys(MUSIC_OPTIONS).map((genre) => (
+              <SelectItem key={genre} value={genre}>
+                {genre}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Track Selection Wheel */}
       <div className="relative w-[400px] h-[400px] mx-auto">
