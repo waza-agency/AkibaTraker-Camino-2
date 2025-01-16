@@ -16,6 +16,31 @@ export default function VideoGallery() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const retryGeneration = useMutation({
+    mutationFn: async (videoId: number) => {
+      const res = await fetch(`/api/videos/${videoId}/retry`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error al reintentar la generación del video");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+      toast({
+        title: "Éxito",
+        description: "Se ha reiniciado la generación del video",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo reintentar la generación del video",
+        variant: "destructive",
+      });
+    },
+  });
+
   const likeMutation = useMutation({
     mutationFn: async (videoId: number) => {
       const res = await fetch(`/api/videos/${videoId}/like`, {
@@ -51,10 +76,10 @@ export default function VideoGallery() {
     );
   }
 
-  // Filter out failed videos and check for remaining videos
-  const successfulVideos = videos?.filter(video => video.status !== "failed") ?? [];
+  // Filter and check for videos
+  const allVideos = videos ?? [];
 
-  if (!successfulVideos.length) {
+  if (!allVideos.length) {
     return (
       <Card className="p-4 text-center text-muted-foreground">
         Aún no has generado ningún video. ¡Intenta crear uno!
@@ -66,12 +91,33 @@ export default function VideoGallery() {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Tus Videos Generados</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {successfulVideos.map((video) => (
+        {allVideos.map((video) => (
           <Card key={video.id} className="p-4 space-y-3 overflow-hidden">
             {video.status === "pending" && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Generando...</p>
+                <p className="text-sm text-muted-foreground">
+                  Generando{" "}
+                  {new Date(video.createdAt).toLocaleTimeString()}
+                </p>
                 <Progress value={30} />
+              </div>
+            )}
+
+            {video.status === "failed" && (
+              <div className="space-y-2">
+                <p className="text-sm text-red-500">Error al generar el video</p>
+                <p className="text-xs text-muted-foreground">
+                  {video.metadata?.error || "Error desconocido"}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => retryGeneration.mutate(video.id)}
+                  disabled={retryGeneration.isPending}
+                  className="w-full"
+                >
+                  Reintentar Generación
+                </Button>
               </div>
             )}
 
@@ -121,6 +167,9 @@ export default function VideoGallery() {
             <div data-video-id={video.id}>
               <p className="text-sm truncate video-prompt" title={video.prompt}>
                 {video.prompt}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(video.createdAt).toLocaleString()}
               </p>
             </div>
           </Card>

@@ -2,20 +2,45 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
 import { videos, videoLikes } from "@db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, lt } from "drizzle-orm";
 import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setupAuth } from "./auth";
 
-// Temporary music library - to be replaced with actual tracks
-const MUSIC_LIBRARY = ["track1.mp3", "track2.mp3", "track3.mp3"];
+const MAX_GENERATION_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-function getRandomMusic(): string {
-  const randomIndex = Math.floor(Math.random() * MUSIC_LIBRARY.length);
-  return MUSIC_LIBRARY[randomIndex];
+// Clean up stalled videos
+async function cleanupStalledVideos() {
+  const staleTime = new Date(Date.now() - MAX_GENERATION_TIME);
+
+  try {
+    await db
+      .update(videos)
+      .set({
+        status: "failed",
+        metadata: sql`jsonb_set(COALESCE(metadata, '{}'::jsonb), '{error}', '"Generation timeout exceeded"')`,
+        updatedAt: new Date()
+      })
+      .where(
+        and(
+          eq(videos.status, "pending"),
+          lt(videos.createdAt, staleTime)
+        )
+      );
+
+    console.log("Cleaned up stalled videos older than:", staleTime);
+  } catch (error) {
+    console.error("Failed to cleanup stalled videos:", error);
+  }
 }
 
+// Run cleanup every 5 minutes
+setInterval(cleanupStalledVideos, 5 * 60 * 1000);
+
 export function registerRoutes(app: Express): Server {
+  // Clean up stalled videos on startup
+  cleanupStalledVideos();
+
   // Set up authentication routes and middleware
   setupAuth(app);
 
@@ -395,4 +420,12 @@ The AMV to caption: ${prompt}`
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Temporary music library - to be replaced with actual tracks
+const MUSIC_LIBRARY = ["track1.mp3", "track2.mp3", "track3.mp3"];
+
+function getRandomMusic(): string {
+  const randomIndex = Math.floor(Math.random() * MUSIC_LIBRARY.length);
+  return MUSIC_LIBRARY[randomIndex];
 }
