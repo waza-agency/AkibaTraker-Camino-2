@@ -47,20 +47,15 @@ export async function generateAkibaImage(prompt: string, apiKey: string): Promis
 
     // Submit request using fal.subscribe for real-time updates
     const result = await fal.subscribe(
-      "fal-ai/sd-lora",
+      "fal-ai/stable-diffusion-v1-5",
       {
         input: {
           prompt: `high quality, detailed, best quality, masterpiece, anime style, ${prompt}`,
-          model_name: "runwayml/stable-diffusion-v1-5",
-          lora_weights: "https://v3.fal.media/files/koala/y0UV6IAVmGjV5d8b_5juS_pytorch_lora_weights.safetensors",
-          lora_scale: 0.85,
-          negative_prompt: "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name",
-          num_inference_steps: 35,
-          guidance_scale: 8.5,
-          width: 768,
-          height: 768,
-          scheduler: "DDIM",
-          seed: Math.floor(Math.random() * 1000000)
+          num_images: 1,
+          enable_safety_checker: true,
+          output_format: "jpeg",
+          image_size: "landscape_4_3",
+          negative_prompt: "bad quality, worst quality, low quality, blurry, censored",
         },
         logs: true,
         onQueueUpdate: (update) => {

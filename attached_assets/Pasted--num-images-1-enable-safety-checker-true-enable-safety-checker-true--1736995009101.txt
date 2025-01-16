@@ -1,0 +1,179 @@
+      num_images: 1,
+          enable_safety_checker: true,
+          enable_safety_checker: true,
+          output_format: "jpeg",
+          output_format: "jpeg",
+          image_size: "landscape_4_3"
+,
+          image_size: "landscape_4_3"
+          negative_prompt: "bad quality, worst quality, low quality, blurry, censored",
+        },
+        },
+        logs: true,
+        logs: true,
+        onQueueUpdate: (update) => {
+        onQueueUpdate: (update) => {
+          if (update.status === "IN_PROGRESS") {
+          if (update.status === "IN_PROGRESS") {
+            update.logs.map((log) => log.message).forEach(console.log);
+            update.logs.map((log) => log.message).forEach(console.log);
+          }
+          }
+        },
+        },
+      });
+      });
+      if (result.data?.images?.[0]) {
+      if (result.data?.images?.[0]) {
+        setGeneratedImageUrl(result.data.images[0].url);
+        setGeneratedImageUrl(result.data.images[0].url);
+        toast({
+        toast({
+          title: "¡Imagen generada!",
+          title: "¡Imagen generada!",
+          description: "Tu imagen de Akiba ha sido generada exitosamente",
+          description: "Tu imagen de Akiba ha sido generada exitosamente",
+        });
+        });
+        console.log('Imagen generada:', result.data);
+        console.log('Imagen generada:', result.data);
+        console.log('Request ID:', result.requestId);
+        console.log('Request ID:', result.requestId);
+      }
+      }
+    } catch (error) {
+    } catch (error) {
+      toast({
+      toast({
+        title: "Error",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Hubo un error al generar la imagen",
+        description: error instanceof Error ? error.message : "Hubo un error al generar la imagen",
+        variant: "destructive",
+        variant: "destructive",
+      });
+      });
+      console.error('Error al generar imagen:', error);
+      console.error('Error al generar imagen:', error);
+    } finally {
+    } finally {
+      setIsGenerating(false);
+      setIsGenerating(false);
+    }
+    }
+  };
+  };
+  return (
+  return (
+    <Card className="w-full p-6 bg-gray-900/30 border-purple-500/30 backdrop-blur-sm hover:border-purple-500/50 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+    <Card className="w-full p-6 bg-gray-900/30 border-purple-500/30 backdrop-blur-sm hover:border-purple-500/50 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+      <h2 className="text-2xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+      <h2 className="text-2xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+        Genera tu propia Akiba ✨
+        Genera tu propia Akiba ✨
+      </h2>
+      </h2>
+      {showApiKeyInput ? (
+      {showApiKeyInput ? (
+        <div className="mb-4">
+        <div className="mb-4">
+          <Input
+          <Input
+            type="password"
+            type="password"
+            placeholder="Ingresa tu API key de FAL.ai"
+            placeholder="Ingresa tu API key de FAL.ai"
+            value={apiKey}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => setApiKey(e.target.value)}
+            className="mb-2 bg-gray-800/50 border-purple-500/30 text-white"
+            className="mb-2 bg-gray-800/50 border-purple-500/30 text-white"
+          />
+          />
+          <Button
+          <Button
+            onClick={() => setShowApiKeyInput(false)}
+            onClick={() => setShowApiKeyInput(false)}
+            disabled={!apiKey}
+            disabled={!apiKey}
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          >
+          >
+            Guardar API Key
+            Guardar API Key
+          </Button>
+          </Button>
+        </div>
+        </div>
+      ) : (
+      ) : (
+        <div className="space-y-4">
+        <div className="space-y-4">
+          <Textarea
+          <Textarea
+            placeholder="Describe cómo quieres que se vea Akiba..."
+            placeholder="Describe cómo quieres que se vea Akiba..."
+            value={prompt}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="min-h-[100px] bg-gray-800/50 border-purple-500/30 text-white"
+            className="min-h-[100px] bg-gray-800/50 border-purple-500/30 text-white"
+          />
+          />
+          <Button
+          <Button
+            onClick={handleGenerate}
+            onClick={handleGenerate}
+            disabled={isGenerating || !prompt.trim()}
+            disabled={isGenerating || !prompt.trim()}
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          >
+          >
+            {isGenerating ? "Generando..." : "Generar Imagen"}
+            {isGenerating ? "Generando..." : "Generar Imagen"}
+          </Button>
+          </Button>
+        </div>
+        </div>
+      )}
+      )}
+      {generatedImageUrl && (
+      {generatedImageUrl && (
+        <div className="mt-6">
+        <div className="mt-6">
+          <img
+          <img
+            src={generatedImageUrl}
+            src={generatedImageUrl}
+            alt="Akiba generada"
+            alt="Akiba generada"
+            className="w-full h-auto rounded-lg shadow-lg"
+            className="w-full h-auto rounded-lg shadow-lg"
+          />
+          />
+          <Button
+          <Button
+            onClick={() => window.open(generatedImageUrl, '_blank')}
+            onClick={() => window.open(generatedImageUrl, '_blank')}
+            className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          >
+          >
+            Descargar Imagen
+            Descargar Imagen
+          </Button>
+          </Button>
+        </div>
+        </div>
+      )}
+      )}
+    </Card>
+    </Card>
+  );
+  );
+};
+};
