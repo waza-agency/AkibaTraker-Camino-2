@@ -57,16 +57,30 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 flex flex-col items-center justify-center px-4">
-      {/* Header Image and Title */}
-      <div className="w-full max-w-md mb-6">
+      {/* Hero Banner */}
+      <div className="w-full max-w-xl mb-8">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="text-center"
+          className="relative"
         >
-          <h1 className="text-4xl font-bold mb-2 glow-text">Akiba AMV</h1>
-          <p className="text-muted-foreground">Create stunning anime music videos with AI</p>
+          <img 
+            src="https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihuyqjzv4elqd4ypj5kakapnjdy54nqdodbqqijbxjogwxzktegxu"
+            alt="Akiba AMV Hero"
+            className="w-full h-auto rounded-lg shadow-2xl pixel-borders"
+            style={{ 
+              maxHeight: '300px',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end justify-center pb-6">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold mb-2 glow-text">Akiba AMV</h1>
+              <p className="text-muted-foreground">Create stunning anime music videos with AI</p>
+            </div>
+          </div>
         </motion.div>
       </div>
 
