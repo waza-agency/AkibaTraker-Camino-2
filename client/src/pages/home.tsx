@@ -73,40 +73,54 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 retro-container">
-      <Navbar />
-      <div className="max-w-6xl mx-auto p-6">
-        <HeroBanner />
+    <div 
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: 'url("https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeicz4mfqquhx7fgjbg6zuz35olhlfcxugbj4rmjpwkvulhixq3lwwa")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-sm" />
 
-        <CharacterCard />
+      {/* Content */}
+      <div className="relative z-10 retro-container">
+        <Navbar />
+        <div className="max-w-6xl mx-auto p-6">
+          <HeroBanner />
 
-        {/* Chat Section */}
-        <div className="my-8">
-          <h2 className="text-2xl font-bold glow-text mb-4 text-center">Chat with Akiba</h2>
-          <ChatInterface />
-        </div>
+          <CharacterCard />
 
-        {/* Image Generator Section */}
-        <div className="my-8">
-          <ImageGenerator />
-        </div>
+          {/* Chat Section */}
+          <div className="my-8">
+            <h2 className="text-2xl font-bold glow-text mb-4 text-center">Chat with Akiba</h2>
+            <ChatInterface />
+          </div>
 
-        <div className="space-y-8">
-          <Card className="p-6 pixel-borders">
-            <div>
-              <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
-              <UploadForm 
-                onSubmit={handleSubmit} 
-                isLoading={createVideo.isPending}
-                isAuthenticated={!!falApiKey}
-                onApiKeySubmit={handleFalApiKeySubmit}
-              />
-            </div>
-          </Card>
+          {/* Image Generator Section */}
+          <div className="my-8">
+            <ImageGenerator />
+          </div>
 
-          <VideoPreview />
+          <div className="space-y-8">
+            <Card className="p-6 pixel-borders">
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Create Your AMV</h2>
+                <UploadForm 
+                  onSubmit={handleSubmit} 
+                  isLoading={createVideo.isPending}
+                  isAuthenticated={!!falApiKey}
+                  onApiKeySubmit={handleFalApiKeySubmit}
+                />
+              </div>
+            </Card>
 
-          <VideoGallery />
+            <VideoPreview />
+
+            <VideoGallery />
+          </div>
         </div>
       </div>
     </div>
