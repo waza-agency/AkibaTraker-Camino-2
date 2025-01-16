@@ -69,9 +69,9 @@ export default function AuthPage() {
       <div className="absolute inset-0 bg-background/40 backdrop-blur-sm" />
 
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col items-center">
         {/* Hero Banner */}
-        <div className="w-full max-w-xl mb-8">
+        <div className="w-full max-w-xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -97,7 +97,7 @@ export default function AuthPage() {
           </motion.div>
         </div>
 
-        <Card className="w-full max-w-md p-6 retro-container bg-background/95 backdrop-blur-sm">
+        <Card className="w-full max-w-md p-6 retro-container bg-background/95 backdrop-blur-sm mt-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
