@@ -33,7 +33,7 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
         case "twitter":
           window.open(
             `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-              title
+              `${shareData.title}\n${shareData.text}`
             )}&url=${encodeURIComponent(url)}`,
             "_blank"
           );
@@ -42,7 +42,7 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
           window.open(
             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
               url
-            )}`,
+            )}&quote=${encodeURIComponent(title)}`,
             "_blank"
           );
           break;
@@ -75,19 +75,19 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
           <Share2 className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent align="start">
         {navigator.share && (
-          <DropdownMenuItem onClick={() => handleShare()}>
+          <DropdownMenuItem onSelect={() => handleShare()}>
             Share...
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => handleShare("twitter")}>
+        <DropdownMenuItem onSelect={() => handleShare("twitter")}>
           Share on Twitter
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleShare("facebook")}>
+        <DropdownMenuItem onSelect={() => handleShare("facebook")}>
           Share on Facebook
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleShare("copy")}>
+        <DropdownMenuItem onSelect={() => handleShare("copy")}>
           Copy Link
         </DropdownMenuItem>
       </DropdownMenuContent>
