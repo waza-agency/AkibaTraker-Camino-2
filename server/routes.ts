@@ -115,7 +115,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
         await db
           .update(videos)
-          .set({ 
+          .set({
             likesCount: sql`likes_count - 1`,
             updatedAt: new Date()
           })
@@ -133,7 +133,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
       await db
         .update(videos)
-        .set({ 
+        .set({
           likesCount: sql`likes_count + 1`,
           updatedAt: new Date()
         })
@@ -220,30 +220,52 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
       generateVideo(prompt, falApiKey)
         .then(async (outputUrl) => {
           console.log("Video generated successfully:", outputUrl);
-          await db
-            .update(videos)
-            .set({
+          try {
+            await db
+              .update(videos)
+              .set({
+                outputUrl,
+                status: "completed",
+                updatedAt: new Date()
+              })
+              .where(eq(videos.id, video.id));
+
+            console.log("Database updated with video URL:", {
+              videoId: video.id,
               outputUrl,
-              status: "completed",
-              updatedAt: new Date()
-            })
-            .where(eq(videos.id, video.id));
+              status: "completed"
+            });
+          } catch (error) {
+            console.error("Failed to update video in database:", error);
+            await db
+              .update(videos)
+              .set({
+                status: "failed",
+                updatedAt: new Date()
+              })
+              .where(eq(videos.id, video.id));
+          }
         })
         .catch(async (error) => {
           console.error("Failed to generate video:", error);
-          await db
-            .update(videos)
-            .set({
-              status: "failed",
-              updatedAt: new Date()
-            })
-            .where(eq(videos.id, video.id));
+          try {
+            await db
+              .update(videos)
+              .set({
+                status: "failed",
+                updatedAt: new Date()
+              })
+              .where(eq(videos.id, video.id));
+            console.log("Updated video status to failed:", video.id);
+          } catch (dbError) {
+            console.error("Failed to update video status in database:", dbError);
+          }
         });
 
       res.json(video);
     } catch (error) {
       console.error("Failed to create video:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to create video",
         details: error instanceof Error ? error.message : "Unknown error"
       });
@@ -308,7 +330,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
       res.json({ imageUrl });
     } catch (error) {
       console.error("Failed to generate image:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to generate image",
         details: error instanceof Error ? error.message : "Unknown error"
       });
@@ -363,7 +385,7 @@ The AMV to caption: ${prompt}`
       res.json({ caption: response.text() });
     } catch (error) {
       console.error("Failed to generate caption:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to generate caption",
         details: error instanceof Error ? error.message : "Unknown error"
       });
