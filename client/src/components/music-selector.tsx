@@ -4,12 +4,13 @@ import { motion } from "framer-motion";
 import { RefreshCw, Play, Pause, SkipBack } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/hooks/use-toast";
 
 const MUSIC_OPTIONS = [
   { 
     id: "epic-flute", 
     name: "Epic Flute", 
-    file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74bzzli", 
+    file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm", 
     color: "bg-red-500" 
   },
   { 
@@ -34,7 +35,9 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [startTime, setStartTime] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { toast } = useToast();
 
   const handleReset = () => {
     onSelect(DEFAULT_TRACK);
@@ -49,8 +52,16 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
+        setIsLoading(true);
         audioRef.current.currentTime = startTime;
-        audioRef.current.play();
+        audioRef.current.play().catch((error) => {
+          toast({
+            title: "Playback Error",
+            description: "Failed to play the audio track. Please try again.",
+            variant: "destructive",
+          });
+          setIsPlaying(false);
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -125,6 +136,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
               variant="ghost"
               onClick={togglePlayPause}
               className="h-8 w-8 p-0"
+              disabled={isLoading}
             >
               {isPlaying ? (
                 <Pause className="h-4 w-4" />
@@ -167,6 +179,18 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
           if (audioRef.current) {
             audioRef.current.currentTime = startTime;
           }
+        }}
+        onLoadStart={() => setIsLoading(true)}
+        onCanPlay={() => setIsLoading(false)}
+        onError={(e) => {
+          console.error("Audio error:", e);
+          setIsLoading(false);
+          setIsPlaying(false);
+          toast({
+            title: "Error",
+            description: "Failed to load the audio track. Please try another one.",
+            variant: "destructive",
+          });
         }}
       />
     </div>
