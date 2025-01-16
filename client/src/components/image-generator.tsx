@@ -105,7 +105,7 @@ export default function ImageGenerator() {
 
   return (
     <Card className="p-6 retro-container">
-      <h2 className="text-2xl font-bold glow-text mb-4">Create Your Akiba</h2>
+      <h2 className="text-2xl font-bold glow-text mb-4">Create Your Akiba Image</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Input
