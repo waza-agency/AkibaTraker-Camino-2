@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
+import { Download } from "lucide-react";
 
 export default function ImageGenerator() {
   const [prompt, setPrompt] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateImage = useMutation({
@@ -30,6 +32,7 @@ export default function ImageGenerator() {
       return res.json();
     },
     onSuccess: (data) => {
+      setGeneratedImage(data.imageUrl);
       toast({
         title: "Success",
         description: "Image generated successfully!",
@@ -60,6 +63,18 @@ export default function ImageGenerator() {
     if (!prompt.trim()) return;
 
     await generateImage.mutate(prompt);
+  };
+
+  const handleDownload = () => {
+    if (generatedImage) {
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = generatedImage;
+      link.download = `akiba-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   if (!isAuthenticated) {
@@ -109,17 +124,20 @@ export default function ImageGenerator() {
           {generateImage.isPending ? "Generating..." : "Generate Akiba"}
         </Button>
 
-        {generateImage.data?.imageUrl && (
-          <div className="mt-4">
-            <img
-              src={generateImage.data.imageUrl}
-              alt="Generated Akiba"
-              className="w-full rounded-lg pixel-borders"
-            />
+        {generatedImage && (
+          <div className="mt-4 space-y-4">
+            <div className="border-4 border-primary/20 rounded-lg overflow-hidden">
+              <img
+                src={generatedImage}
+                alt="Generated Akiba"
+                className="w-full h-auto"
+              />
+            </div>
             <Button 
-              className="w-full mt-2 retro-btn"
-              onClick={() => window.open(generateImage.data.imageUrl, '_blank')}
+              className="w-full retro-btn"
+              onClick={handleDownload}
             >
+              <Download className="w-4 h-4 mr-2" />
               Download Image
             </Button>
           </div>
