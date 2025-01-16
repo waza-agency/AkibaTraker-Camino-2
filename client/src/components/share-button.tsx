@@ -17,13 +17,13 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
   const { toast } = useToast();
 
   const handleShare = async (platform?: string) => {
-    const shareData = {
-      title: "Check out this AMV!",
-      text: title,
-      url: url,
-    };
-
     try {
+      const shareData = {
+        title: "Check out this AMV!",
+        text: title,
+        url: url,
+      };
+
       if (!platform && navigator.share) {
         await navigator.share(shareData);
         return;
@@ -35,7 +35,8 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
             `https://twitter.com/intent/tweet?text=${encodeURIComponent(
               `${shareData.title}\n${shareData.text}`
             )}&url=${encodeURIComponent(url)}`,
-            "_blank"
+            "_blank",
+            "noopener,noreferrer"
           );
           break;
         case "facebook":
@@ -43,7 +44,8 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
               url
             )}&quote=${encodeURIComponent(title)}`,
-            "_blank"
+            "_blank",
+            "noopener,noreferrer"
           );
           break;
         case "copy":
