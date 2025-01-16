@@ -83,7 +83,7 @@ export default function ImageGenerator() {
       <Card className="w-full retro-container p-6">
         <div className="text-center space-y-4">
           <h3 className="text-lg font-bold glow-text">FAL.ai API Key Required</h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-2">
             To generate custom Akiba images, you'll need a FAL.ai API key.
           </p>
           <form onSubmit={handleApiKeySubmit} className="space-y-4">
@@ -105,66 +105,68 @@ export default function ImageGenerator() {
 
   return (
     <Card className="p-6 retro-container">
-      <h2 className="text-2xl font-bold glow-text mb-4">Create Your Akiba Image</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Input
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe how you want your Akiba to look..."
-            className="pixel-borders"
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Create Your Akiba Image</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Input
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe how you want your Akiba to look..."
+              className="pixel-borders"
+              disabled={generateImage.isPending}
+            />
+          </div>
+
+          <Button 
+            type="submit"
+            className="w-full retro-btn"
             disabled={generateImage.isPending}
-          />
-        </div>
-
-        <Button 
-          type="submit"
-          className="w-full retro-btn"
-          disabled={generateImage.isPending}
-        >
-          {generateImage.isPending ? (
-            <div className="flex items-center space-x-2">
-              <LoadingSpinner size="sm" />
-              <span>Generating...</span>
-            </div>
-          ) : (
-            "Generate Akiba"
-          )}
-        </Button>
-
-        <AnimatePresence>
-          {generatedImage && (
-            <motion.div 
-              className="mt-4 space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="border-4 border-primary/20 rounded-lg overflow-hidden relative">
-                <img
-                  src={generatedImage}
-                  alt="Generated Akiba"
-                  className="w-full h-auto"
-                />
-                {generateImage.isPending && (
-                  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                    <LoadingSpinner size="lg" />
-                  </div>
-                )}
+          >
+            {generateImage.isPending ? (
+              <div className="flex items-center space-x-2">
+                <LoadingSpinner size="sm" />
+                <span>Generating...</span>
               </div>
-              <Button 
-                className="w-full retro-btn"
-                onClick={handleDownload}
-                disabled={generateImage.isPending}
+            ) : (
+              "Generate Akiba"
+            )}
+          </Button>
+
+          <AnimatePresence>
+            {generatedImage && (
+              <motion.div 
+                className="mt-4 space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <Download className="w-4 h-4 mr-2" />
-                Download Image
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </form>
+                <div className="border-4 border-primary/20 rounded-lg overflow-hidden relative">
+                  <img
+                    src={generatedImage}
+                    alt="Generated Akiba"
+                    className="w-full h-auto"
+                  />
+                  {generateImage.isPending && (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                      <LoadingSpinner size="lg" />
+                    </div>
+                  )}
+                </div>
+                <Button 
+                  className="w-full retro-btn"
+                  onClick={handleDownload}
+                  disabled={generateImage.isPending}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Image
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </form>
+      </div>
     </Card>
   );
 }
