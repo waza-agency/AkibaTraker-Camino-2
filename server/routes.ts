@@ -5,6 +5,7 @@ import { videos } from "@db/schema";
 import { eq } from "drizzle-orm";
 import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { setupAuth } from "./auth";
 
 // Temporary music library - to be replaced with actual tracks
 const MUSIC_LIBRARY = ["track1.mp3", "track2.mp3", "track3.mp3"];
@@ -15,7 +16,8 @@ function getRandomMusic(): string {
 }
 
 export function registerRoutes(app: Express): Server {
-  const httpServer = createServer(app);
+  // Set up authentication routes and middleware
+  setupAuth(app);
 
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
@@ -85,6 +87,10 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Create new video generation
   app.post("/api/videos", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { prompt, style } = req.body;
     const falApiKey = req.headers['x-fal-api-key'] as string;
     const musicFile = getRandomMusic();
@@ -96,7 +102,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     try {
       console.log("Creating video with prompt:", prompt);
 
-      // First create a pending video entry
       const [video] = await db.insert(videos)
         .values({
           prompt,
@@ -109,7 +114,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
       console.log("Created pending video entry:", video);
 
-      // Generate video with FAL.ai in the background
       generateVideo(prompt, falApiKey)
         .then(async (outputUrl) => {
           console.log("Video generated successfully:", outputUrl);
@@ -145,6 +149,10 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Get video status
   app.get("/api/videos/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { id } = req.params;
 
     try {
@@ -178,6 +186,10 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Generate Akiba image
   app.post("/api/generate-image", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { prompt } = req.body;
     const falApiKey = req.headers['x-fal-api-key'] as string;
 
@@ -198,5 +210,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     }
   });
 
+  const httpServer = createServer(app);
   return httpServer;
 }

@@ -2,6 +2,14 @@ import { pgTable, text, serial, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").unique().notNull(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const stylePresets = {
   dramatic: "Dramatic and intense scenes with high contrast",
   romantic: "Soft and emotional scenes with warm colors",
@@ -18,9 +26,21 @@ export const videos = pgTable("videos", {
   status: text("status").notNull().default("pending"),
   style: text("style").notNull().default("dramatic"),
   metadata: jsonb("metadata").notNull().default({}),
+  userId: serial("user_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
+
+export const insertUserSchema = createInsertSchema(users);
+export const selectUserSchema = createSelectSchema(users);
+export type InsertUser = typeof users.$inferInsert;
+export type SelectUser = typeof users.$inferSelect;
+export type StylePreset = keyof typeof stylePresets;
+
+export const insertVideoSchema = createInsertSchema(videos);
+export const selectVideoSchema = createSelectSchema(videos);
+export type InsertVideo = typeof videos.$inferInsert;
+export type SelectVideo = typeof videos.$inferSelect;
 
 // Drop and recreate the table to ensure schema consistency
 export const migrateVideos = `
@@ -33,13 +53,19 @@ CREATE TABLE IF NOT EXISTS videos (
   status TEXT NOT NULL DEFAULT 'pending',
   style TEXT NOT NULL DEFAULT 'dramatic',
   metadata JSONB NOT NULL DEFAULT '{}',
+  user_id INTEGER REFERENCES users(id),
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 `;
 
-export const insertVideoSchema = createInsertSchema(videos);
-export const selectVideoSchema = createSelectSchema(videos);
-export type InsertVideo = typeof videos.$inferInsert;
-export type SelectVideo = typeof videos.$inferSelect;
-export type StylePreset = keyof typeof stylePresets;
+export const migrateUsers = `
+DROP TABLE IF EXISTS users CASCADE;
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+`
