@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { SelectVideo } from "@db/schema";
 import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import ShareButton from "./share-button";
+import CaptionGenerator from "./caption-generator";
 
 export default function VideoGallery() {
   const { data: videos, isLoading } = useQuery<SelectVideo[]>({
@@ -81,16 +82,36 @@ export default function VideoGallery() {
                   url={video.outputUrl} 
                   title={video.prompt}
                 />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                  onClick={() => likeMutation.mutate(video.id)}
-                  disabled={likeMutation.isPending}
-                >
-                  <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
-                  <span className="ml-1">{video.likesCount || 0}</span>
-                </Button>
+                <div className="absolute top-2 right-2 flex gap-2">
+                  <CaptionGenerator
+                    prompt={video.prompt}
+                    onCaptionGenerated={(caption) => {
+                      const captionElement = document.createElement('p');
+                      captionElement.className = 'text-sm mt-2 italic text-muted-foreground';
+                      captionElement.textContent = caption;
+
+                      const promptElement = document.querySelector(`[data-video-id="${video.id}"] .video-prompt`);
+                      if (promptElement) {
+                        const existingCaption = promptElement.nextElementSibling;
+                        if (existingCaption?.classList.contains('video-caption')) {
+                          existingCaption.textContent = caption;
+                        } else {
+                          promptElement.insertAdjacentElement('afterend', captionElement);
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                    onClick={() => likeMutation.mutate(video.id)}
+                    disabled={likeMutation.isPending}
+                  >
+                    <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
+                    <span className="ml-1">{video.likesCount || 0}</span>
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -100,9 +121,11 @@ export default function VideoGallery() {
               </p>
             )}
 
-            <p className="text-sm truncate" title={video.prompt}>
-              {video.prompt}
-            </p>
+            <div data-video-id={video.id}>
+              <p className="text-sm truncate video-prompt" title={video.prompt}>
+                {video.prompt}
+              </p>
+            </div>
           </Card>
         ))}
       </div>

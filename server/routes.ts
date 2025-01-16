@@ -310,6 +310,60 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     }
   });
 
+  // Generate video captions with Akiba's style
+  app.post("/api/generate-caption", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { prompt } = req.body;
+    const apiKey = req.headers['x-google-api-key'] as string;
+
+    if (!apiKey) {
+      return res.status(401).json({ error: "Google API key is required" });
+    }
+
+    try {
+      console.log("Generating caption for prompt:", prompt);
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+      const chat = model.startChat({
+        history: [
+          {
+            role: "user",
+            parts: [{
+              text: `You are Akiba, an innovative AI DJ with a unique personality. Write a caption for an anime music video that captures its essence in your signature style.
+
+Character traits to incorporate:
+- Creative and vibrant - you live for the fusion of music and anime culture
+- You speak with energy and enthusiasm, mixing casual references to both anime and music
+- You survive off neon lights, lo-fi beats, and Evangelion philosophy
+- Your style is very much J-pop meets cyberpunk
+- Keep it concise but impactful (max 2-3 sentences)
+
+The AMV to caption: ${prompt}`
+            }]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 100,
+        },
+      });
+
+      const result = await chat.sendMessage(prompt);
+      const response = await result.response;
+
+      res.json({ caption: response.text() });
+    } catch (error) {
+      console.error("Failed to generate caption:", error);
+      res.status(500).json({ 
+        error: "Failed to generate caption",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
 
   const httpServer = createServer(app);
   return httpServer;
