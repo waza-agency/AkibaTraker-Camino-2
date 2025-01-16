@@ -36,6 +36,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
 
@@ -47,23 +48,40 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
     }
   };
 
+  const resetPlayback = () => {
+    setIsPlaying(false);
+    setIsLoading(false);
+    setHasError(false);
+  };
+
   const togglePlayPause = () => {
+    if (hasError) {
+      // If there was an error, try reloading the audio
+      if (audioRef.current) {
+        audioRef.current.load();
+        setHasError(false);
+      }
+      return;
+    }
+
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
         setIsLoading(true);
+        setHasError(false);
         audioRef.current.currentTime = startTime;
         audioRef.current.play().catch((error) => {
+          console.error("Audio playback error:", error);
           toast({
             title: "Playback Error",
             description: "Failed to play the audio track. Please try again.",
             variant: "destructive",
           });
-          setIsPlaying(false);
+          resetPlayback();
         });
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -89,9 +107,12 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
     }
   };
 
+  // Reset audio when selected track changes
   useEffect(() => {
+    resetPlayback();
     if (audioRef.current) {
       audioRef.current.currentTime = startTime;
+      audioRef.current.load();
     }
   }, [selected]);
 
@@ -140,6 +161,8 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
             >
               {isPlaying ? (
                 <Pause className="h-4 w-4" />
+              ) : hasError ? (
+                <RefreshCw className="h-4 w-4" />
               ) : (
                 <Play className="h-4 w-4" />
               )}
@@ -180,15 +203,26 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
             audioRef.current.currentTime = startTime;
           }
         }}
-        onLoadStart={() => setIsLoading(true)}
-        onCanPlay={() => setIsLoading(false)}
+        onLoadStart={() => {
+          setIsLoading(true);
+          setHasError(false);
+        }}
+        onCanPlay={() => {
+          setIsLoading(false);
+          if (isPlaying) {
+            audioRef.current?.play().catch(() => {
+              resetPlayback();
+            });
+          }
+        }}
         onError={(e) => {
           console.error("Audio error:", e);
           setIsLoading(false);
           setIsPlaying(false);
+          setHasError(true);
           toast({
             title: "Error",
-            description: "Failed to load the audio track. Please try another one.",
+            description: "Failed to load the audio track. Please try another one or retry.",
             variant: "destructive",
           });
         }}
