@@ -9,6 +9,7 @@ import CharacterCard from "@/components/character-card";
 import ChatInterface from "@/components/chat-interface";
 import { useToast } from "@/hooks/use-toast";
 import ImageGenerator from "@/components/image-generator";
+import Navbar from "@/components/navbar";
 
 interface GenerateVideoParams {
   prompt: string;
@@ -73,6 +74,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 retro-container">
+      <Navbar />
       <div className="max-w-6xl mx-auto p-6">
         <HeroBanner />
 
