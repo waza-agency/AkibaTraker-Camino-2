@@ -32,7 +32,7 @@ export default function AuthPage() {
   const onSubmit = async (data: AuthFormData) => {
     try {
       const result = isLogin ? await login(data) : await register(data);
-      
+
       if (!result.ok) {
         toast({
           title: "Error",
@@ -56,16 +56,29 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 flex flex-col items-center justify-center px-4">
+      {/* Header Image and Title */}
+      <div className="w-full max-w-md mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <h1 className="text-4xl font-bold mb-2 glow-text">Akiba AMV</h1>
+          <p className="text-muted-foreground">Create stunning anime music videos with AI</p>
+        </motion.div>
+      </div>
+
       <Card className="w-full max-w-md p-6 retro-container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h1 className="text-2xl font-bold text-center mb-6 glow-text">
+          <h2 className="text-2xl font-bold text-center mb-6 glow-text">
             {isLogin ? "Welcome Back!" : "Create Account"}
-          </h1>
+          </h2>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
