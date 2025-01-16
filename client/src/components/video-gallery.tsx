@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { SelectVideo } from "@db/schema";
+import VideoPreviewThumbnail from "./video-preview-thumbnail";
 
 export default function VideoGallery() {
   const { data: videos, isLoading } = useQuery<SelectVideo[]>({
@@ -50,7 +51,7 @@ export default function VideoGallery() {
 
   if (!videos?.length) {
     return (
-      <Card className="p-6 text-center text-muted-foreground">
+      <Card className="p-4 text-center text-muted-foreground">
         No videos generated yet. Try creating one!
       </Card>
     );
@@ -71,10 +72,9 @@ export default function VideoGallery() {
 
             {video.status === "completed" && video.outputUrl && (
               <div className="relative group">
-                <video
+                <VideoPreviewThumbnail
                   src={video.outputUrl}
-                  controls
-                  className="w-full rounded-lg aspect-video object-cover"
+                  className="w-full rounded-lg aspect-video"
                 />
                 <Button
                   variant="ghost"
