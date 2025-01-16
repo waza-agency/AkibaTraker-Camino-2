@@ -11,8 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 
 const authSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
 type AuthFormData = z.infer<typeof authSchema>;
@@ -43,13 +43,13 @@ export default function AuthPage() {
       }
 
       toast({
-        title: "Success",
-        description: isLogin ? "Welcome back!" : "Account created successfully!",
+        title: "¡Éxito!",
+        description: isLogin ? "¡Bienvenido de nuevo!" : "¡Cuenta creada exitosamente!",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Something went wrong",
+        description: error instanceof Error ? error.message : "Algo salió mal",
         variant: "destructive",
       });
     }
@@ -104,7 +104,7 @@ export default function AuthPage() {
             transition={{ duration: 0.3 }}
           >
             <h2 className="text-2xl font-bold text-center mb-6 glow-text">
-              {isLogin ? "Welcome Back!" : "Create Account"}
+              {isLogin ? "¡Bienvenido de nuevo!" : "Crear Cuenta"}
             </h2>
 
             <Form {...form}>
@@ -114,12 +114,13 @@ export default function AuthPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Nombre de Usuario</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
                           className="pixel-borders"
                           autoComplete="username"
+                          placeholder="Tu nombre de usuario"
                         />
                       </FormControl>
                       <FormMessage />
@@ -132,13 +133,14 @@ export default function AuthPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Contraseña</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
                           type="password" 
                           className="pixel-borders"
                           autoComplete={isLogin ? "current-password" : "new-password"}
+                          placeholder="Tu contraseña"
                         />
                       </FormControl>
                       <FormMessage />
@@ -147,7 +149,7 @@ export default function AuthPage() {
                 />
 
                 <Button type="submit" className="w-full retro-btn">
-                  {isLogin ? "Login" : "Create Account"}
+                  {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
                 </Button>
 
                 <div className="text-center mt-4">
@@ -157,8 +159,8 @@ export default function AuthPage() {
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {isLogin
-                      ? "Need an account? Sign up"
-                      : "Already have an account? Login"}
+                      ? "¿No tienes cuenta? Regístrate"
+                      : "¿Ya tienes cuenta? Inicia sesión"}
                   </button>
                 </div>
               </form>
