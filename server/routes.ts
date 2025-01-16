@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { db } from "@db";
 import { videos } from "@db/schema";
 import { eq } from "drizzle-orm";
-import { generateVideo } from "../client/src/lib/fal-api";
+import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Temporary music library - to be replaced with actual tracks
@@ -173,6 +173,28 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     } catch (error) {
       console.error("Failed to get videos:", error);
       res.status(500).json({ error: "Failed to get videos" });
+    }
+  });
+
+  // Generate Akiba image
+  app.post("/api/generate-image", async (req, res) => {
+    const { prompt } = req.body;
+    const falApiKey = req.headers['x-fal-api-key'] as string;
+
+    if (!falApiKey) {
+      return res.status(401).json({ error: "FAL.ai API key is required" });
+    }
+
+    try {
+      console.log("Generating image with prompt:", prompt);
+      const imageUrl = await generateAkibaImage(prompt, falApiKey);
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+      res.status(500).json({ 
+        error: "Failed to generate image",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 

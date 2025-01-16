@@ -8,6 +8,7 @@ import HeroBanner from "@/components/hero-banner";
 import CharacterCard from "@/components/character-card";
 import ChatInterface from "@/components/chat-interface";
 import { useToast } from "@/hooks/use-toast";
+import ImageGenerator from "@/components/image-generator";
 
 interface GenerateVideoParams {
   prompt: string;
@@ -81,6 +82,11 @@ export default function Home() {
         <div className="my-8">
           <h2 className="text-2xl font-bold glow-text mb-4 text-center">Chat with Akiba</h2>
           <ChatInterface />
+        </div>
+
+        {/* Image Generator Section */}
+        <div className="my-8">
+          <ImageGenerator />
         </div>
 
         <div className="space-y-8">
