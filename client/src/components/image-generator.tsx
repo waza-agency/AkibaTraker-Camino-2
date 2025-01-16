@@ -7,6 +7,8 @@ import { useMutation } from "@tanstack/react-query";
 
 export default function ImageGenerator() {
   const [prompt, setPrompt] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
 
   const generateImage = useMutation({
@@ -15,7 +17,7 @@ export default function ImageGenerator() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "x-fal-api-key": localStorage.getItem("falApiKey") || ""
+          "x-fal-api-key": apiKey
         },
         body: JSON.stringify({ prompt: userPrompt }),
       });
@@ -42,12 +44,48 @@ export default function ImageGenerator() {
     },
   });
 
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!apiKey.trim()) return;
+
+    setIsAuthenticated(true);
+    toast({
+      title: "Success",
+      description: "API Key saved! You can now generate images",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
 
     await generateImage.mutate(prompt);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="w-full retro-container p-6">
+        <div className="text-center space-y-4">
+          <h3 className="text-lg font-bold glow-text">FAL.ai API Key Required</h3>
+          <p className="text-sm text-muted-foreground">
+            To generate custom Akiba images, you'll need a FAL.ai API key.
+          </p>
+          <form onSubmit={handleApiKeySubmit} className="space-y-4">
+            <Input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Enter your FAL.ai API key"
+              className="pixel-borders"
+            />
+            <Button type="submit" className="w-full retro-btn">
+              Start Creating
+            </Button>
+          </form>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 retro-container">

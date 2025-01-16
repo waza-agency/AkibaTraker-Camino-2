@@ -43,26 +43,33 @@ export async function generateAkibaImage(prompt: string, apiKey: string): Promis
       credentials: apiKey
     });
 
+    console.log("Starting image generation with prompt:", prompt);
+
     // Submit request using fal.subscribe for real-time updates
     const result = await fal.subscribe(
-      "fal-ai/sd-lora", // Base model endpoint
+      "fal-ai/stable-diffusion-v1-5",
       {
         input: {
           prompt: `anime style, detailed, ${prompt}`,
           lora_weights: "https://v3.fal.media/files/koala/y0UV6IAVmGjV5d8b_5juS_pytorch_lora_weights.safetensors",
-          lora_config: "https://v3.fal.media/files/elephant/dLLiHf0_kNXEVb2vztR-w_config.json",
+          lora_scale: 0.8,
           negative_prompt: "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry",
           num_inference_steps: 30,
-          guidance_scale: 7.5
+          guidance_scale: 7.5,
+          width: 512,
+          height: 512
         },
         logs: true,
         onQueueUpdate: (update) => {
           if (update.status === "IN_PROGRESS") {
+            console.log("Generation status:", update.status);
             update.logs.map((log) => log.message).forEach(console.log);
           }
         },
       }
     );
+
+    console.log("Generation result:", result);
 
     if (!result.data?.images?.[0]) {
       throw new Error("No image URL in response");
