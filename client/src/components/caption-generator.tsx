@@ -23,8 +23,8 @@ export default function CaptionGenerator({
 
   const generateCaption = useMutation({
     mutationFn: async () => {
-      if (!apiKey) {
-        throw new Error("API Key is required");
+      if (!apiKey.trim()) {
+        throw new Error("Se requiere una API key válida");
       }
 
       const res = await fetch("/api/generate-caption", {
@@ -38,20 +38,22 @@ export default function CaptionGenerator({
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText);
+        const errorData = await res.text();
+        throw new Error(errorData || "Error al generar el subtítulo");
       }
 
       const data = await res.json();
       return data.caption;
     },
     onSuccess: (caption) => {
-      onCaptionGenerated?.(caption);
-      toast({
-        title: "¡Éxito!",
-        description: "¡Subtítulo generado correctamente!",
-      });
-      setShowDialog(false);
+      if (caption) {
+        onCaptionGenerated?.(caption);
+        toast({
+          title: "¡Éxito!",
+          description: "¡Subtítulo generado correctamente!",
+        });
+        setShowDialog(false);
+      }
     },
     onError: (error) => {
       toast({
@@ -62,15 +64,19 @@ export default function CaptionGenerator({
     },
   });
 
-  const handleGenerateCaption = () => {
-    if (!apiKey) {
+  const handleGenerateCaption = async () => {
+    if (!apiKey.trim()) {
       setShowDialog(true);
       return;
     }
-    generateCaption.mutate();
+    try {
+      await generateCaption.mutateAsync();
+    } catch (error) {
+      console.error("Error al generar subtítulo:", error);
+    }
   };
 
-  const handleApiKeySubmit = (e: React.FormEvent) => {
+  const handleApiKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!apiKey.trim()) {
       toast({
@@ -80,7 +86,11 @@ export default function CaptionGenerator({
       });
       return;
     }
-    generateCaption.mutate();
+    try {
+      await generateCaption.mutateAsync();
+    } catch (error) {
+      console.error("Error al generar subtítulo después de ingresar API key:", error);
+    }
   };
 
   return (
@@ -115,6 +125,7 @@ export default function CaptionGenerator({
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Ingresa tu API key de Google"
               className="w-full"
+              required
             />
             <Button 
               type="submit" 
