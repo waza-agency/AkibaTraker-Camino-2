@@ -6,10 +6,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Image } from "lucide-react";
 import StyleSelector from "./style-selector";
 import MusicSelector from "./music-selector";
+import StyleTransferPreview from "./style-transfer-preview";
 import { useState } from "react";
 
 interface UploadFormProps {
-  onSubmit: (data: { prompt: string; style: string; music: string }) => void;
+  onSubmit: (data: { prompt: string; style: string; music: string; styleStrength?: number }) => void;
   isLoading: boolean;
   isAuthenticated: boolean;
   onApiKeySubmit: (apiKey: string) => void;
@@ -18,6 +19,7 @@ interface UploadFormProps {
 export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApiKeySubmit }: UploadFormProps) {
   const [selectedStyle, setSelectedStyle] = useState("dramatic");
   const [selectedMusic, setSelectedMusic] = useState("epic.mp3");
+  const [styleStrength, setStyleStrength] = useState(0.75);
   const [apiKey, setApiKey] = useState("");
 
   const form = useForm({
@@ -30,7 +32,8 @@ export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApi
     onSubmit({ 
       ...data, 
       style: selectedStyle,
-      music: selectedMusic
+      music: selectedMusic,
+      styleStrength
     });
   };
 
@@ -84,6 +87,13 @@ export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApi
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        {/* Style Preview */}
+        <StyleTransferPreview 
+          prompt={form.watch("prompt")}
+          onStyleStrengthChange={setStyleStrength}
+          className="mt-4"
         />
 
         <div>

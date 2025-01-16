@@ -310,6 +310,36 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     }
   });
 
+  // Style preview generation
+  app.post("/api/style-preview", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { prompt, styleStrength } = req.body;
+    const falApiKey = req.headers['x-fal-api-key'] as string;
+
+    if (!falApiKey) {
+      return res.status(401).json({ error: "FAL.ai API key is required" });
+    }
+
+    try {
+      console.log("Generating style preview with prompt:", prompt);
+      const previewUrl = await generateAkibaImage(prompt, falApiKey, {
+        styleStrength: styleStrength,
+        isPreview: true,
+        size: "512x512" // Smaller size for previews
+      });
+      res.json({ previewUrl });
+    } catch (error) {
+      console.error("Failed to generate style preview:", error);
+      res.status(500).json({ 
+        error: "Failed to generate style preview",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
