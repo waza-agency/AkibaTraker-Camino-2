@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { Download } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ImageGenerator() {
   const [prompt, setPrompt] = useState("");
@@ -67,7 +69,6 @@ export default function ImageGenerator() {
 
   const handleDownload = () => {
     if (generatedImage) {
-      // Create a temporary link element
       const link = document.createElement('a');
       link.href = generatedImage;
       link.download = `akiba-${Date.now()}.png`;
@@ -121,27 +122,48 @@ export default function ImageGenerator() {
           className="w-full retro-btn"
           disabled={generateImage.isPending}
         >
-          {generateImage.isPending ? "Generating..." : "Generate Akiba"}
+          {generateImage.isPending ? (
+            <div className="flex items-center space-x-2">
+              <LoadingSpinner size="sm" />
+              <span>Generating...</span>
+            </div>
+          ) : (
+            "Generate Akiba"
+          )}
         </Button>
 
-        {generatedImage && (
-          <div className="mt-4 space-y-4">
-            <div className="border-4 border-primary/20 rounded-lg overflow-hidden">
-              <img
-                src={generatedImage}
-                alt="Generated Akiba"
-                className="w-full h-auto"
-              />
-            </div>
-            <Button 
-              className="w-full retro-btn"
-              onClick={handleDownload}
+        <AnimatePresence>
+          {generatedImage && (
+            <motion.div 
+              className="mt-4 space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <Download className="w-4 h-4 mr-2" />
-              Download Image
-            </Button>
-          </div>
-        )}
+              <div className="border-4 border-primary/20 rounded-lg overflow-hidden relative">
+                <img
+                  src={generatedImage}
+                  alt="Generated Akiba"
+                  className="w-full h-auto"
+                />
+                {generateImage.isPending && (
+                  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                    <LoadingSpinner size="lg" />
+                  </div>
+                )}
+              </div>
+              <Button 
+                className="w-full retro-btn"
+                onClick={handleDownload}
+                disabled={generateImage.isPending}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Image
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </form>
     </Card>
   );
