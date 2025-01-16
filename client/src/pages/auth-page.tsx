@@ -56,102 +56,116 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 flex flex-col items-center justify-center px-4">
-      {/* Hero Banner */}
-      <div className="w-full max-w-xl mb-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative"
-        >
-          <img 
-            src="https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihuyqjzv4elqd4ypj5kakapnjdy54nqdodbqqijbxjogwxzktegxu"
-            alt="Akiba AMV Hero"
-            className="w-full h-auto rounded-lg shadow-2xl pixel-borders"
-            style={{ 
-              maxHeight: '300px',
-              objectFit: 'cover',
-              objectPosition: 'center'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end justify-center pb-6">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold mb-2 glow-text">Akiba AMV</h1>
-              <p className="text-muted-foreground">Create stunning anime music videos with AI</p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+    <div 
+      className="min-h-screen relative flex flex-col items-center justify-center px-4"
+      style={{
+        backgroundImage: 'url("https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeicz4mfqquhx7fgjbg6zuz35olhlfcxugbj4rmjpwkvulhixq3lwwa")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-sm" />
 
-      <Card className="w-full max-w-md p-6 retro-container">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <h2 className="text-2xl font-bold text-center mb-6 glow-text">
-            {isLogin ? "Welcome Back!" : "Create Account"}
-          </h2>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        className="pixel-borders"
-                        autoComplete="username"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="password" 
-                        className="pixel-borders"
-                        autoComplete={isLogin ? "current-password" : "new-password"}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" className="w-full retro-btn">
-                {isLogin ? "Login" : "Create Account"}
-              </Button>
-
-              <div className="text-center mt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {isLogin
-                    ? "Need an account? Sign up"
-                    : "Already have an account? Login"}
-                </button>
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Hero Banner */}
+        <div className="w-full max-w-xl mb-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative"
+          >
+            <img 
+              src="https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihuyqjzv4elqd4ypj5kakapnjdy54nqdodbqqijbxjogwxzktegxu"
+              alt="Akiba AMV Hero"
+              className="w-full h-auto rounded-lg shadow-2xl pixel-borders"
+              style={{ 
+                maxHeight: '300px',
+                objectFit: 'cover',
+                objectPosition: 'center'
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end justify-center pb-6">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold mb-2 glow-text">Akiba AMV</h1>
+                <p className="text-muted-foreground">Create stunning anime music videos with AI</p>
               </div>
-            </form>
-          </Form>
-        </motion.div>
-      </Card>
+            </div>
+          </motion.div>
+        </div>
+
+        <Card className="w-full max-w-md p-6 retro-container bg-background/95 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 className="text-2xl font-bold text-center mb-6 glow-text">
+              {isLogin ? "Welcome Back!" : "Create Account"}
+            </h2>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="pixel-borders"
+                          autoComplete="username"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="password" 
+                          className="pixel-borders"
+                          autoComplete={isLogin ? "current-password" : "new-password"}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full retro-btn">
+                  {isLogin ? "Login" : "Create Account"}
+                </Button>
+
+                <div className="text-center mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {isLogin
+                      ? "Need an account? Sign up"
+                      : "Already have an account? Login"}
+                  </button>
+                </div>
+              </form>
+            </Form>
+          </motion.div>
+        </Card>
+      </div>
     </div>
   );
 }
