@@ -18,7 +18,7 @@ export default function CaptionGenerator({
   disabled 
 }: CaptionGeneratorProps) {
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>("");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('google_api_key') || '');
   const [showDialog, setShowDialog] = useState(false);
 
   const generateCaption = useMutation({
@@ -31,36 +31,47 @@ export default function CaptionGenerator({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-google-api-key": apiKey
+          "x-google-api-key": apiKey.trim()
         },
         body: JSON.stringify({ prompt }),
-        credentials: "include"
       });
 
       if (!res.ok) {
-        const errorData = await res.text();
-        throw new Error(errorData || "Error al generar el subtítulo");
+        const error = await res.text();
+        throw new Error(error);
       }
 
       const data = await res.json();
       return data.caption;
     },
     onSuccess: (caption) => {
-      if (caption) {
-        onCaptionGenerated?.(caption);
-        toast({
-          title: "¡Éxito!",
-          description: "¡Subtítulo generado correctamente!",
-        });
-        setShowDialog(false);
+      if (!caption) {
+        throw new Error("No se pudo generar el subtítulo");
       }
+
+      // Save API key for future use
+      localStorage.setItem('google_api_key', apiKey);
+
+      onCaptionGenerated?.(caption);
+      toast({
+        title: "¡Éxito!",
+        description: "¡Subtítulo generado correctamente!",
+      });
+      setShowDialog(false);
     },
     onError: (error) => {
+      console.error("Error generating caption:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Error al generar el subtítulo",
         variant: "destructive",
       });
+
+      // Clear invalid API key
+      if (error.message.includes("API key")) {
+        localStorage.removeItem('google_api_key');
+        setApiKey('');
+      }
     },
   });
 
@@ -69,11 +80,7 @@ export default function CaptionGenerator({
       setShowDialog(true);
       return;
     }
-    try {
-      await generateCaption.mutateAsync();
-    } catch (error) {
-      console.error("Error al generar subtítulo:", error);
-    }
+    await generateCaption.mutateAsync();
   };
 
   const handleApiKeySubmit = async (e: React.FormEvent) => {
@@ -86,11 +93,7 @@ export default function CaptionGenerator({
       });
       return;
     }
-    try {
-      await generateCaption.mutateAsync();
-    } catch (error) {
-      console.error("Error al generar subtítulo después de ingresar API key:", error);
-    }
+    await generateCaption.mutateAsync();
   };
 
   return (
@@ -116,6 +119,7 @@ export default function CaptionGenerator({
             <DialogTitle>Ingresa tu API Key de Google</DialogTitle>
             <DialogDescription>
               Para generar subtítulos con el estilo de Akiba, necesitas una API key de Google para el modelo Gemini.
+              Esta se guardará localmente para futuros usos.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleApiKeySubmit} className="space-y-4">

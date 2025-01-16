@@ -364,16 +364,15 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Generate video captions with Akiba's style
   app.post("/api/generate-caption", async (req, res) => {
-    // Temporarily disabled authentication for testing
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ error: "Authentication required" });
-    // }
-
     const { prompt } = req.body;
     const apiKey = req.headers['x-google-api-key'] as string;
 
     if (!apiKey) {
       return res.status(401).json({ error: "Google API key is required" });
+    }
+
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
     }
 
     try {
@@ -401,13 +400,16 @@ The AMV to caption: ${prompt}`
         ],
         generationConfig: {
           maxOutputTokens: 100,
+          temperature: 0.9
         },
       });
 
       const result = await chat.sendMessage(prompt);
       const response = await result.response;
+      const caption = response.text();
 
-      res.json({ caption: response.text() });
+      console.log("Generated caption:", caption);
+      res.json({ caption });
     } catch (error) {
       console.error("Failed to generate caption:", error);
       res.status(500).json({
