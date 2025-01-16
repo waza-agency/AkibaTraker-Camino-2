@@ -91,7 +91,7 @@ export default function AuthPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end justify-center pb-6">
               <div className="text-center">
                 <h1 className="text-4xl font-bold mb-2 glow-text">Akiba AMV</h1>
-                <p className="text-muted-foreground">Create stunning anime music videos with AI</p>
+                <p className="text-muted-foreground">Crea increíbles videos musicales de anime con IA</p>
               </div>
             </div>
           </motion.div>
