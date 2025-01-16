@@ -18,16 +18,20 @@ export default function CaptionGenerator({
   disabled 
 }: CaptionGeneratorProps) {
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string>("");
   const [showDialog, setShowDialog] = useState(false);
 
   const generateCaption = useMutation({
     mutationFn: async () => {
+      if (!apiKey) {
+        throw new Error("API Key is required");
+      }
+
       const res = await fetch("/api/generate-caption", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-google-api-key": apiKey || ""
+          "x-google-api-key": apiKey
         },
         body: JSON.stringify({ prompt }),
         credentials: "include"
@@ -58,17 +62,24 @@ export default function CaptionGenerator({
     },
   });
 
-  const handleGenerateCaption = async () => {
+  const handleGenerateCaption = () => {
     if (!apiKey) {
       setShowDialog(true);
       return;
     }
-    await generateCaption.mutate();
+    generateCaption.mutate();
   };
 
   const handleApiKeySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!apiKey) return;
+    if (!apiKey.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor ingresa una API key válida",
+        variant: "destructive",
+      });
+      return;
+    }
     generateCaption.mutate();
   };
 
@@ -100,7 +111,7 @@ export default function CaptionGenerator({
           <form onSubmit={handleApiKeySubmit} className="space-y-4">
             <Input
               type="password"
-              value={apiKey || ""}
+              value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Ingresa tu API key de Google"
               className="w-full"
