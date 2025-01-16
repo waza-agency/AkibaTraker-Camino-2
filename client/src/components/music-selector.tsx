@@ -25,49 +25,49 @@ interface MusicOptions {
 }
 
 const MUSIC_OPTIONS: MusicOptions = {
-  "Anime & J-Pop": [
+  "Anime y J-Pop": [
     {
       id: "jpop-1",
-      name: "Sakura Dreams",
+      name: "Sueños de Sakura",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
       color: "bg-pink-500"
     },
     {
       id: "jpop-2",
-      name: "City Pop Vibes",
+      name: "Vibras City Pop",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
       color: "bg-blue-400"
     }
   ],
-  "Epic & Orchestral": [
+  "Épica y Orquestal": [
     {
       id: "epic-flute",
-      name: "Epic Flute",
+      name: "Flauta Épica",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
       color: "bg-red-500"
     },
     {
       id: "fantasy-orchestra",
-      name: "Fantasy Orchestra",
+      name: "Orquesta Fantástica",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
       color: "bg-purple-500"
     }
   ],
-  "Traditional Japanese": [
+  "Tradicional Japonesa": [
     {
       id: "trad-1",
-      name: "Zen Garden",
+      name: "Jardín Zen",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
       color: "bg-green-500"
     },
     {
       id: "trad-2",
-      name: "Koto Dreams",
+      name: "Sueños de Koto",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
       color: "bg-emerald-500"
     }
   ],
-  "Electronic": [
+  "Electrónica": [
     {
       id: "electronic-1",
       name: "Future Bass",
@@ -76,28 +76,28 @@ const MUSIC_OPTIONS: MusicOptions = {
     },
     {
       id: "electronic-2",
-      name: "Synthwave Night",
+      name: "Noche Synthwave",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
       color: "bg-indigo-500"
     }
   ],
-  "Lo-fi & Chill": [
+  "Lo-fi y Chill": [
     {
       id: "lofi-1",
-      name: "Rainy Mood",
+      name: "Ambiente Lluvioso",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
       color: "bg-violet-500"
     },
     {
       id: "lofi-2",
-      name: "Study Beats",
+      name: "Ritmos de Estudio",
       file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
       color: "bg-rose-500"
     }
   ]
 };
 
-const DEFAULT_GENRE = "Anime & J-Pop";
+const DEFAULT_GENRE = "Anime y J-Pop";
 const DEFAULT_TRACK = MUSIC_OPTIONS[DEFAULT_GENRE][0].file;
 const VIDEO_DURATION = 5; // Duration in seconds
 
@@ -148,10 +148,10 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
         setHasError(false);
         audioRef.current.currentTime = startTime;
         audioRef.current.play().catch((error) => {
-          console.error("Audio playback error:", error);
+          console.error("Error de reproducción:", error);
           toast({
-            title: "Playback Error",
-            description: "Failed to play the audio track. Please try again.",
+            title: "Error",
+            description: "No se pudo reproducir la pista de audio. Por favor, inténtalo de nuevo.",
             variant: "destructive",
           });
           resetPlayback();
@@ -181,7 +181,6 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
     }
   };
 
-  // Reset audio when selected track changes
   useEffect(() => {
     resetPlayback();
     if (audioRef.current) {
@@ -198,13 +197,12 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
           value={currentGenre}
           onValueChange={(value) => {
             setCurrentGenre(value);
-            // Select first track of the new genre by default
             const firstTrack = MUSIC_OPTIONS[value][0].file;
             onSelect(firstTrack);
           }}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a genre" />
+            <SelectValue placeholder="Selecciona un género" />
           </SelectTrigger>
           <SelectContent>
             {Object.keys(MUSIC_OPTIONS).map((genre) => (
@@ -252,7 +250,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
 
         {/* Central Play Controls */}
         <div className="absolute left-1/2 top-1/2 w-32 h-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 retro-container flex flex-col items-center justify-center gap-2">
-          <span className="text-sm font-bold text-primary glow-text">Preview</span>
+          <span className="text-sm font-bold text-primary glow-text">Vista Previa</span>
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -292,7 +290,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
           className="w-full"
         />
         <div className="text-sm text-center text-muted-foreground">
-          Start Time: {startTime.toFixed(1)}s
+          Tiempo de inicio: {startTime.toFixed(1)}s
         </div>
       </div>
 
@@ -320,13 +318,13 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
           }
         }}
         onError={(e) => {
-          console.error("Audio error:", e);
+          console.error("Error de audio:", e);
           setIsLoading(false);
           setIsPlaying(false);
           setHasError(true);
           toast({
             title: "Error",
-            description: "Failed to load the audio track. Please try another one or retry.",
+            description: "No se pudo cargar la pista de audio. Por favor, intenta con otra o vuelve a intentar.",
             variant: "destructive",
           });
         }}

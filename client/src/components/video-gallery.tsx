@@ -22,7 +22,7 @@ export default function VideoGallery() {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to like video");
+      if (!res.ok) throw new Error("Error al dar me gusta al video");
       return res.json();
     },
     onSuccess: () => {
@@ -32,7 +32,7 @@ export default function VideoGallery() {
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to like video",
+        description: "No se pudo dar me gusta al video",
         variant: "destructive",
       });
     },
@@ -41,7 +41,7 @@ export default function VideoGallery() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Your Generated Videos</h2>
+        <h2 className="text-lg font-semibold">Tus Videos Generados</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Card key={i} className="p-4 h-[200px] animate-pulse bg-muted" />
@@ -57,20 +57,20 @@ export default function VideoGallery() {
   if (!successfulVideos.length) {
     return (
       <Card className="p-4 text-center text-muted-foreground">
-        No videos generated yet. Try creating one!
+        Aún no has generado ningún video. ¡Intenta crear uno!
       </Card>
     );
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Your Generated Videos</h2>
+      <h2 className="text-lg font-semibold">Tus Videos Generados</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {successfulVideos.map((video) => (
           <Card key={video.id} className="p-4 space-y-3 overflow-hidden">
             {video.status === "pending" && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Generating...</p>
+                <p className="text-sm text-muted-foreground">Generando...</p>
                 <Progress value={30} />
               </div>
             )}
