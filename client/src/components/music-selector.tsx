@@ -5,23 +5,89 @@ import { RefreshCw, Play, Pause, SkipBack } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const MUSIC_OPTIONS = [
-  { 
-    id: "epic-flute", 
-    name: "Epic Flute", 
-    file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm", 
-    color: "bg-red-500" 
-  },
-  { 
-    id: "fantasy-orchestra", 
-    name: "Fantasy Orchestra", 
-    file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli", 
-    color: "bg-blue-500" 
-  },
-];
+const MUSIC_OPTIONS = {
+  "Anime & J-Pop": [
+    {
+      id: "jpop-1",
+      name: "Sakura Dreams",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
+      color: "bg-pink-500"
+    },
+    {
+      id: "jpop-2",
+      name: "City Pop Vibes",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
+      color: "bg-blue-400"
+    }
+  ],
+  "Epic & Orchestral": [
+    {
+      id: "epic-flute",
+      name: "Epic Flute",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
+      color: "bg-red-500"
+    },
+    {
+      id: "fantasy-orchestra",
+      name: "Fantasy Orchestra",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
+      color: "bg-purple-500"
+    }
+  ],
+  "Traditional Japanese": [
+    {
+      id: "trad-1",
+      name: "Zen Garden",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
+      color: "bg-green-500"
+    },
+    {
+      id: "trad-2",
+      name: "Koto Dreams",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
+      color: "bg-emerald-500"
+    }
+  ],
+  "Electronic": [
+    {
+      id: "electronic-1",
+      name: "Future Bass",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
+      color: "bg-cyan-500"
+    },
+    {
+      id: "electronic-2",
+      name: "Synthwave Night",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
+      color: "bg-indigo-500"
+    }
+  ],
+  "Lo-fi & Chill": [
+    {
+      id: "lofi-1",
+      name: "Rainy Mood",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
+      color: "bg-violet-500"
+    },
+    {
+      id: "lofi-2",
+      name: "Study Beats",
+      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
+      color: "bg-rose-500"
+    }
+  ]
+};
 
-const DEFAULT_TRACK = MUSIC_OPTIONS[0].file;
+const DEFAULT_GENRE = "Anime & J-Pop";
+const DEFAULT_TRACK = MUSIC_OPTIONS[DEFAULT_GENRE][0].file;
 const VIDEO_DURATION = 5; // Duration in seconds
 
 interface MusicSelectorProps {
@@ -30,8 +96,7 @@ interface MusicSelectorProps {
 }
 
 const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
-  const radius = 150;
-  const totalItems = MUSIC_OPTIONS.length;
+  const [currentGenre, setCurrentGenre] = useState(DEFAULT_GENRE);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [startTime, setStartTime] = useState(0);
@@ -56,7 +121,6 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
 
   const togglePlayPause = () => {
     if (hasError) {
-      // If there was an error, try reloading the audio
       if (audioRef.current) {
         audioRef.current.load();
         setHasError(false);
@@ -90,7 +154,6 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
       const time = audioRef.current.currentTime;
       setCurrentTime(time);
 
-      // Stop if we've played 5 seconds from the start time
       if (time >= startTime + VIDEO_DURATION) {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -118,9 +181,34 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
 
   return (
     <div className="space-y-8">
+      {/* Genre Selector */}
+      <Select
+        value={currentGenre}
+        onValueChange={(value) => {
+          setCurrentGenre(value);
+          // Select first track of the new genre by default
+          const firstTrack = MUSIC_OPTIONS[value][0].file;
+          onSelect(firstTrack);
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select a genre" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.keys(MUSIC_OPTIONS).map((genre) => (
+            <SelectItem key={genre} value={genre}>
+              {genre}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Track Selection Wheel */}
       <div className="relative w-[400px] h-[400px] mx-auto">
-        {MUSIC_OPTIONS.map((option, index) => {
+        {MUSIC_OPTIONS[currentGenre].map((option, index) => {
+          const totalItems = MUSIC_OPTIONS[currentGenre].length;
           const angle = (index / totalItems) * 2 * Math.PI;
+          const radius = 150;
           const x = radius * Math.cos(angle);
           const y = radius * Math.sin(angle);
 
@@ -149,6 +237,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
           );
         })}
 
+        {/* Central Play Controls */}
         <div className="absolute left-1/2 top-1/2 w-32 h-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 retro-container flex flex-col items-center justify-center gap-2">
           <span className="text-sm font-bold text-primary glow-text">Preview</span>
           <div className="flex gap-2">
@@ -179,6 +268,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
         </div>
       </div>
 
+      {/* Time Slider */}
       <div className="w-full max-w-md mx-auto space-y-2">
         <Slider
           value={[startTime]}
@@ -193,6 +283,7 @@ const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
         </div>
       </div>
 
+      {/* Hidden Audio Element */}
       <audio
         ref={audioRef}
         src={selected}
