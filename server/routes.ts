@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
 import { videos, videoLikes } from "@db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setupAuth } from "./auth";
@@ -115,7 +115,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
         await db
           .update(videos)
           .set({ 
-            likesCount: db.raw('likes_count - 1'),
+            likesCount: sql`likes_count - 1`,
             updatedAt: new Date()
           })
           .where(eq(videos.id, videoId));
@@ -133,7 +133,7 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
       await db
         .update(videos)
         .set({ 
-          likesCount: db.raw('likes_count + 1'),
+          likesCount: sql`likes_count + 1`,
           updatedAt: new Date()
         })
         .where(eq(videos.id, videoId));
@@ -207,7 +207,8 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
           style,
           status: "pending",
           metadata: {},
-          userId: req.user!.id // Added userId
+          userId: req.user!.id,
+          likesCount: 0
         })
         .returning();
 
