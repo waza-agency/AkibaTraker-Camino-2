@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { videos } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { videos, videoLikes } from "@db/schema";
+import { eq, and, desc } from "drizzle-orm";
 import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setupAuth } from "./auth";
@@ -85,6 +85,104 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     }
   });
 
+  // Like/Unlike video
+  app.post("/api/videos/:id/like", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const videoId = parseInt(req.params.id);
+    const userId = req.user!.id;
+
+    try {
+      // Check if user has already liked this video
+      const [existingLike] = await db
+        .select()
+        .from(videoLikes)
+        .where(
+          and(
+            eq(videoLikes.videoId, videoId),
+            eq(videoLikes.userId, userId)
+          )
+        )
+        .limit(1);
+
+      if (existingLike) {
+        // Unlike: Remove the like and decrement likes count
+        await db.delete(videoLikes)
+          .where(eq(videoLikes.id, existingLike.id));
+
+        await db
+          .update(videos)
+          .set({ 
+            likesCount: db.raw('likes_count - 1'),
+            updatedAt: new Date()
+          })
+          .where(eq(videos.id, videoId));
+
+        return res.json({ liked: false });
+      }
+
+      // Like: Add new like and increment likes count
+      await db.insert(videoLikes)
+        .values({
+          videoId,
+          userId
+        });
+
+      await db
+        .update(videos)
+        .set({ 
+          likesCount: db.raw('likes_count + 1'),
+          updatedAt: new Date()
+        })
+        .where(eq(videos.id, videoId));
+
+      res.json({ liked: true });
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+      res.status(500).json({ error: "Failed to toggle like" });
+    }
+  });
+
+  // Get user's liked videos
+  app.get("/api/videos/liked", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    try {
+      const likedVideos = await db.query.videoLikes.findMany({
+        where: eq(videoLikes.userId, req.user!.id),
+        with: {
+          video: true
+        }
+      });
+
+      res.json(likedVideos);
+    } catch (error) {
+      console.error("Failed to get liked videos:", error);
+      res.status(500).json({ error: "Failed to get liked videos" });
+    }
+  });
+
+  // Get top liked videos
+  app.get("/api/videos/top", async (req, res) => {
+    try {
+      const topVideos = await db
+        .select()
+        .from(videos)
+        .where(eq(videos.status, "completed"))
+        .orderBy(desc(videos.likesCount))
+        .limit(4);
+
+      res.json(topVideos);
+    } catch (error) {
+      console.error("Failed to get top videos:", error);
+      res.status(500).json({ error: "Failed to get top videos" });
+    }
+  });
+
   // Create new video generation
   app.post("/api/videos", async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -108,7 +206,8 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
           musicFile,
           style,
           status: "pending",
-          metadata: {}
+          metadata: {},
+          userId: req.user!.id // Added userId
         })
         .returning();
 

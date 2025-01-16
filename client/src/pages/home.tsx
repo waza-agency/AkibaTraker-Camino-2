@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import UploadForm from "@/components/upload-form";
 import VideoPreview from "@/components/video-preview";
 import VideoGallery from "@/components/video-gallery";
+import TopVideos from "@/components/top-videos";
 import HeroBanner from "@/components/hero-banner";
 import CharacterCard from "@/components/character-card";
 import ChatInterface from "@/components/chat-interface";
@@ -118,6 +119,9 @@ export default function Home() {
             </Card>
 
             <VideoPreview />
+
+            {/* Top Videos Section */}
+            <TopVideos />
 
             <VideoGallery />
           </div>

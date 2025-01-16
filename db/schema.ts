@@ -27,9 +27,20 @@ export const videos = pgTable("videos", {
   style: text("style").notNull().default("dramatic"),
   metadata: jsonb("metadata").notNull().default({}),
   userId: serial("user_id").references(() => users.id),
+  likesCount: integer("likes_count").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
+
+export const videoLikes = pgTable("video_likes", {
+  id: serial("id").primaryKey(),
+  videoId: integer("video_id").notNull().references(() => videos.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  // Ensure a user can only like a video once
+  uniqueLike: unique().on(table.videoId, table.userId),
+}));
 
 // New tables for background themes and votes
 export const backgroundThemes = pgTable("background_themes", {
@@ -65,6 +76,11 @@ export const selectVideoSchema = createSelectSchema(videos);
 export type InsertVideo = typeof videos.$inferInsert;
 export type SelectVideo = typeof videos.$inferSelect;
 
+export const insertVideoLikeSchema = createInsertSchema(videoLikes);
+export const selectVideoLikeSchema = createSelectSchema(videoLikes);
+export type InsertVideoLike = typeof videoLikes.$inferInsert;
+export type SelectVideoLike = typeof videoLikes.$inferSelect;
+
 // New schemas for background themes
 export const insertBackgroundThemeSchema = createInsertSchema(backgroundThemes);
 export const selectBackgroundThemeSchema = createSelectSchema(backgroundThemes);
@@ -75,30 +91,3 @@ export const insertThemeVoteSchema = createInsertSchema(themeVotes);
 export const selectThemeVoteSchema = createSelectSchema(themeVotes);
 export type InsertThemeVote = typeof themeVotes.$inferInsert;
 export type SelectThemeVote = typeof themeVotes.$inferSelect;
-
-export const migrateVideos = `
-DROP TABLE IF EXISTS videos CASCADE;
-CREATE TABLE IF NOT EXISTS videos (
-  id SERIAL PRIMARY KEY,
-  prompt TEXT NOT NULL,
-  music_file TEXT NOT NULL,
-  output_url TEXT,
-  status TEXT NOT NULL DEFAULT 'pending',
-  style TEXT NOT NULL DEFAULT 'dramatic',
-  metadata JSONB NOT NULL DEFAULT '{}',
-  user_id INTEGER REFERENCES users(id),
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-`;
-
-export const migrateUsers = `
-DROP TABLE IF EXISTS users CASCADE;
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-`;
