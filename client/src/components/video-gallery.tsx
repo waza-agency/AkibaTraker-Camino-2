@@ -77,22 +77,20 @@ export default function VideoGallery() {
                   src={video.outputUrl}
                   className="w-full rounded-lg aspect-video"
                 />
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                    onClick={() => likeMutation.mutate(video.id)}
-                    disabled={likeMutation.isPending}
-                  >
-                    <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
-                    <span className="ml-1">{video.likesCount || 0}</span>
-                  </Button>
-                  <ShareButton 
-                    url={video.outputUrl} 
-                    title={video.prompt}
-                  />
-                </div>
+                <ShareButton 
+                  url={video.outputUrl} 
+                  title={video.prompt}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                  onClick={() => likeMutation.mutate(video.id)}
+                  disabled={likeMutation.isPending}
+                >
+                  <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
+                  <span className="ml-1">{video.likesCount || 0}</span>
+                </Button>
               </div>
             )}
 
