@@ -18,8 +18,6 @@ interface Message {
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -41,8 +39,7 @@ export default function ChatInterface() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "x-google-api-key": apiKey,
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({ message }),
         });
@@ -185,29 +182,6 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col h-full">
-      {!isAuthenticated ? (
-        <div className="flex-1 flex items-center justify-center p-4">
-          <form onSubmit={handleApiKeySubmit} className="w-full max-w-md space-y-4">
-            <div className="text-center mb-4">
-              <p className="text-sm text-muted-foreground">
-                Enter your Google API key to chat with Akiba
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your Google API key"
-                className="flex-1"
-                aria-label="Google API Key"
-                ref={inputRef}
-              />
-              <Button type="submit">Start Chat</Button>
-            </div>
-          </form>
-        </div>
-      ) : (
         <>
           <ScrollArea className="flex-1 px-4 py-2">
             <div className="space-y-4 min-h-full">
@@ -270,7 +244,6 @@ export default function ChatInterface() {
             </form>
           </div>
         </>
-      )}
     </div>
   );
 }
