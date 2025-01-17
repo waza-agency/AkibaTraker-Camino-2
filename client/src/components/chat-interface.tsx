@@ -37,22 +37,32 @@ export default function ChatInterface() {
 
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-google-api-key": apiKey
-        },
-        body: JSON.stringify({ message }),
-      });
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-google-api-key": apiKey,
+          },
+          body: JSON.stringify({ message }),
+        });
 
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error);
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || `HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (!data || !data.message) {
+          throw new Error("Invalid response format from server");
+        }
+
+        return data;
+      } catch (error) {
+        console.error("Chat API error:", error);
+        throw new Error(error instanceof Error ? error.message : "Failed to send message");
       }
-
-      return res.json();
-    }
+    },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,82 +73,65 @@ export default function ChatInterface() {
     setInput("");
 
     const userMessageId = `msg-${Date.now()}-user`;
-    setMessages((prev) => [...prev, {
-      role: "user",
-      content: userMessage,
-      id: userMessageId
-    }]);
-
-    await sendMessage.mutate(userMessage, {
-      onSuccess: async (data) => {
-        let assistantMessage;
-        try {
-          console.log("Chat response received, analyzing emotion for:", data.message.substring(0, 50) + "...");
-
-          const emotionResponse = await fetch("/api/analyze-emotion", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-google-api-key": apiKey,
-            },
-            body: JSON.stringify({ text: data.message })
-          });
-
-          console.log("Emotion analysis status:", emotionResponse.status);
-
-          if (!emotionResponse.ok) {
-            const errorText = await emotionResponse.text();
-            console.error("Emotion analysis failed:", {
-              status: emotionResponse.status,
-              statusText: emotionResponse.statusText,
-              error: errorText
-            });
-            throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
-          }
-
-          const emotionData = await emotionResponse.json();
-          console.log("Emotion analysis succeeded:", emotionData);
-
-          if (emotionData && typeof emotionData.mood === 'string' &&
-            ["happy", "energetic", "calm", "serious", "kawaii", "bored"].includes(emotionData.mood)) {
-            setMood(emotionData.mood);
-          } else {
-            console.warn("Invalid emotion data received:", emotionData);
-            // Don't change mood on invalid data
-          }
-        } catch (error) {
-          console.error("Error in emotion analysis:", error);
-          toast({
-            title: "Emotion Analysis Warning",
-            description: "Could not analyze emotion, but message was sent successfully",
-            variant: "default"
-          });
-          // Don't change mood on error
-        } finally {
-          // Always add the assistant's message, regardless of emotion analysis result
-          assistantMessage = {
-            role: "assistant",
-            content: data.message,
-            id: `msg-${Date.now()}-assistant`
-          };
-          setMessages(prev => [...prev, assistantMessage]);
-
-          // Ensure input focus after response
-          setTimeout(() => {
-            inputRef.current?.focus();
-          }, 0);
-        }
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: userMessage,
+        id: userMessageId,
       },
-      onError: (error) => {
-        console.error("Chat message error:", error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
+    ]);
+
+    try {
+      const data = await sendMessage.mutateAsync(userMessage);
+
+      try {
+        const emotionResponse = await fetch("/api/analyze-emotion", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-google-api-key": apiKey,
+          },
+          body: JSON.stringify({ text: data.message }),
         });
-        inputRef.current?.focus();
+
+        if (!emotionResponse.ok) {
+          throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
+        }
+
+        const emotionData = await emotionResponse.json();
+        if (
+          emotionData &&
+          typeof emotionData.mood === "string" &&
+          ["happy", "energetic", "calm", "serious", "kawaii", "bored"].includes(
+            emotionData.mood
+          )
+        ) {
+          setMood(emotionData.mood);
+        }
+      } catch (error) {
+        console.warn("Emotion analysis warning:", error);
+        // Continue with chat even if emotion analysis fails
       }
-    });
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.message,
+          id: `msg-${Date.now()}-assistant`,
+        },
+      ]);
+    } catch (error) {
+      console.error("Chat message error:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message",
+        variant: "destructive",
+      });
+    }
+
+    inputRef.current?.focus();
   };
 
   const handleApiKeySubmit = (e: React.FormEvent) => {
@@ -210,9 +203,7 @@ export default function ChatInterface() {
                 aria-label="Google API Key"
                 ref={inputRef}
               />
-              <Button type="submit">
-                Start Chat
-              </Button>
+              <Button type="submit">Start Chat</Button>
             </div>
           </form>
         </div>
@@ -224,27 +215,22 @@ export default function ChatInterface() {
                 {messages.map((message) => (
                   <motion.div
                     key={message.id}
-                    variants={messageVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
                     className={`flex ${
                       message.role === "user" ? "justify-end" : "justify-start"
-                      }`}
+                    }`}
                   >
-                    <motion.div
-                      variants={pulseAnimation}
-                      initial="initial"
-                      animate="animate"
+                    <div
                       className={`max-w-[80%] px-4 py-2 rounded-2xl ${
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted"
-                        }`}
+                      }`}
                     >
                       <p className="text-sm">{message.content}</p>
-                    </motion.div>
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
