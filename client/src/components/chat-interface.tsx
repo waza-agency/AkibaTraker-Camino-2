@@ -39,7 +39,7 @@ export default function ChatInterface() {
     mutationFn: async (message: string) => {
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "x-google-api-key": apiKey
         },
@@ -63,56 +63,74 @@ export default function ChatInterface() {
     setInput("");
 
     const userMessageId = `msg-${Date.now()}-user`;
-    setMessages((prev) => [...prev, { 
-      role: "user", 
+    setMessages((prev) => [...prev, {
+      role: "user",
       content: userMessage,
       id: userMessageId
     }]);
 
     await sendMessage.mutate(userMessage, {
       onSuccess: async (data) => {
+        let assistantMessage;
         try {
+          console.log("Chat response received, analyzing emotion for:", data.message.substring(0, 50) + "...");
+
           const emotionResponse = await fetch("/api/analyze-emotion", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "x-google-api-key": apiKey,
             },
-            body: JSON.stringify({ message: data.message })
+            body: JSON.stringify({ text: data.message })
           });
 
+          console.log("Emotion analysis status:", emotionResponse.status);
+
           if (!emotionResponse.ok) {
-            throw new Error(`Error analyzing emotion: ${emotionResponse.status}`);
+            const errorText = await emotionResponse.text();
+            console.error("Emotion analysis failed:", {
+              status: emotionResponse.status,
+              statusText: emotionResponse.statusText,
+              error: errorText
+            });
+            throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
           }
 
           const emotionData = await emotionResponse.json();
-          if (emotionData && emotionData.mood) {
+          console.log("Emotion analysis succeeded:", emotionData);
+
+          if (emotionData && typeof emotionData.mood === 'string' &&
+            ["happy", "energetic", "calm", "serious", "kawaii", "bored"].includes(emotionData.mood)) {
             setMood(emotionData.mood);
           } else {
-            console.error("Invalid emotion data format:", emotionData);
-            setMood("energetic");
+            console.warn("Invalid emotion data received:", emotionData);
+            // Don't change mood on invalid data
           }
         } catch (error) {
-          console.error("Error analyzing emotion:", error);
-          setMood("kawaii"); // Default to kawaii on error
-        }
-
-        const assistantMessageId = `msg-${Date.now()}-assistant`;
-        setMessages((prev) => [
-          ...prev,
-          { 
-            role: "assistant", 
+          console.error("Error in emotion analysis:", error);
+          toast({
+            title: "Emotion Analysis Warning",
+            description: "Could not analyze emotion, but message was sent successfully",
+            variant: "default"
+          });
+          // Don't change mood on error
+        } finally {
+          // Always add the assistant's message, regardless of emotion analysis result
+          assistantMessage = {
+            role: "assistant",
             content: data.message,
-            id: assistantMessageId
-          },
-        ]);
+            id: `msg-${Date.now()}-assistant`
+          };
+          setMessages(prev => [...prev, assistantMessage]);
 
-        // Ensure input focus after response
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 0);
+          // Ensure input focus after response
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 0);
+        }
       },
       onError: (error) => {
+        console.error("Chat message error:", error);
         toast({
           title: "Error",
           description: error.message,
@@ -139,17 +157,17 @@ export default function ChatInterface() {
   };
 
   const messageVariants = {
-    initial: { 
+    initial: {
       opacity: 0,
       scale: 0.95,
       y: 20
     },
-    animate: { 
+    animate: {
       opacity: 1,
       scale: 1,
       y: 0
     },
-    exit: { 
+    exit: {
       opacity: 0,
       scale: 0.95,
       y: -20
@@ -213,7 +231,7 @@ export default function ChatInterface() {
                     layout
                     className={`flex ${
                       message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                      }`}
                   >
                     <motion.div
                       variants={pulseAnimation}
@@ -223,7 +241,7 @@ export default function ChatInterface() {
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted"
-                      }`}
+                        }`}
                     >
                       <p className="text-sm">{message.content}</p>
                     </motion.div>
@@ -231,7 +249,7 @@ export default function ChatInterface() {
                 ))}
               </AnimatePresence>
               {sendMessage.isPending && (
-                <motion.div 
+                <motion.div
                   className="flex justify-start"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -255,8 +273,8 @@ export default function ChatInterface() {
                 aria-label="Chat message"
                 ref={inputRef}
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 size="icon"
                 disabled={sendMessage.isPending}
                 aria-label="Send message"

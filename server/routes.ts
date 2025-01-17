@@ -45,19 +45,20 @@ export function registerRoutes(app: Express): Server {
   // Set up authentication routes and middleware
   setupAuth(app);
 
-  // Register emotion analysis routes
+  // Register emotion analysis routes under /api prefix
   app.use("/api", emotionRouter);
 
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
+    const apiKey = req.headers["x-google-api-key"];
 
-    if (!process.env.GOOGLE_API_KEY) {
-      return res.status(500).json({ error: "Google API key not configured" });
+    if (!apiKey || typeof apiKey !== "string") {
+      return res.status(401).json({ error: "Google API key is required" });
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ 
         model: "gemini-pro",
         generationConfig: {

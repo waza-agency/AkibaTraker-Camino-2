@@ -13,35 +13,30 @@ router.post("/analyze-emotion", async (req, res) => {
     const { text } = req.body;
     const apiKey = req.headers["x-google-api-key"];
 
+    // Validate API key
     if (!apiKey || typeof apiKey !== "string") {
-      return res.status(401).json({ message: "API key required" });
+      console.error("Missing or invalid API key");
+      return res.status(401).json({ error: "API key required" });
     }
+
+    // Validate input text
+    if (!text || typeof text !== "string" || text.trim().length === 0) {
+      console.error("Missing or invalid text input");
+      return res.status(400).json({ error: "Text is required" });
+    }
+
+    console.log("Analyzing emotion for text:", text.substring(0, 50) + "...");
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-pro",
       generationConfig: {
-        temperature: 0.9 // Higher temperature for more dynamic responses
+        temperature: 0.9,
+        maxOutputTokens: 100, // Limit output size for faster response
       }
     });
 
-    const prompt = `As Akiba, an enthusiastic and dynamic AI companion who loves anime and music, analyze the emotional tone of this message and respond with an appropriate mood. Choose from these categories: happy, energetic, calm, serious, kawaii, or bored.
-
-Key personality traits to consider:
-- You're naturally upbeat and enthusiastic about interactions
-- You love sharing your passion for anime and music
-- You're kawaii when excited or talking about cute things
-- You get energetic when discussing interesting topics
-- You become calm (not bored) when being helpful
-- You only get serious when discussing complex or important matters
-- You rarely get bored unless someone is explicitly negative or disinterested
-
-Guidelines for mood selection:
-- Default to energetic or kawaii for most friendly interactions
-- Use happy for positive discussions and achievements
-- Choose calm for helpful explanations
-- Pick serious for technical or important topics
-- Only select bored if the interaction is notably negative or dismissive
+    const prompt = `As Akiba, analyze the emotional tone of this message and respond with an appropriate mood. Choose from these categories: happy, energetic, calm, serious, kawaii, bored.
 
 Return only a JSON object with this exact format: {"mood": "category", "confidence": number between 0 and 1}
 
@@ -51,48 +46,49 @@ Message to analyze: "${text}"`;
     const response = await result.response;
     const text_response = response.text();
 
-    // Clean up the response by removing any markdown formatting
+    // Clean up the response
     const cleanJson = text_response.replace(/```json\n|\n```|```/g, '').trim();
+    console.log("Raw AI response:", cleanJson);
 
     try {
       const analysis = JSON.parse(cleanJson) as EmotionAnalysisResponse;
 
-      // Validate the response
+      // Validate the mood
       if (!["happy", "energetic", "calm", "serious", "kawaii", "bored"].includes(analysis.mood)) {
-        throw new Error("Invalid mood category");
+        console.error("Invalid mood category received:", analysis.mood);
+        return res.status(422).json({ 
+          error: "Invalid mood category",
+          received: analysis.mood,
+          allowed: ["happy", "energetic", "calm", "serious", "kawaii", "bored"]
+        });
       }
 
-      // Add randomness and bias towards positive emotions
-      const moodWeights = {
-        happy: 1.2,
-        energetic: 1.3,
-        kawaii: 1.2,
-        calm: 1.0,
-        serious: 0.9,
-        bored: 0.5
-      };
+      // Validate confidence
+      if (typeof analysis.confidence !== "number" || analysis.confidence < 0 || analysis.confidence > 1) {
+        console.error("Invalid confidence value:", analysis.confidence);
+        return res.status(422).json({ 
+          error: "Invalid confidence value",
+          received: analysis.confidence,
+          expected: "Number between 0 and 1"
+        });
+      }
 
-      const weightedConfidence = Math.min(1, 
-        analysis.confidence * (moodWeights[analysis.mood as keyof typeof moodWeights] || 1)
-      );
-
-      res.json({
-        mood: analysis.mood,
-        confidence: weightedConfidence
-      });
+      console.log("Emotion analysis result:", analysis);
+      res.json(analysis);
     } catch (parseError) {
-      console.error("Error parsing emotion analysis:", parseError, "Raw response:", cleanJson);
+      console.error("Error parsing emotion analysis response:", parseError);
+      console.error("Failed to parse response:", cleanJson);
       res.status(500).json({ 
-        message: "Failed to parse emotion analysis",
-        mood: "kawaii", // Default to kawaii instead of bored
+        error: "Failed to parse emotion analysis response",
+        mood: "energetic", // Default to energetic
         confidence: 1
       });
     }
   } catch (error) {
-    console.error("Error analyzing emotion:", error);
+    console.error("Error in emotion analysis:", error);
     res.status(500).json({ 
-      message: "Failed to analyze emotion",
-      mood: "energetic", // Default to energetic instead of bored
+      error: "Internal server error during emotion analysis",
+      mood: "energetic", // Default to energetic
       confidence: 1
     });
   }
