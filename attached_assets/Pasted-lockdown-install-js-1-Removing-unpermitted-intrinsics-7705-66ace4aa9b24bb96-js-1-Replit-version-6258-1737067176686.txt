@@ -1,0 +1,186 @@
+lockdown-install.js:1 Removing unpermitted intrinsics
+7705-66ace4aa9b24bb96.js:1 Replit version 62584422, pid2 version 0.0.875
+_app-873939d83c9c4216.js:16 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-873939d83c9c4216.js:16 [LaunchDarkly] LaunchDarkly client initialized
+ Removing unpermitted intrinsics
+lockdown-install.js:1 Removing unpermitted intrinsics
+20Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this errorAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'battery'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+framework-7887a94b40d53667.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-7887a94b40d53667.js:1Understand this warningAI
+lockdown-install.js:1 Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+injectLeap.js:4 Uncaught (in promise) RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'"). Build with -sASSERTIONS for more info.
+    at Q (injectLeap.js:4:3405164)
+    at injectLeap.js:4:3599385Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://stripe.com/cookie-settings/enforcement-mode https://errors.stripe.com https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://stripe.com/cookie-settings/enforcement-mode https://errors.stripe.com https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://stripe.com/cookie-settings/enforcement-mode https://errors.stripe.com https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://stripe.com/cookie-settings/enforcement-mode https://errors.stripe.com https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+ Removing unpermitted intrinsics
+injectLeap.js:4 Uncaught SyntaxError: Invalid or unexpected tokenUnderstand this errorAI
+12[Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+Understand this errorAI
+lockdown-install.js:1 Removing unpermitted intrinsics
+8[Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+Understand this errorAI
+injectLeap.js:4 Uncaught (in promise) RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'"). Build with -sASSERTIONS for more info.
+    at Q (injectLeap.js:4:3405164)
+    at injectLeap.js:4:3599385Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 [Report Only] Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+ [Report Only] Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 [Report Only] Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+ [Report Only] Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src 'self' https://r.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+ Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+lockdown-install.js:1 Removing unpermitted intrinsics
+injectLeap.js:4 Uncaught (in promise) RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='"). Build with -sASSERTIONS for more info.
+    at Q (injectLeap.js:4:3405164)
+    at injectLeap.js:4:3599385Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src https://m.stripe.network https://m.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the following Content Security Policy directive: "connect-src https://m.stripe.network https://m.stripe.com".
+
+value @ injected.js:1Understand this errorAI
+injected.js:1 Refused to connect to 'https://evmos-evm.publicnode.com/' because it violates the document's Content Security Policy.
+value @ injected.js:1Understand this errorAI
+AkibaTracker:1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">Understand this warningAI
+AkibaTracker:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'battery'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'layout-animations'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'navigation-override'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'oversized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Unrecognized feature: 'unsized-media'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warningAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arrl%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warningAI
+lockdown-install.js:1 Removing unpermitted intrinsics
+9Refused to display '<URL>' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+75Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('null').Understand this warningAI
+lockdown-install.js:1 Removing unpermitted intrinsics

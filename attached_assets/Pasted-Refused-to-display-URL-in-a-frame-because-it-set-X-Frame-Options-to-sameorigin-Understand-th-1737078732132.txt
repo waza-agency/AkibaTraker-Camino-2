@@ -1,0 +1,12 @@
+Refused to display '<URL>' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+chromewebdata/:1 Refused to display 'https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.Understand this errorAI
+51Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('null').Understand this warningAI
+lockdown-install.js:1 Removing unpermitted intrinsics

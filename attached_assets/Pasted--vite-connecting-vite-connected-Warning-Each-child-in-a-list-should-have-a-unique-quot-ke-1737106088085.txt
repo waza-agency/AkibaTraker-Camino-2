@@ -1,0 +1,80 @@
+[vite] connecting...
+[vite] connected.
+Warning: Each child in a list should have a unique &quot;key&quot; prop.
+
+Check the render method of `ChatInterface`. See https://reactjs.org/link/warning-keys for more information.
+    at MotionComponent (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=c1c974a8:6536:40)
+    at ChatInterface (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/chat-interface.tsx:29:35)
+    at div
+    at _c (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at div
+    at div
+    at Home (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/pages/home.tsx:36:21)
+    at Route (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c1c974a8:323:16)
+    at Switch (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c1c974a8:379:17)
+    at Router (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/App.tsx?v=yJvQwJqDLuzriBKnAMhUg:31:31)
+    at MoodProvider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/hooks/use-mood.tsx:20:32)
+    at QueryClientProvider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=c1c974a8:2805:3)
+    at App
+Warning: Encountered two children with the same key, &#x60;&#x60;. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at AnimatePresence (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=c1c974a8:7800:26)
+    at div
+    at div
+    at div
+    at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VZNMAICS.js?v=c1c974a8:41:13
+    at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-scroll-area.js?v=c1c974a8:112:13
+    at div
+    at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VZNMAICS.js?v=c1c974a8:41:13
+    at Provider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-H267BXJE.js?v=c1c974a8:48:15)
+    at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-scroll-area.js?v=c1c974a8:50:7
+    at _c (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/ui/scroll-area.tsx:21:11)
+    at div
+    at ChatInterface (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/chat-interface.tsx:29:35)
+    at div
+    at _c (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at div
+    at div
+    at Home (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/pages/home.tsx:36:21)
+    at Route (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c1c974a8:323:16)
+    at Switch (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c1c974a8:379:17)
+    at Router (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/App.tsx?v=yJvQwJqDLuzriBKnAMhUg:31:31)
+    at MoodProvider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/hooks/use-mood.tsx:20:32)
+    at QueryClientProvider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=c1c974a8:2805:3)
+    at App
+at AnimatePresence (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=c1c974a8:7800:26)
+at div
+at div
+at div
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VZNMAICS.js?v=c1c974a8:41:13
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-scroll-area.js?v=c1c974a8:112:13
+at div
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VZNMAICS.js?v=c1c974a8:41:13
+at Provider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-H267BXJE.js?v=c1c974a8:48:15)
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-scroll-area.js?v=c1c974a8:50:7
+at _c (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/ui/scroll-area.tsx:21:11)
+at div
+at ChatInterface (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/chat-interface.tsx:29:35)
+at div
+at _c (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/ui/card.tsx:20:11)
+at div
+at div
+at div
+at div
+at div
+at Home (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/pages/home.tsx:36:21)
+at Route (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c1c974a8:323:16)
+at Switch (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c1c974a8:379:17)
+at Router (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/App.tsx?v=yJvQwJqDLuzriBKnAMhUg:31:31)
+at MoodProvider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/hooks/use-mood.tsx:20:32)
+at QueryClientProvider (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=c1c974a8:2805:3)
+at App
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400

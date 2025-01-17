@@ -8,6 +8,7 @@ import AuthPage from "@/pages/auth-page";
 import ProfilePage from "@/pages/profile";
 import { useUser } from "@/hooks/use-user";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { MoodProvider } from "@/hooks/use-mood";
 
 function Router() {
   const { user, isLoading } = useUser();
@@ -36,8 +37,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <MoodProvider>
+        <Router />
+        <Toaster />
+      </MoodProvider>
     </QueryClientProvider>
   );
 }

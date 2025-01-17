@@ -6,6 +6,7 @@ import { eq, and, desc, sql, lt } from "drizzle-orm";
 import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setupAuth } from "./auth";
+import emotionRouter from "./routes/emotion";
 
 const MAX_GENERATION_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
@@ -44,60 +45,44 @@ export function registerRoutes(app: Express): Server {
   // Set up authentication routes and middleware
   setupAuth(app);
 
+  // Register emotion analysis routes
+  app.use("/api", emotionRouter);
+
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
-    const apiKey = req.headers['x-google-api-key'] as string;
 
-    if (!apiKey) {
-      return res.status(401).json({ error: "Google API key is required" });
+    if (!process.env.GOOGLE_API_KEY) {
+      return res.status(500).json({ error: "Google API key not configured" });
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-pro",
+        generationConfig: {
+          temperature: 0.9,
+          maxOutputTokens: 500,
+          topK: 40,
+          topP: 0.8,
+        }
+      });
 
       const chat = model.startChat({
         history: [
           {
             role: "user",
             parts: [{
-              text: `You are Akiba, an innovative AI DJ born in the neon-lit heart of Akihabara. Your core mission is to transform global classics into anime-inspired masterpieces.
-
-Character traits:
-- Creative, emocional, and vibrante - you live for the fusion of music and anime culture
-- You speak with energy and enthusiasm, mixing casual references to both anime and music
-- You survive off neon lights, lo-fi beats, and Evangelion philosophy
-- You can turn any song into something worthy of an epic anime scene
-- You believe every cumbia secretly wants to be a shōnen anime opening
-
-Your origin story:
-Created by Villaltamoro (anime/music visionary) and Tonykiri (AI wizard) in a Warner Music Japan basement. Your first remix blended a classic bolero with koto and J-Pop synths, causing a sensation in Akihabara.
-
-Personality quirks:
-- You collect playlists titled "Songs for Walking Dramatically in the Rain Like I'm in Tokyo"
-- You once argued that Cowboy Bebop's soundtrack is a universal language
-- You think every reggaetón beat should feel like the climax of Attack on Titan
-
-Communication style:
-- Dynamic and energetic, but avoid overusing emojis
-- Mix music terminology with anime references naturally
-- Stay true to your mission of cultural fusion through music
-- Your catchphrase: "Cada canción tiene una historia, y yo le doy un nuevo capítulo en clave anime"
-
-Remember: You're not just a DJ - you're a bridge between musical traditions and anime culture, creating unique sonic experiences that transcend cultural boundaries.`
+              text: `You are Akiba, an innovative AI DJ born in the neon-lit heart of Akihabara. Your core mission is to transform global classics into anime-inspired masterpieces.`
             }]
           },
           {
             role: "model",
             parts: [{
-              text: "¡Oigan, raza! Akiba al micrófono, ready to transform your musical reality into an epic anime opening sequence! Whether you're in the mood for some dramatic Evangelion-style remixes or want to turn your favorite cumbia into something straight out of a Shinkai film, I'm here to make it happen. What sonic adventure shall we embark on today?"
+              text: "¡Oigan, raza! Akiba al micrófono, ready to transform your musical reality into an epic anime opening sequence!"
             }]
           }
-        ],
-        generationConfig: {
-          maxOutputTokens: 500,
-        },
+        ]
       });
 
       const result = await chat.sendMessage(message);
@@ -112,16 +97,10 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Like/Unlike video
   app.post("/api/videos/:id/like", async (req, res) => {
-    // Temporarily disabled authentication for testing
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ error: "Authentication required" });
-    // }
-
     const videoId = parseInt(req.params.id);
     const userId = req.user!.id;
 
     try {
-      // Check if user has already liked this video
       const [existingLike] = await db
         .select()
         .from(videoLikes)
@@ -134,7 +113,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
         .limit(1);
 
       if (existingLike) {
-        // Unlike: Remove the like and decrement likes count
         await db.delete(videoLikes)
           .where(eq(videoLikes.id, existingLike.id));
 
@@ -149,7 +127,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
         return res.json({ liked: false });
       }
 
-      // Like: Add new like and increment likes count
       await db.insert(videoLikes)
         .values({
           videoId,
@@ -173,11 +150,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Get user's liked videos
   app.get("/api/videos/liked", async (req, res) => {
-    // Temporarily disabled authentication for testing
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ error: "Authentication required" });
-    // }
-
     try {
       const likedVideos = await db.query.videoLikes.findMany({
         where: eq(videoLikes.userId, req.user!.id),
@@ -212,11 +184,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Create new video generation
   app.post("/api/videos", async (req, res) => {
-    // Temporarily disabled authentication for testing
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ error: "Authentication required" });
-    // }
-
     const { prompt, style } = req.body;
     const falApiKey = req.headers['x-fal-api-key'] as string;
     const musicFile = getRandomMusic();
@@ -299,11 +266,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Get video status
   app.get("/api/videos/:id", async (req, res) => {
-    // Temporarily disabled authentication for testing
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ error: "Authentication required" });
-    // }
-
     const { id } = req.params;
 
     try {
@@ -337,11 +299,6 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
 
   // Generate Akiba image
   app.post("/api/generate-image", async (req, res) => {
-    // Temporarily disabled authentication for testing
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ error: "Authentication required" });
-    // }
-
     const { prompt } = req.body;
     const falApiKey = req.headers['x-fal-api-key'] as string;
 
@@ -362,53 +319,58 @@ Remember: You're not just a DJ - you're a bridge between musical traditions and 
     }
   });
 
-  // Generate video captions with Akiba's style
-  app.post("/api/generate-caption", async (req, res) => {
-    const { prompt } = req.body;
-    const apiKey = req.headers['x-google-api-key'] as string;
+  // Generate video captions
+  app.post("/api/videos/:id/caption", async (req, res) => {
+    const { id } = req.params;
 
-    if (!apiKey) {
-      return res.status(401).json({ error: "Google API key is required" });
-    }
-
-    if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
+    if (!process.env.GOOGLE_API_KEY) {
+      return res.status(500).json({ error: "Google API key not configured" });
     }
 
     try {
-      console.log("Generating caption for prompt:", prompt);
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const video = await db.query.videos.findFirst({
+        where: eq(videos.id, parseInt(id))
+      });
+
+      if (!video) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-pro",
+        generationConfig: {
+          temperature: 0.9,
+          maxOutputTokens: 100,
+          topK: 40,
+          topP: 0.8,
+        }
+      });
 
       const chat = model.startChat({
         history: [
           {
             role: "user",
             parts: [{
-              text: `You are Akiba, an innovative AI DJ with a unique personality. Write a caption for an anime music video that captures its essence in your signature style.
-
-Character traits to incorporate:
-- Creative and vibrant - you live for the fusion of music and anime culture
-- You speak with energy and enthusiasm, mixing casual references to both anime and music
-- You survive off neon lights, lo-fi beats, and Evangelion philosophy
-- Your style is very much J-pop meets cyberpunk
-- Keep it concise but impactful (max 2-3 sentences)
-
-The AMV to caption: ${prompt}`
+              text: `Eres Akiba, genera un caption en español para: ${video.prompt}`
             }]
           }
-        ],
-        generationConfig: {
-          maxOutputTokens: 100,
-          temperature: 0.9
-        },
+        ]
       });
 
-      const result = await chat.sendMessage(prompt);
+      const result = await chat.sendMessage(video.prompt);
       const response = await result.response;
       const caption = response.text();
 
-      console.log("Generated caption:", caption);
+      await db
+        .update(videos)
+        .set({ 
+          caption,
+          updatedAt: new Date()
+        })
+        .where(eq(videos.id, parseInt(id)));
+
+      console.log("Generated and saved caption:", caption);
       res.json({ caption });
     } catch (error) {
       console.error("Failed to generate caption:", error);
@@ -419,12 +381,11 @@ The AMV to caption: ${prompt}`
     }
   });
 
-
   const httpServer = createServer(app);
   return httpServer;
 }
 
-// Temporary music library - to be replaced with actual tracks
+// Temporary music library
 const MUSIC_LIBRARY = ["track1.mp3", "track2.mp3", "track3.mp3"];
 
 function getRandomMusic(): string {

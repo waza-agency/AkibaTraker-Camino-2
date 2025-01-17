@@ -92,7 +92,7 @@ export default function VideoGallery() {
     );
   }
 
-  const handleCaptionGenerated = (videoId: number, caption: string) => {
+  const handleCaptionGenerated = async (videoId: number, caption: string) => {
     setVideoCaptions(prev => ({
       ...prev,
       [videoId]: caption
@@ -126,10 +126,6 @@ export default function VideoGallery() {
                   title={video.prompt}
                 />
                 <div className="absolute top-2 right-2 flex gap-2">
-                  <CaptionGenerator
-                    prompt={video.prompt}
-                    onCaptionGenerated={(caption) => handleCaptionGenerated(video.id, caption)}
-                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -140,6 +136,11 @@ export default function VideoGallery() {
                     <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
                     <span className="ml-1">{video.likesCount || 0}</span>
                   </Button>
+                  <CaptionGenerator
+                    videoId={video.id}
+                    prompt={video.prompt}
+                    onCaptionGenerated={(caption) => handleCaptionGenerated(video.id, caption)}
+                  />
                 </div>
               </div>
             )}

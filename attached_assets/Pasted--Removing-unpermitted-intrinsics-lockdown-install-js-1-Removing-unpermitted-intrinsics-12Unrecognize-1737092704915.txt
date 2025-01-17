@@ -1,0 +1,50 @@
+ Removing unpermitted intrinsics
+lockdown-install.js:1 Removing unpermitted intrinsics
+12Unrecognized Content-Security-Policy directive 'webassembly-src'.Understand this errorAI
+9Invalid 'X-Frame-Options' header encountered when loading '<URL>': 'ALLOW-FROM <URL> <URL>' is not a recognized directive. The header will be ignored.Understand this errorAI
+ Removing unpermitted intrinsics
+ Removing unpermitted intrinsics
+lockdown-install.js:1 Removing unpermitted intrinsics
+18Refused to load the script '<URL>' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' <URL> <URL> <URL> *.replit.dev". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/api/user:1 
+        
+        
+       Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this errorAI
+chunk-RPCDYKBN.js?v=d3515045:8452 Refused to frame 'https://elevenlabs.io/' because it violates the following Content Security Policy directive: "frame-src 'self' https://*.replit.dev https://*.repl.co".
+Understand this errorAI
+chunk-RPCDYKBN.js?v=d3515045:8452 Refused to frame 'https://elevenlabs.io/' because it violates the following Content Security Policy directive: "frame-src 'self' https://*.replit.dev https://*.repl.co".
+Understand this errorAI
+chunk-RPCDYKBN.js?v=d3515045:8452 Refused to frame 'https://elevenlabs.io/' because it violates the following Content Security Policy directive: "frame-src 'self' https://*.replit.dev https://*.repl.co".

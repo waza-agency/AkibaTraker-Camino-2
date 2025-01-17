@@ -30,7 +30,7 @@ export default function Navbar() {
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 flex">
+        <div className="mr-4 flex gap-2">
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2 retro-btn">
               <Home className="h-4 w-4" />

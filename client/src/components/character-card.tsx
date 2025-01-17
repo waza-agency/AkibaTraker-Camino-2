@@ -1,21 +1,50 @@
 import { FC } from "react";
 import { Card } from "@/components/ui/card";
+import { MoodIndicator } from "./mood-indicator";
+import { useMood } from "@/hooks/use-mood";
+import { motion, AnimatePresence } from "framer-motion";
+
+const moodVideos = {
+  happy: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
+  energetic: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
+  calm: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
+  serious: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
+  kawaii: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihtcbfmicmblro5jtoyoi3edjt3sp3rnvpr5bzitfs7re6chxnt6q",
+  bored: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiag5zwawnbbdvjbrjmxorpobfyiuc2ncqr7azgylbuhpfrwcjaaha"
+};
 
 const CharacterCard: FC = () => {
+  const { currentMood } = useMood();
+
   return (
     <div className="w-full max-w-4xl mx-auto my-8">
       <Card className="retro-container overflow-hidden">
         <div className="grid md:grid-cols-2 gap-6 p-6">
           {/* Character Video */}
           <div className="relative aspect-square">
-            <video 
-              src="https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihtcbfmicmblro5jtoyoi3edjt3sp3rnvpr5bzitfs7re6chxnt6q"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="object-cover w-full h-full rounded-lg pixel-borders"
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentMood}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                <video 
+                  key={moodVideos[currentMood]}
+                  src={moodVideos[currentMood]}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="object-cover w-full h-full rounded-lg pixel-borders"
+                />
+              </motion.div>
+            </AnimatePresence>
+            <div className="absolute top-4 right-4">
+              <MoodIndicator mood={currentMood} className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full" />
+            </div>
           </div>
 
           {/* Character Info */}
