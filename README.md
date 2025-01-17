@@ -1,67 +1,81 @@
 # Akiba AMV Generator
 
-An advanced AI-powered multimedia platform for generating personalized Anime Music Videos (AMVs) and custom Akiba-style images using cutting-edge AI technologies. The application combines retro gaming aesthetics with state-of-the-art image generation capabilities.
+An advanced AI-powered multimedia platform for generating personalized Anime Music Videos (AMVs) and custom Akiba-style images using cutting-edge AI technologies.
 
-## Features
+## 🌟 Features
 
-- 🎮 Retro Japanese video game animations and effects
+- 🎮 Interactive AI DJ character (Akiba) powered by Google's Gemini AI
 - 🎵 AI-powered AMV generation using FAL.ai
 - 🎨 Custom Akiba image generation with LoRA models
-- 💬 Interactive chat with Akiba powered by Google's Gemini AI
+- 💬 Emotion analysis and dynamic responses
 - 🎼 Multiple music style selections
-- 🖼️ Pixel art design system
+- 🖼️ Retro Japanese video game aesthetics
 - 🌐 Real-time video processing
+- 🎮 Retro Japanese video game animations and effects (from original)
+- 🖼️ Pixel art design system (from original)
 
-## Tech Stack
 
-- React.js + TypeScript frontend
-- Express.js backend
-- PostgreSQL database with Drizzle ORM
-- Google Gemini AI for chat
-- FAL.ai for video and image generation
-- Custom Flux LoRA model for image generation
-- Shadcn UI components
-- Framer Motion for animations
+## 🛠️ Tech Stack
 
-## Getting Started
+- **Frontend**: React.js + TypeScript, Shadcn UI, Framer Motion
+- **Backend**: Express.js + Node.js
+- **Database**: PostgreSQL with Drizzle ORM
+- **AI Services**: 
+  - Google Gemini AI for chat
+  - FAL.ai for video/image generation
+  - Custom Flux LoRA model
+  - Emotion analysis system
 
-### Prerequisites
+## 🚀 Getting Started
 
-- Node.js 18+
-- PostgreSQL database
-- FAL.ai API key
-- Google API key (for Gemini AI)
-
-### Environment Variables
-
-Create a `.env` file with:
-
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
+3. Set up environment variables:  Create a `.env` file (as described below)
 ```env
 DATABASE_URL=your_postgresql_url
 FAL_KEY=your_fal_ai_key
 GOOGLE_API_KEY=your_google_api_key
 ```
-
-### Installation
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Set up the database:
+4. Set up the database:
 ```bash
 npm run db:push
 ```
-
-3. Start the development server:
+5. Start the development server:
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5000`
+## 📁 Project Structure
 
-## Project Structure
+```
+├── client/           # React frontend
+├── server/           # Express backend
+├── db/               # Database schemas
+└── public/           # Static assets
+```
+
+## 🔑 Environment Variables
+
+- `DATABASE_URL`: PostgreSQL connection string
+- `FAL_KEY`: FAL.ai API key
+- `GOOGLE_API_KEY`: Google Gemini AI API key
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Push to the branch
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## Project Structure (More Details - from original)
 
 ```
 ├── client/           # Frontend React application
@@ -77,7 +91,7 @@ The application will be available at `http://localhost:5000`
 └── public/          # Static assets
 ```
 
-## Features in Detail
+## Features in Detail (from original, selectively included)
 
 ### AMV Generation
 Upload or provide descriptions to generate custom anime music videos with various style presets.
@@ -87,7 +101,3 @@ Create custom Akiba-style images using our fine-tuned LoRA model.
 
 ### Chat Interface
 Interact with Akiba, our AI DJ character powered by Google's Gemini AI.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
