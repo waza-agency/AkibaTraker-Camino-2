@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 const moodVideos = {
   happy: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
   energetic: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
-  calm: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
-  serious: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy",
+  calm: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeici4uce7c6p7ypgkyguazxwozpv3x64yd2jcyjwwmowdsoazc3jhm",
+  serious: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibxskahlx6eaed7d5ngsjkx2yvypm74gsyd5yf4msxw7643ubmoti",
   kawaii: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihtcbfmicmblro5jtoyoi3edjt3sp3rnvpr5bzitfs7re6chxnt6q",
   bored: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiag5zwawnbbdvjbrjmxorpobfyiuc2ncqr7azgylbuhpfrwcjaaha"
 };
