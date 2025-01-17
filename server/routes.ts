@@ -338,7 +338,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-      const model = genAI.getGenerativeModel({ 
+      const model = genAI.getGenerativeModel({
         model: "gemini-pro",
         generationConfig: {
           temperature: 0.9,
@@ -365,7 +365,7 @@ export function registerRoutes(app: Express): Server {
 
       await db
         .update(videos)
-        .set({ 
+        .set({
           caption,
           updatedAt: new Date()
         })

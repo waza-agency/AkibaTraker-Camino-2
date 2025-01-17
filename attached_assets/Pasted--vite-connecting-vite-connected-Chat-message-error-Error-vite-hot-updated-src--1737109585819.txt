@@ -1,0 +1,38 @@
+[vite] connecting...
+[vite] connected.
+Chat message error: 
+Error {}
+
+[vite] hot updated: /src/components/character-card.tsx
+[vite] hot updated: /src/index.css?v=uIwH2nR06C0TFnlmTRK0E
+[vite] hot updated: /src/components/chat-interface.tsx
+[vite] hot updated: /src/index.css?v=uIwH2nR06C0TFnlmTRK0E
+Chat API error: 
+Error {}
+message: "{"error":"Failed to process chat message"}"
+stack: "Error: {"error":"Failed to process chat message"}↵ at Object.mutationFn (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/src/components/chat-interface.tsx?t=1737109468533:58:17)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+
+Chat message error: 
+Error {}
+
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Chat API error: 
+Error {}
+
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Chat message error: 
+Error {}
+
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://dfec6bb8-52ab-44b3-9b4c-8dbcb02ba6ec-00-oim4wvxhucc9.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
