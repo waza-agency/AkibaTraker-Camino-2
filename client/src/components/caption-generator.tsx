@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-export function CaptionGenerator({ videoId }: { videoId: number }) {
+export default function CaptionGenerator({ videoId }: { videoId: number }) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
