@@ -323,9 +323,10 @@ export function registerRoutes(app: Express): Server {
   // Generate video captions
   app.post("/api/videos/:id/caption", async (req, res) => {
     const { id } = req.params;
+    const apiKey = process.env.GOOGLE_API_KEY || req.headers["x-google-api-key"];
 
-    if (!process.env.GOOGLE_API_KEY) {
-      return res.status(500).json({ error: "Google API key not configured" });
+    if (!apiKey || typeof apiKey !== "string") {
+      return res.status(401).json({ error: "Google API key is required" });
     }
 
     try {
@@ -337,7 +338,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ error: "Video not found" });
       }
 
-      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: "gemini-pro",
         generationConfig: {
