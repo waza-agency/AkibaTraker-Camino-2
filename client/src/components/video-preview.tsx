@@ -6,6 +6,7 @@ import { Download } from "lucide-react";
 import type { SelectVideo } from "@db/schema";
 
 export default function VideoPreview() {
+  const [aspectRatio, setAspectRatio] = useState<"16:9" | "9:16" | "1:1">("16:9");
   const { data: videos, refetch } = useQuery<SelectVideo[]>({
     queryKey: ["/api/videos"],
     // Poll for updates every 2 seconds while a video is pending
@@ -24,6 +25,30 @@ export default function VideoPreview() {
   return (
     <Card className="p-6 retro-container">
       <h2 className="text-lg font-semibold mb-4 glow-text">Preview</h2>
+      
+      <div className="mb-4">
+        <label className="text-sm block mb-2">Aspect Ratio:</label>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setAspectRatio("16:9")}
+            className={`px-3 py-1 rounded ${aspectRatio === "16:9" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          >
+            16:9
+          </button>
+          <button 
+            onClick={() => setAspectRatio("9:16")}
+            className={`px-3 py-1 rounded ${aspectRatio === "9:16" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          >
+            9:16
+          </button>
+          <button 
+            onClick={() => setAspectRatio("1:1")}
+            className={`px-3 py-1 rounded ${aspectRatio === "1:1" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          >
+            1:1
+          </button>
+        </div>
+      </div>
 
       {latestVideo.status === "pending" && (
         <div className="space-y-4">
@@ -34,11 +59,17 @@ export default function VideoPreview() {
 
       {latestVideo.status === "completed" && latestVideo.outputUrl && (
         <div className="space-y-4">
-          <video
-            src={latestVideo.outputUrl}
-            controls
-            className="w-full rounded-lg pixel-borders"
-          />
+          <div className={`relative ${
+            aspectRatio === "16:9" ? "aspect-video" : 
+            aspectRatio === "9:16" ? "aspect-[9/16]" : 
+            "aspect-square"
+          }`}>
+            <video
+              src={latestVideo.outputUrl}
+              controls
+              className="w-full h-full rounded-lg pixel-borders object-cover"
+            />
+          </div>
           <Button 
             className="w-full retro-btn"
             onClick={() => window.open(latestVideo.outputUrl, '_blank')}
