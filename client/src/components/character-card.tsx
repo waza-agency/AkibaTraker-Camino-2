@@ -9,7 +9,7 @@ const CharacterCard: FC = () => {
           {/* Character Video */}
           <div className="relative aspect-square">
             <video 
-              src="https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeibgqkgzdokcbm3p7gzzvtz5lp5hz5awiqfzd6vdtccnqjceabnfzy"
+              src="https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeihtcbfmicmblro5jtoyoi3edjt3sp3rnvpr5bzitfs7re6chxnt6q"
               autoPlay
               loop
               muted
