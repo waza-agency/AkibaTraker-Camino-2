@@ -138,10 +138,23 @@ export default function VideoGallery() {
                   </Button>
                   <CaptionGenerator
                     videoId={video.id}
-                    prompt={video.prompt}
                     onCaptionGenerated={(caption) => handleCaptionGenerated(video.id, caption)}
                   />
                 </div>
+              </div>
+
+              <div>
+                <p className="text-sm truncate" title={video.prompt}>
+                  {video.prompt}
+                </p>
+                {videoCaptions[video.id] && (
+                  <p className="text-sm mt-2 italic text-muted-foreground">
+                    {videoCaptions[video.id]}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(video.createdAt).toLocaleString()}
+                </p>
               </div>
             )}
 

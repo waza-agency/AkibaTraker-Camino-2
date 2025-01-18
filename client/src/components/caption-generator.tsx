@@ -3,7 +3,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-export default function CaptionGenerator({ videoId }: { videoId: number }) {
+interface CaptionGeneratorProps {
+  videoId: number;
+  onCaptionGenerated: (caption: string) => void;
+}
+
+export default function CaptionGenerator({ videoId, onCaptionGenerated }: CaptionGeneratorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -22,11 +27,11 @@ export default function CaptionGenerator({ videoId }: { videoId: number }) {
       }
 
       const data = await response.json();
+      onCaptionGenerated(data.caption);
       toast({
         title: "Success",
         description: "Caption generated successfully!",
       });
-      return data.caption;
     } catch (error) {
       console.error("Error generando caption:", error);
       toast({
@@ -46,7 +51,7 @@ export default function CaptionGenerator({ videoId }: { videoId: number }) {
       variant="secondary"
       size="sm"
     >
-      {isLoading ? "Generating..." : "Generar Caption"}
+      {isLoading ? "Generando..." : "Generar Caption"}
     </Button>
   );
 }
