@@ -27,7 +27,7 @@ export async function analyzeEmotion(text: string, apiKey: string): Promise<Emot
     console.log("Emotion analysis result:", result);
 
     // Validate that the mood is one of the allowed values
-    if (!["happy", "energetic", "calm", "serious", "kawaii"].includes(result.mood)) {
+    if (!["happy", "energetic", "calm", "serious", "kawaii", "bored"].includes(result.mood)) {
       console.warn("Invalid mood received:", result.mood);
       return { mood: "energetic", confidence: 1 }; // Default fallback
     }
