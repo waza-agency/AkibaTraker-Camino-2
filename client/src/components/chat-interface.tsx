@@ -22,6 +22,7 @@ export default function ChatInterface() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { setMood } = useMood();
+  const [messageCount, setMessageCount] = useState(0);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -36,6 +37,24 @@ export default function ChatInterface() {
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
       try {
+        // Only analyze emotion every 3 messages
+        if (messageCount % 3 === 0) {
+          const emotionResponse = await fetch('/api/analyze-emotion', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: message }),
+          });
+
+          if (!emotionResponse.ok) {
+            throw new Error('Failed to analyze emotion');
+          }
+
+          const emotionResult = await emotionResponse.json();
+          setMood(emotionResult.mood);
+        }
+        setMessageCount(prev => prev + 1);
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
@@ -81,34 +100,6 @@ export default function ChatInterface() {
 
     try {
       const data = await sendMessage.mutateAsync(userMessage);
-
-      try {
-        const emotionResponse = await fetch("/api/analyze-emotion", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text: data.message }),
-        });
-
-        if (!emotionResponse.ok) {
-          throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
-        }
-
-        const emotionData = await emotionResponse.json();
-        if (
-          emotionData &&
-          typeof emotionData.mood === "string" &&
-          ["happy", "energetic", "calm", "serious", "kawaii", "bored"].includes(
-            emotionData.mood
-          )
-        ) {
-          setMood(emotionData.mood);
-        }
-      } catch (error) {
-        console.warn("Emotion analysis warning:", error);
-        // Continue with chat even if emotion analysis fails
-      }
 
       setMessages((prev) => [
         ...prev,
