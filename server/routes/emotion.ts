@@ -11,12 +11,12 @@ interface EmotionAnalysisResponse {
 router.post("/analyze-emotion", async (req, res) => {
   try {
     const { text } = req.body;
-    const apiKey = req.headers["x-google-api-key"];
+    const apiKey = process.env.GOOGLE_API_KEY || "";
 
     // Validate API key
-    if (!apiKey || typeof apiKey !== "string") {
-      console.error("Missing or invalid API key");
-      return res.status(401).json({ error: "API key required" });
+    if (!apiKey || apiKey.trim() === "") {
+      console.error("Missing Google API key in environment");
+      return res.status(401).json({ error: "Google API key not configured in secrets" });
     }
 
     // Validate input text
