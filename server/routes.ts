@@ -89,8 +89,9 @@ export function registerRoutes(app: Express): Server {
 
       const result = await chat.sendMessage(message);
       const response = await result.response;
+      const text = await response.text();
 
-      res.json({ message: response.text() });
+      res.json({ message: text });
     } catch (error) {
       console.error("Chat error:", error);
       res.status(500).json({ error: "Failed to process chat message" });

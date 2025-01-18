@@ -58,19 +58,21 @@ export default function ChatInterface() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept": "application/json"
           },
           body: JSON.stringify({ message }),
           credentials: 'include'
         });
 
+        const data = await res.json();
+        
         if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || `HTTP error! status: ${res.status}`);
+          throw new Error(data.error || `HTTP error! status: ${res.status}`);
         }
 
-        const data = await res.json();
-        if (!data || !data.message) {
+        if (!data || typeof data.message !== 'string') {
+          console.error("Invalid response:", data);
           throw new Error("Invalid response format from server");
         }
 
