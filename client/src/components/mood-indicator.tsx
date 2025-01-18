@@ -96,7 +96,7 @@ const videoUrls: Record<Mood, string> = {
 };
 
 export const MoodIndicator: FC<Props> = ({ mood, className = "", isChat = false }) => {
-  const videoSrc = isChat ? emotionVideos[mood] : undefined;
+  const videoSrc = isChat ? videoUrls[mood] : undefined;
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>

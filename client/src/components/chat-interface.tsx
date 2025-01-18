@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { analyzeEmotion } from "@/lib/emotion-analysis";
 import { useMood } from "@/hooks/use-mood";
 import { motion, AnimatePresence } from "framer-motion";
+import { MoodIndicator } from "./mood-indicator";
 
 interface Message {
   role: "user" | "assistant";
