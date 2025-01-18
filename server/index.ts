@@ -14,7 +14,7 @@ app.use((req, res, next) => {
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://apis.google.com https://*.googleapis.com https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io *.replit.dev; " +
     "style-src 'self' 'unsafe-inline' https: *.replit.dev; " +
     "img-src 'self' data: https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev; " +
-    "connect-src 'self' http://localhost:* ws://localhost:* https://*.googleapis.com https://generativelanguage.googleapis.com https://*.fal.ai wss://* https://*.mypinata.cloud https://evmos-evm.publicnode.com https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io wss://*.elevenlabs.io *.replit.dev; " +
+    "connect-src 'self' http://localhost:* ws://localhost:* https://*.googleapis.com https://generativelanguage.googleapis.com https://ai-api.google.com https://*.fal.ai wss://* https://*.mypinata.cloud https://evmos-evm.publicnode.com https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io wss://*.elevenlabs.io *.replit.dev; " +
     "media-src 'self' https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev; " +
     "frame-src 'self' https://*.replit.dev https://*.repl.co https://*.elevenlabs.io; " +
     "font-src 'self' data: https: *.replit.dev; " +
