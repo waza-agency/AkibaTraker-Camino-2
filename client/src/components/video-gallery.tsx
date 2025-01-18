@@ -116,45 +116,46 @@ export default function VideoGallery() {
             )}
 
             {video.status === "completed" && video.outputUrl && (
-              <div className="relative group">
-                <VideoPreviewThumbnail
-                  src={video.outputUrl}
-                  className="w-full rounded-lg aspect-video"
-                />
-                <ShareButton 
-                  url={video.outputUrl} 
-                  title={video.prompt}
-                />
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                    onClick={() => likeMutation.mutate(video.id)}
-                    disabled={likeMutation.isPending}
-                  >
-                    <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
-                    <span className="ml-1">{video.likesCount || 0}</span>
-                  </Button>
-                  <CaptionGenerator
-                    videoId={video.id}
-                    onCaptionGenerated={(caption) => handleCaptionGenerated(video.id, caption)}
+              <div className="space-y-3">
+                <div className="relative group">
+                  <VideoPreviewThumbnail
+                    src={video.outputUrl}
+                    className="w-full rounded-lg aspect-video"
                   />
+                  <ShareButton 
+                    url={video.outputUrl} 
+                    title={video.prompt}
+                  />
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                      onClick={() => likeMutation.mutate(video.id)}
+                      disabled={likeMutation.isPending}
+                    >
+                      <Heart className={`w-4 h-4 ${video.likesCount > 0 ? 'fill-primary text-primary' : ''}`} />
+                      <span className="ml-1">{video.likesCount || 0}</span>
+                    </Button>
+                    <CaptionGenerator
+                      videoId={video.id}
+                      onCaptionGenerated={(caption) => handleCaptionGenerated(video.id, caption)}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <p className="text-sm truncate" title={video.prompt}>
-                  {video.prompt}
-                </p>
-                {videoCaptions[video.id] && (
-                  <p className="text-sm mt-2 italic text-muted-foreground">
-                    {videoCaptions[video.id]}
+                <div>
+                  <p className="text-sm truncate" title={video.prompt}>
+                    {video.prompt}
                   </p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  {new Date(video.createdAt).toLocaleString()}
-                </p>
+                  {videoCaptions[video.id] && (
+                    <p className="text-sm mt-2 italic text-muted-foreground">
+                      {videoCaptions[video.id]}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {new Date(video.createdAt).toLocaleString()}
+                  </p>
+                </div>
               </div>
             )}
           </Card>
