@@ -10,6 +10,12 @@ interface EmotionAnalysisResponse {
 
 router.post("/analyze-emotion", async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user) {
+      console.error("Unauthorized emotion analysis attempt");
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { text } = req.body;
     const apiKey = process.env.GOOGLE_API_KEY || "";
 
