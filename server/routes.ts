@@ -51,7 +51,7 @@ export function registerRoutes(app: Express): Server {
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
-    const apiKey = req.headers["x-google-api-key"];
+    const apiKey = process.env.GOOGLE_API_KEY || req.headers["x-google-api-key"];
 
     if (!apiKey || typeof apiKey !== "string") {
       return res.status(401).json({ error: "Google API key is required" });
