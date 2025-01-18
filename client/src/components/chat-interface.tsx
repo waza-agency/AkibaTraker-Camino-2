@@ -61,6 +61,7 @@ export default function ChatInterface() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ message }),
+          credentials: 'include'
         });
 
         if (!res.ok) {
