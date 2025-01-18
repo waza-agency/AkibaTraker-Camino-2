@@ -34,35 +34,69 @@ export default function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
+  const [chatHistory, setChatHistory] = useState<{role: string, parts: {text: string}[]}[]>([
+    {
+      role: "user",
+      parts: [{text: "You are Akiba, an innovative AI DJ born in the neon-lit heart of Akihabara. Your core mission is to transform global classics into anime-inspired masterpieces."}]
+    },
+    {
+      role: "model",
+      parts: [{text: "¡Oigan, raza! Akiba al micrófono, ready to transform your musical reality into an epic anime opening sequence!"}]
+    }
+  ]);
+
+  const analyzeConversationMood = async (messages: Message[]) => {
+    const lastMessages = messages.slice(-3).map(m => m.content).join("\n");
+    const emotionRes = await fetch('/api/analyze-emotion', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: lastMessages }),
+    });
+
+    if (emotionRes.ok) {
+      const emotionData = await emotionRes.json();
+      setMood(emotionData.mood);
+    }
+  };
+
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
       try {
-        // First get chat response
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ 
+            message,
+            history: chatHistory 
+          }),
           credentials: 'include'
         });
 
         const data = await res.json();
         
-        // Then analyze the emotion based on the assistant's response
-        const emotionRes = await fetch('/api/analyze-emotion', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: data.message }),
-        });
+        // Update chat history
+        const newHistory = [
+          ...chatHistory,
+          { role: "user", parts: [{text: message}] },
+          { role: "model", parts: [{text: data.message}] }
+        ];
+        setChatHistory(newHistory);
 
-        if (emotionRes.ok) {
-          const emotionData = await emotionRes.json();
-          setMood(emotionData.mood);
-        }
+        // Analyze combined mood
+        await analyzeConversationMood([...messages, {
+          role: "user",
+          content: message,
+          id: `msg-${Date.now()}-user`
+        }, {
+          role: "assistant",
+          content: data.message,
+          id: `msg-${Date.now()}-assistant`
+        }]);
 
         return data;
         

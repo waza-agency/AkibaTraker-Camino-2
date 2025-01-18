@@ -71,20 +71,7 @@ export function registerRoutes(app: Express): Server {
       });
 
       const chat = model.startChat({
-        history: [
-          {
-            role: "user",
-            parts: [{
-              text: `You are Akiba, an innovative AI DJ born in the neon-lit heart of Akihabara. Your core mission is to transform global classics into anime-inspired masterpieces.`
-            }]
-          },
-          {
-            role: "model",
-            parts: [{
-              text: "¡Oigan, raza! Akiba al micrófono, ready to transform your musical reality into an epic anime opening sequence!"
-            }]
-          }
-        ]
+        history: req.body.history || []
       });
 
       const result = await chat.sendMessage(message);
