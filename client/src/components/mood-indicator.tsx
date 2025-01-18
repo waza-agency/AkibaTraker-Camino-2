@@ -85,7 +85,18 @@ const moodAnimations: Record<Mood, any> = {
   }
 };
 
+const videoUrls: Record<Mood, string> = {
+  happy: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeicu5vjdynha335bgy33ma4xl66worzexkji7yluongayvqkfyb3xi",
+  energetic: "",
+  calm: "",
+  serious: "",
+  kawaii: "",
+  bored: ""
+};
+
 export const MoodIndicator: FC<Props> = ({ mood, className = "" }) => {
+  const videoSrc = videoUrls[mood];
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <AnimatePresence mode="wait">
@@ -101,6 +112,7 @@ export const MoodIndicator: FC<Props> = ({ mood, className = "" }) => {
             boxShadow: `0 0 10px ${moodColors[mood]}33`
           }}
         >
+          {videoSrc && <video src={videoSrc} autoPlay loop muted />} {/* Added video playback */}
           <motion.span 
             className="text-lg"
             role="img" 
