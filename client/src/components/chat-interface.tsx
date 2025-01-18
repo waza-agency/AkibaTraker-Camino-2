@@ -13,6 +13,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   id: string;
+  mood?: string; // Added mood property
 }
 
 export default function ChatInterface() {
@@ -78,7 +79,7 @@ export default function ChatInterface() {
         });
 
         const data = await res.json();
-        
+
         // Update chat history
         const newHistory = [
           ...chatHistory,
@@ -88,18 +89,22 @@ export default function ChatInterface() {
         setChatHistory(newHistory);
 
         // Analyze combined mood
-        await analyzeConversationMood([...messages, {
+        const newMessage: Message = { //Added type for newMessage
           role: "user",
           content: message,
           id: `msg-${Date.now()}-user`
-        }, {
+        };
+        const assistantMessage: Message = { //Added type for assistantMessage
           role: "assistant",
           content: data.message,
-          id: `msg-${Date.now()}-assistant`
-        }]);
+          id: `msg-${Date.now()}-assistant`,
+          mood: data.mood // Assign mood from API response
+        };
+
+        await analyzeConversationMood([...messages, newMessage, assistantMessage]);
 
         return data;
-        
+
         if (!res.ok) {
           throw new Error(data.error || `HTTP error! status: ${res.status}`);
         }
@@ -143,6 +148,7 @@ export default function ChatInterface() {
           role: "assistant",
           content: data.message,
           id: `msg-${Date.now()}-assistant`,
+          mood: data.mood // Assign mood from API response
         },
       ]);
     } catch (error) {
@@ -215,6 +221,9 @@ export default function ChatInterface() {
                           : "bg-muted"
                       }`}
                     >
+                      {message.role === "assistant" && (
+                        <MoodIndicator mood={message.mood || "energetic"} isChat={true} className="mb-2" />
+                      )}
                       <p className="text-sm">{message.content}</p>
                     </div>
                   </motion.div>
