@@ -6,6 +6,7 @@ export type Mood = "happy" | "energetic" | "calm" | "serious" | "kawaii" | "bore
 interface Props {
   mood: Mood;
   className?: string;
+  hideVideo?: boolean;
 }
 
 const moodColors: Record<Mood, string> = {
@@ -94,8 +95,8 @@ const videoUrls: Record<Mood, string> = {
   bored: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiag5zwawnbbdvjbrjmxorpobfyiuc2ncqr7azgylbuhpfrwcjaaha"
 };
 
-export const MoodIndicator: FC<Props> = ({ mood, className = "" }) => {
-  const videoSrc = videoUrls[mood];
+export const MoodIndicator: FC<Props> = ({ mood, className = "", hideVideo = false }) => {
+  const videoSrc = !hideVideo ? videoUrls[mood] : undefined;
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
