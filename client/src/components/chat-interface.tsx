@@ -37,6 +37,7 @@ export default function ChatInterface() {
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
       try {
+        // First get chat response
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
@@ -48,6 +49,22 @@ export default function ChatInterface() {
         });
 
         const data = await res.json();
+        
+        // Then analyze the emotion based on the assistant's response
+        const emotionRes = await fetch('/api/analyze-emotion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: data.message }),
+        });
+
+        if (emotionRes.ok) {
+          const emotionData = await emotionRes.json();
+          setMood(emotionData.mood);
+        }
+
+        return data;
         
         if (!res.ok) {
           throw new Error(data.error || `HTTP error! status: ${res.status}`);
