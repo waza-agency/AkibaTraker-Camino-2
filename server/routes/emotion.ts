@@ -36,7 +36,7 @@ router.post("/analyze-emotion", async (req, res) => {
       }
     });
 
-    const prompt = `As Akiba, analyze the emotional tone of your response and select the most appropriate mood that matches your emotional state. Choose from these categories: happy, energetic, calm, serious, kawaii.
+    const prompt = `As Akiba, analyze the over all emotional tone of the last 5 messages between akiba and the user and select the most appropriate mood that matches your emotional state. Choose from these categories: happy, energetic, calm, serious, kawaii.
 
 Return only a JSON object with this exact format: {"mood": "category", "confidence": number between 0 and 1}
 
