@@ -1,0 +1,83 @@
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+
+6e89015e-80d3-493d-9…2F&id=%3Ar2tf%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+lockdown-install.js:1 Removing unpermitted intrinsics
+4
+contentScript.js:2 Error: Extension context invalidated.
+    at o.sendMessageToAnywhere (contentScript.js:2:2994942)
+    at contentScript.js:2:5115206
+9
+Unrecognized Content-Security-Policy directive 'worklet-src'.
+ Removing unpermitted intrinsics
+2
+contentScript.js:2 Error: Extension context invalidated.
+    at o.sendMessageToAnywhere (contentScript.js:2:2994942)
+    at contentScript.js:2:5115206
+ Removing unpermitted intrinsics
+lockdown-install.js:1 Removing unpermitted intrinsics
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…plit.dev/api/user:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…i/analyze-emotion:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…i/analyze-emotion:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…i/analyze-emotion:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+ Chat API error: Error: Failed to analyze emotion
+    at Object.mutationFn (chat-interface.tsx:56:19)
+ Chat message error: Error: Failed to analyze emotion
+    at Object.mutationFn (chat-interface.tsx:82:15)
+6e89015e-80d3-493d-9…i/analyze-emotion:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…i/analyze-emotion:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+6e89015e-80d3-493d-9…i/analyze-emotion:1 
+ Failed to load resource: the server responded with a status of 401 (Unauthorized)
+ Chat API error: Error: Failed to analyze emotion
+    at Object.mutationFn (chat-interface.tsx:56:19)
+Mt.forEach.n.<computed>	@	eruda.js:2
+ Chat message error: Error: Failed to analyze emotion
+    at Object.mutationFn (chat-interface.tsx:82:15)
+Mt.forEach.n.<computed>	@	eruda.js:2
+ 
+ POST https://6e89015e-80d3-493d-9637-534d612a9631-00-1qgovcyd0rqqg.worf.replit.dev/api/analyze-emotion 401 (Unauthorized)
+ Chat API error: Error: Failed to analyze emotion
+    at Object.mutationFn (chat-interface.tsx:56:19)
+ Chat message error: Error: Failed to analyze emotion
+    at Object.mutationFn (chat-interface.tsx:82:15)
+Mt.forEach.n.<computed>	@	eruda.js:2
+handleSubmit	@	chat-interface.tsx:115
+await in handleSubmit		
+callCallback2	@	chunk-RPCDYKBN.js:3674
+invokeGuardedCallbackDev	@	chunk-RPCDYKBN.js:3699
+invokeGuardedCallback	@	chunk-RPCDYKBN.js:3733
+invokeGuardedCallbackAndCatchFirstError	@	chunk-RPCDYKBN.js:3736
+executeDispatch	@	chunk-RPCDYKBN.js:7014
+processDispatchQueueItemsInOrder	@	chunk-RPCDYKBN.js:7034
+processDispatchQueue	@	chunk-RPCDYKBN.js:7043
+dispatchEventsForPlugins	@	chunk-RPCDYKBN.js:7051
+(anonymous)	@	chunk-RPCDYKBN.js:7174
+batchedUpdates$1	@	chunk-RPCDYKBN.js:18913
+batchedUpdates	@	chunk-RPCDYKBN.js:3579
+dispatchEventForPluginEventSystem	@	chunk-RPCDYKBN.js:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay	@	chunk-RPCDYKBN.js:5478
+dispatchEvent	@	chunk-RPCDYKBN.js:5472
+dispatchDiscreteEvent
