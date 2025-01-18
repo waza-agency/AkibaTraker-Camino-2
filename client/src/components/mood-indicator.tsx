@@ -91,7 +91,7 @@ const videoUrls: Record<Mood, string> = {
   calm: "",
   serious: "",
   kawaii: "",
-  bored: ""
+  bored: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiag5zwawnbbdvjbrjmxorpobfyiuc2ncqr7azgylbuhpfrwcjaaha"
 };
 
 export const MoodIndicator: FC<Props> = ({ mood, className = "" }) => {
@@ -112,7 +112,15 @@ export const MoodIndicator: FC<Props> = ({ mood, className = "" }) => {
             boxShadow: `0 0 10px ${moodColors[mood]}33`
           }}
         >
-          {videoSrc && <video src={videoSrc} autoPlay loop muted />} {/* Added video playback */}
+          {videoSrc && (
+            <video 
+              src={videoSrc} 
+              autoPlay 
+              loop 
+              muted 
+              className="w-12 h-12 object-cover rounded-full"
+            />
+          )}
           <motion.span 
             className="text-lg"
             role="img" 
