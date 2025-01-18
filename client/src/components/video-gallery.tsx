@@ -157,20 +157,6 @@ export default function VideoGallery() {
                 </p>
               </div>
             )}
-
-            <div>
-              <p className="text-sm truncate" title={video.prompt}>
-                {video.prompt}
-              </p>
-              {videoCaptions[video.id] && (
-                <p className="text-sm mt-2 italic text-muted-foreground">
-                  {videoCaptions[video.id]}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                {new Date(video.createdAt).toLocaleString()}
-              </p>
-            </div>
           </Card>
         ))}
       </div>
