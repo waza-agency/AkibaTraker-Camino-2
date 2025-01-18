@@ -50,12 +50,6 @@ export function registerRoutes(app: Express): Server {
 
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
-    // Check if user is authenticated
-    if (!req.user) {
-      console.error("Unauthorized chat attempt");
-      return res.status(401).json({ error: "Authentication required" });
-    }
-
     const { message } = req.body;
     const apiKey = process.env.GOOGLE_API_KEY || "";
 

@@ -8,13 +8,11 @@ import { useMutation } from "@tanstack/react-query";
 import { analyzeEmotion } from "@/lib/emotion-analysis";
 import { useMood } from "@/hooks/use-mood";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoodIndicator } from "./mood-indicator";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   id: string;
-  mood?: string; // Added mood property
 }
 
 export default function ChatInterface() {
@@ -80,7 +78,7 @@ export default function ChatInterface() {
         });
 
         const data = await res.json();
-
+        
         // Update chat history
         const newHistory = [
           ...chatHistory,
@@ -90,22 +88,18 @@ export default function ChatInterface() {
         setChatHistory(newHistory);
 
         // Analyze combined mood
-        const newMessage: Message = { //Added type for newMessage
+        await analyzeConversationMood([...messages, {
           role: "user",
           content: message,
           id: `msg-${Date.now()}-user`
-        };
-        const assistantMessage: Message = { //Added type for assistantMessage
+        }, {
           role: "assistant",
           content: data.message,
-          id: `msg-${Date.now()}-assistant`,
-          mood: data.mood // Assign mood from API response
-        };
-
-        await analyzeConversationMood([...messages, newMessage, assistantMessage]);
+          id: `msg-${Date.now()}-assistant`
+        }]);
 
         return data;
-
+        
         if (!res.ok) {
           throw new Error(data.error || `HTTP error! status: ${res.status}`);
         }
@@ -149,7 +143,6 @@ export default function ChatInterface() {
           role: "assistant",
           content: data.message,
           id: `msg-${Date.now()}-assistant`,
-          mood: data.mood // Assign mood from API response
         },
       ]);
     } catch (error) {
@@ -222,9 +215,6 @@ export default function ChatInterface() {
                           : "bg-muted"
                       }`}
                     >
-                      {message.role === "assistant" && (
-                        <MoodIndicator mood={message.mood || "energetic"} isChat={true} className="mb-2" />
-                      )}
                       <p className="text-sm">{message.content}</p>
                     </div>
                   </motion.div>
