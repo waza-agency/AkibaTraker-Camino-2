@@ -7,6 +7,7 @@ import { generateVideo, generateAkibaImage } from "../client/src/lib/fal-api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setupAuth } from "./auth";
 import emotionRouter from "./routes/emotion";
+import cspRouter from "./routes/csp";
 
 const MAX_GENERATION_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
@@ -48,6 +49,9 @@ export function registerRoutes(app: Express): Server {
   // Register emotion analysis routes under /api prefix
   app.use("/api", emotionRouter);
 
+  // Register CSP routes
+  app.use("/api/csp", cspRouter);
+
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
@@ -55,7 +59,7 @@ export function registerRoutes(app: Express): Server {
 
     if (!apiKey) {
       console.error("Missing Google API key in environment");
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: "Authentication failed",
         details: "Google API key not configured"
       });
@@ -63,7 +67,7 @@ export function registerRoutes(app: Express): Server {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ 
+      const model = genAI.getGenerativeModel({
         model: "gemini-pro",
         generationConfig: {
           temperature: 0.9,
@@ -319,7 +323,7 @@ export function registerRoutes(app: Express): Server {
 
     if (!apiKey) {
       console.error("Missing Google API key in environment");
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: "Authentication failed",
         details: "Google API key not configured"
       });

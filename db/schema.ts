@@ -42,6 +42,16 @@ export const videoLikes = pgTable("video_likes", {
   uniqueLike: unique().on(table.videoId, table.userId),
 }));
 
+// Add CSP violations table
+export const cspViolations = pgTable("csp_violations", {
+  id: serial("id").primaryKey(),
+  blockedUri: text("blocked_uri").notNull(),
+  documentUri: text("document_uri").notNull(),
+  violatedDirective: text("violated_directive").notNull(),
+  originalPolicy: text("original_policy").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 export type InsertUser = typeof users.$inferInsert;
@@ -56,3 +66,8 @@ export const insertVideoLikeSchema = createInsertSchema(videoLikes);
 export const selectVideoLikeSchema = createSelectSchema(videoLikes);
 export type InsertVideoLike = typeof videoLikes.$inferInsert;
 export type SelectVideoLike = typeof videoLikes.$inferSelect;
+
+export const insertCspViolationSchema = createInsertSchema(cspViolations);
+export const selectCspViolationSchema = createSelectSchema(cspViolations);
+export type InsertCspViolation = typeof cspViolations.$inferInsert;
+export type SelectCspViolation = typeof cspViolations.$inferSelect;
