@@ -13,7 +13,7 @@ export async function analyzeEmotion(text: string, apiKey: string): Promise<Emot
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-google-api-key': apiKey
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({ text }),
     });
