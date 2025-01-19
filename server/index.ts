@@ -1,97 +1,28 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import express from "express";
+import { json, urlencoded } from "express";
+import { log } from "./vite"; // Retaining the original logging function
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Security middleware
-app.use((req, res, next) => {
-  // CORS headers - Only allow specific Replit domains
-  const allowedOrigins = ['*.replit.dev', '*.repl.co'];
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.some(allowed => origin.match(new RegExp(allowed.replace('*', '.*'))))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Fal-Api-Key');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
+// Basic middleware
+app.use(json());
+app.use(urlencoded({ extended: false }));
 
-  // Content Security Policy
-  res.setHeader(
-    'Content-Security-Policy-Report-Only',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.replit.dev *.repl.co",
-      "style-src 'self' 'unsafe-inline' *.replit.dev *.repl.co",
-      "img-src 'self' data: blob: *.replit.dev *.repl.co *.fal.ai",
-      "media-src 'self' data: blob: *.replit.dev *.repl.co",
-      "connect-src 'self' *.replit.dev *.repl.co *.fal.ai api.openai.com api.anthropic.com",
-      "font-src 'self' data: *.replit.dev *.repl.co",
-      "frame-src 'self' *.replit.dev *.repl.co",
-      "worker-src 'self' blob:",
-      "manifest-src 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'self'",
-      "report-uri /api/csp/report"
-    ].join('; ')
-  );
-
-  // Basic security headers
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()');
-
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-      log(logLine);
-    }
-  });
-
-  next();
+// Basic health check route
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
+  log("GET /api/health 200 in 0ms"); // Added logging for the health check route
 });
 
-(async () => {
-  const server = registerRoutes(app);
+// Error handling (modified to use original log function)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  const status = err.status || 500;
+  res.status(status).json({ error: 'Internal Server Error' });
+  log(`Error: ${err.message} - Status ${status}`); // Log the error
+});
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
-  const PORT = 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
-  });
-})();
+const PORT = 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  log(`Server running on port ${PORT}`);
+});
