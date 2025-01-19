@@ -55,7 +55,10 @@ export function registerRoutes(app: Express): Server {
 
     if (!apiKey || apiKey.trim() === "") {
       console.error("Missing Google API key in environment");
-      return res.status(500).json({ error: "Google API key not configured in secrets" });
+      return res.status(401).json({ 
+        error: "Authentication failed",
+        details: "Google API key not configured. Please add GOOGLE_API_KEY in Replit Secrets."
+      });
     }
 
     try {
@@ -316,7 +319,10 @@ export function registerRoutes(app: Express): Server {
 
     if (!apiKey || apiKey.trim() === "") {
       console.error("Missing Google API key in environment");
-      return res.status(500).json({ error: "Google API key not configured in secrets" });
+      return res.status(401).json({ 
+        error: "Authentication failed",
+        details: "Google API key not configured. Please add GOOGLE_API_KEY in Replit Secrets."
+      });
     }
 
     try {
