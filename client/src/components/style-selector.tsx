@@ -1,7 +1,30 @@
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { stylePresets } from "@db/schema";
+
+interface StylePreset {
+  name: string;
+  description: string;
+}
+
+const stylePresets: Record<string, StylePreset> = {
+  "anime": {
+    name: "Anime",
+    description: "Stylized anime-inspired visuals with vibrant colors and smooth lines"
+  },
+  "realistic": {
+    name: "Realistic",
+    description: "Photo-realistic style with natural lighting and textures"
+  },
+  "watercolor": {
+    name: "Watercolor",
+    description: "Soft, artistic style with watercolor painting effects"
+  },
+  "pixel": {
+    name: "Pixel Art",
+    description: "Retro-inspired pixel art style with distinct blocks and limited color palette"
+  }
+};
 
 interface StyleSelectorProps {
   selected: string;
@@ -15,7 +38,7 @@ export default function StyleSelector({ selected, onSelect }: StyleSelectorProps
       onValueChange={onSelect}
       className="grid gap-4 mt-4"
     >
-      {Object.entries(stylePresets).map(([style, description]) => (
+      {Object.entries(stylePresets).map(([style, preset]) => (
         <Card
           key={style}
           className={`p-4 cursor-pointer transition-colors hover:bg-accent ${
@@ -27,9 +50,9 @@ export default function StyleSelector({ selected, onSelect }: StyleSelectorProps
             <RadioGroupItem value={style} id={style} />
             <div className="flex-1">
               <Label htmlFor={style} className="font-medium">
-                {style.charAt(0).toUpperCase() + style.slice(1)}
+                {preset.name}
               </Label>
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm text-muted-foreground">{preset.description}</p>
             </div>
           </div>
         </Card>
