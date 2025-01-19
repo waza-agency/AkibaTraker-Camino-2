@@ -7,16 +7,26 @@ export const configureSecurityHeaders = (req: Request, res: Response, next: Next
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://apis.google.com",
-      "connect-src 'self' https://*.googleapis.com https://apis.google.com https://generativelanguage.googleapis.com ws: wss:",
-      "img-src 'self' data: https: blob:",
-      "style-src 'self' 'unsafe-inline'",
+      // Allow Google APIs scripts and resources
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://apis.google.com https://www.gstatic.com",
+      // Allow connections to Google APIs and WebSocket
+      "connect-src 'self' https://*.googleapis.com https://apis.google.com https://generativelanguage.googleapis.com https://www.googleapis.com wss: ws: http: https:",
+      // Allow images from various sources
+      "img-src 'self' data: https: blob: https://*.googleapis.com",
+      // Allow styles
+      "style-src 'self' 'unsafe-inline' https://www.googleapis.com",
+      // Restrict frame ancestors
       "frame-ancestors 'none'",
-      "font-src 'self' data:",
+      // Allow fonts
+      "font-src 'self' data: https://fonts.gstatic.com",
+      // Form submissions
       "form-action 'self'",
+      // Base URI restriction
       "base-uri 'self'",
+      // Restrict object sources
       "object-src 'none'",
-      "media-src 'self' blob: https://*.googleapis.com"
+      // Allow media
+      "media-src 'self' blob: https://*.googleapis.com https://www.googleapis.com"
     ].join('; ')
   );
 
@@ -35,13 +45,18 @@ export const configureCors = (req: Request, res: Response, next: NextFunction) =
   const allowedOrigins = [
     'https://generativelanguage.googleapis.com',
     'https://apis.google.com',
-    'https://*.googleapis.com'
+    'https://*.googleapis.com',
+    'https://www.googleapis.com'
   ];
 
   const origin = req.headers.origin;
 
-  // Allow requests from the same origin
-  if (!origin || origin === 'null' || origin.startsWith('http://localhost') || origin.startsWith('https://localhost')) {
+  // Allow requests from development environments and same origin
+  if (!origin || 
+      origin === 'null' || 
+      origin.startsWith('http://localhost') || 
+      origin.startsWith('https://localhost') ||
+      origin.includes('.repl.co')) {
     res.setHeader('Access-Control-Allow-Origin', '*');
   } else {
     // Check if the origin matches any allowed pattern
@@ -61,7 +76,7 @@ export const configureCors = (req: Request, res: Response, next: NextFunction) =
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 
-    'X-Requested-With, Content-Type, Authorization, X-Custom-Header, Accept'
+    'X-Requested-With, Content-Type, Authorization, X-Custom-Header, Accept, X-Goog-Api-Key, X-Goog-FieldMask'
   );
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
@@ -83,13 +98,10 @@ export const validateGoogleRequest = (req: Request, res: Response, next: NextFun
     return res.status(500).json({ error: 'API configuration error' });
   }
 
-  // Validate request headers
-  if (!req.headers['content-type']?.includes('application/json')) {
-    return res.status(400).json({ error: 'Invalid content type. Expected application/json' });
-  }
-
   // Add Google API key to request for downstream handlers
-  req.headers['x-goog-api-key'] = apiKey;
+  if (!req.headers.authorization) {
+    req.headers.authorization = `Bearer ${apiKey}`;
+  }
 
   next();
 };

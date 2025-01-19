@@ -22,7 +22,6 @@ export default function ChatInterface() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { setMood } = useMood();
-  const [messageCount, setMessageCount] = useState(0);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -46,18 +45,22 @@ export default function ChatInterface() {
   ]);
 
   const analyzeConversationMood = async (messages: Message[]) => {
-    const lastMessages = messages.slice(-3).map(m => m.content).join("\n");
-    const emotionRes = await fetch('/api/analyze-emotion', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ text: lastMessages }),
-    });
+    try {
+      const lastMessages = messages.slice(-3).map(m => m.content).join("\n");
+      const emotionRes = await fetch('/api/analyze-emotion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: lastMessages }),
+      });
 
-    if (emotionRes.ok) {
-      const emotionData = await emotionRes.json();
-      setMood(emotionData.mood);
+      if (emotionRes.ok) {
+        const emotionData = await emotionRes.json();
+        setMood(emotionData.mood);
+      }
+    } catch (error) {
+      console.error("Error analyzing conversation mood:", error);
     }
   };
 

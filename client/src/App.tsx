@@ -4,13 +4,12 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import { MoodProvider } from "@/hooks/use-mood";
 
 function Router() {
   return (
     <Switch>
-      {/* Add pages below */}
       <Route path="/" component={Home} />
-      {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -19,8 +18,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <MoodProvider>
+        <div className="min-h-screen bg-background text-foreground">
+          <Router />
+          <Toaster />
+        </div>
+      </MoodProvider>
     </QueryClientProvider>
   );
 }
