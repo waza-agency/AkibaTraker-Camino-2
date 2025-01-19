@@ -6,7 +6,8 @@ import {
   configureCors,
   apiErrorHandler 
 } from "./middleware/security";
-import { createServer } from "http";
+import { db } from "@db";
+import { users } from "@db/schema";
 
 const app = express();
 
@@ -49,12 +50,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// API error handling
-app.use("/api", apiErrorHandler);
-
 (async () => {
   try {
+    // Test database connection with a simple query
+    await db.select().from(users).limit(1);
+    log("Database connection successful");
+
     const server = registerRoutes(app);
+
+    // API error handling
+    app.use("/api", apiErrorHandler);
 
     // Global error handler
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -93,36 +98,12 @@ app.use("/api", apiErrorHandler);
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-    // Function to try starting the server on a port
-    const startServer = (port: number) => {
-      return new Promise<number>((resolve, reject) => {
-        server.once('error', (err: any) => {
-          if (err.code === 'EADDRINUSE') {
-            console.log(`Port ${port} is in use, trying next port...`);
-            resolve(port + 1);
-          } else {
-            reject(err);
-          }
-        });
-
-        server.listen(port, "0.0.0.0", () => {
-          console.log(`Server started successfully on port ${port}`);
-          resolve(0); // 0 indicates success
-        });
-      });
-    };
-
-    // Try ports starting from 5000
-    let currentPort = 5000;
-    while (currentPort < 5010) { // Try up to port 5009
-      const result = await startServer(currentPort);
-      if (result === 0) {
-        log(`Server running on port ${currentPort}`);
-        log(`Environment: ${process.env.NODE_ENV}`);
-        break;
-      }
-      currentPort = result;
-    }
+    // Start server on port 5000
+    const PORT = 5000;
+    server.listen(PORT, "0.0.0.0", () => {
+      log(`Server running on port ${PORT}`);
+      log(`Environment: ${process.env.NODE_ENV}`);
+    });
 
   } catch (error) {
     console.error('Failed to start server:', error);
