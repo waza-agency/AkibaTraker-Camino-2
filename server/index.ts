@@ -54,7 +54,6 @@ app.use("/api", apiErrorHandler);
 
 (async () => {
   try {
-    const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
     const server = registerRoutes(app);
 
     // Global error handler
@@ -94,23 +93,36 @@ app.use("/api", apiErrorHandler);
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-    // Add error handler for the server
-    server.on('error', (error: any) => {
-      if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Trying another port...`);
-        server.listen(0); // Let the OS assign a random port
-      } else {
-        console.error('Server error:', error);
-        process.exit(1);
-      }
-    });
+    // Function to try starting the server on a port
+    const startServer = (port: number) => {
+      return new Promise<number>((resolve, reject) => {
+        server.once('error', (err: any) => {
+          if (err.code === 'EADDRINUSE') {
+            console.log(`Port ${port} is in use, trying next port...`);
+            resolve(port + 1);
+          } else {
+            reject(err);
+          }
+        });
 
-    server.listen(PORT, "0.0.0.0", () => {
-      const addr = server.address();
-      const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
-      log(`Server running on port ${actualPort}`);
-      log(`Environment: ${process.env.NODE_ENV}`);
-    });
+        server.listen(port, "0.0.0.0", () => {
+          console.log(`Server started successfully on port ${port}`);
+          resolve(0); // 0 indicates success
+        });
+      });
+    };
+
+    // Try ports starting from 5000
+    let currentPort = 5000;
+    while (currentPort < 5010) { // Try up to port 5009
+      const result = await startServer(currentPort);
+      if (result === 0) {
+        log(`Server running on port ${currentPort}`);
+        log(`Environment: ${process.env.NODE_ENV}`);
+        break;
+      }
+      currentPort = result;
+    }
 
   } catch (error) {
     console.error('Failed to start server:', error);

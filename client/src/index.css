@@ -32,7 +32,20 @@
       rgba(255, 255, 255, 0.05) 50%,
       transparent 100%
     );
+    animation: retro-shine 3s ease-in-out infinite;
     pointer-events: none;
+  }
+
+  @keyframes retro-shine {
+    0% {
+      transform: translateX(-100%) translateY(-100%);
+    }
+    50% {
+      transform: translateX(100%) translateY(100%);
+    }
+    100% {
+      transform: translateX(-100%) translateY(-100%);
+    }
   }
 
   .pixel-borders {
@@ -45,6 +58,20 @@
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
                  0 0 20px rgba(255, 255, 255, 0.3),
                  0 0 30px rgba(255, 255, 255, 0.2);
+    animation: text-glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes text-glow {
+    from {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+                   0 0 20px rgba(255, 255, 255, 0.3),
+                   0 0 30px rgba(255, 255, 255, 0.2);
+    }
+    to {
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.6),
+                   0 0 30px rgba(255, 255, 255, 0.4),
+                   0 0 40px rgba(255, 255, 255, 0.3);
+    }
   }
 
   .retro-btn {
@@ -64,5 +91,17 @@
   .shadow-glow {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
                 0 0 20px rgba(255, 255, 255, 0.1);
+    animation: shadow-pulse 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes shadow-pulse {
+    from {
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
+                  0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    to {
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3),
+                  0 0 30px rgba(255, 255, 255, 0.2);
+    }
   }
 }
