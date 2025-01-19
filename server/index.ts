@@ -1,40 +1,26 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { 
+  configureSecurityHeaders, 
+  configureCors,
+  apiErrorHandler 
+} from "./middleware/security";
+import { createServer } from "http";
+import net from "net";
 
 const app = express();
+
+// Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Security middleware
+app.use(configureSecurityHeaders);
+app.use(configureCors);
+
+// Request logging middleware
 app.use((req, res, next) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*.replit.dev, *.repl.co');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-fal-api-key, x-google-api-key');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
-
-  // Content Security Policy
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self' https: data: *.replit.dev *.repl.co; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://apis.google.com https://*.googleapis.com https://*.google.com https://ai.google.dev https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io https://*.fal.ai *.replit.dev *.repl.co; " +
-    "style-src 'self' 'unsafe-inline' https: *.replit.dev *.repl.co; " +
-    "img-src 'self' data: https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev *.repl.co; " +
-    "connect-src 'self' https: wss: http://0.0.0.0:* ws://0.0.0.0:* https://*.googleapis.com https://generativelanguage.googleapis.com https://ai.google.dev https://ai-api.google.com https://*.fal.ai wss://* https://*.mypinata.cloud https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io *.replit.dev *.repl.co; " +
-    "media-src 'self' https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev *.repl.co; " +
-    "frame-src 'self' https://*.replit.dev https://*.repl.co https://*.elevenlabs.io; " +
-    "font-src 'self' data: https: *.replit.dev *.repl.co; " +
-    "worker-src 'self' blob: https://*.elevenlabs.io; " +
-    "child-src 'self' blob: https://*.elevenlabs.io; " +
-    "worklet-src 'self' blob: https://*.elevenlabs.io"
-  );
-
-  // Basic security headers
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
@@ -64,25 +50,107 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  const server = registerRoutes(app);
+// API error handling
+app.use("/api", apiErrorHandler);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+const checkPort = async (port: number, retries = 3): Promise<number> => {
+  for (let i = 0; i < retries; i++) {
+    const isAvailable = await new Promise<boolean>((resolve) => {
+      const server = net.createServer()
+        .once('error', () => {
+          resolve(false);
+        })
+        .once('listening', () => {
+          server.close();
+          resolve(true);
+        })
+        .listen(port);
+    });
 
-    res.status(status).json({ message });
-    throw err;
-  });
+    if (isAvailable) {
+      return port;
+    }
 
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    log(`Port ${port} is in use, attempt ${i + 1}/${retries}`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  const PORT = 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
+  // If the preferred port is not available after retries, find a random available port
+  return new Promise((resolve) => {
+    const server = net.createServer()
+      .once('listening', () => {
+        const port = (server.address() as net.AddressInfo).port;
+        server.close(() => resolve(port));
+      })
+      .listen(0);
   });
+};
+
+const PREFERRED_PORT = 5000;
+
+(async () => {
+  let server;
+  try {
+    const port = await checkPort(PREFERRED_PORT);
+    if (port !== PREFERRED_PORT) {
+      log(`Using alternative port ${port} as ${PREFERRED_PORT} is not available`);
+    }
+
+    server = registerRoutes(app);
+
+    // Global error handler
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      console.error('Unhandled error:', err);
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      res.status(status).json({ 
+        message,
+        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
+    });
+
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+
+    // Handle server shutdown gracefully
+    const gracefulShutdown = (signal: string) => {
+      console.log(`Received ${signal} signal. Closing server...`);
+
+      // First stop accepting new connections
+      server?.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+
+      // Force close after timeout
+      setTimeout(() => {
+        console.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+    // Add error handler for the server
+    server.on('error', (error: any) => {
+      console.error('Server error:', error);
+      if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${port} is already in use. Exiting...`);
+      }
+      process.exit(1);
+    });
+
+    server.listen(port, "0.0.0.0", () => {
+      log(`Server running on port ${port}`);
+      log(`Environment: ${process.env.NODE_ENV}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 })();

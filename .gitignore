@@ -1,49 +1,6 @@
-# Dependencies
 node_modules
-.pnp
-.pnp.js
-
-# Build outputs
 dist
-build
-server/public
-
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# System files
 .DS_Store
-Thumbs.db
-
-# IDE/Editor files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Replit specific
-.replit
-.config/
-.npm/
-.cache/
-.upm/
-.breakpoints
-replit.nix
-*.nix
-
-# TypeScript
-*.tsbuildinfo
+server/public
 vite.config.ts.*
-
-# Project specific
 *.tar.gz
-.vercel
