@@ -79,6 +79,25 @@ export default function Home() {
     });
   };
 
+  const VoiceWaveAnimation = () => (
+    <div className="flex gap-3 mt-4">
+      {[1, 2, 3].map((i) => (
+        <motion.div
+          key={i}
+          className="w-3 bg-primary/60 rounded-full"
+          animate={{
+            height: ["20px", "40px", "20px"],
+          }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            delay: i * 0.2,
+          }}
+        />
+      ))}
+    </div>
+  );
+
   return (
     <div
       className="min-h-screen relative"
@@ -121,6 +140,28 @@ export default function Home() {
                 Habla con Akiba (Voz)
               </h2>
               <Card className="flex-1 min-h-[500px] max-h-[500px] bg-card/50 backdrop-blur-sm relative overflow-hidden">
+                {/* Neon Marquee */}
+                <div className="absolute top-0 left-0 right-0 bg-black/30 backdrop-blur-sm">
+                  <motion.div
+                    className="text-center py-2 text-sm font-medium tracking-wider"
+                    animate={{
+                      opacity: [1, 0.5, 1],
+                      textShadow: [
+                        "0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #0fa, 0 0 82px #0fa, 0 0 92px #0fa",
+                        "0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #0fa",
+                        "0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #0fa, 0 0 82px #0fa, 0 0 92px #0fa",
+                      ]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    ¿Quieres Conversar con Akiba?
+                  </motion.div>
+                </div>
+
                 {/* ElevenLabs Widget Container */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-full max-w-2xl px-4 pt-20 flex flex-col items-center justify-center">
@@ -134,15 +175,22 @@ export default function Home() {
                           alignItems: "center",
                           justifyContent: "center",
                           margin: "0 auto",
-                          background: "transparent",
-                          color: "white",
-                          border: "2px solid white",
-                          position: "relative",
-                          transform: "none"
-                        }}
+                          "--elevenlabs-button-background": "transparent",
+                          "--elevenlabs-button-color": "white",
+                          "--elevenlabs-button-border": "2px solid white",
+                          "--elevenlabs-button-hover-background": "rgba(255, 255, 255, 0.1)",
+                          "--elevenlabs-call-button-position": "relative",
+                          "--elevenlabs-call-button-transform": "none",
+                          "--elevenlabs-call-button-margin": "0 auto",
+                        } as React.CSSProperties}
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Voice Wave Animation */}
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                  <VoiceWaveAnimation />
                 </div>
               </Card>
             </div>

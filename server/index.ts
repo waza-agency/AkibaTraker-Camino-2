@@ -7,7 +7,6 @@ import {
   apiErrorHandler 
 } from "./middleware/security";
 import { createServer } from "http";
-import net from "net";
 
 const app = express();
 
@@ -53,50 +52,10 @@ app.use((req, res, next) => {
 // API error handling
 app.use("/api", apiErrorHandler);
 
-const checkPort = async (port: number, retries = 3): Promise<number> => {
-  for (let i = 0; i < retries; i++) {
-    const isAvailable = await new Promise<boolean>((resolve) => {
-      const server = net.createServer()
-        .once('error', () => {
-          resolve(false);
-        })
-        .once('listening', () => {
-          server.close();
-          resolve(true);
-        })
-        .listen(port);
-    });
-
-    if (isAvailable) {
-      return port;
-    }
-
-    log(`Port ${port} is in use, attempt ${i + 1}/${retries}`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-
-  // If the preferred port is not available after retries, find a random available port
-  return new Promise((resolve) => {
-    const server = net.createServer()
-      .once('listening', () => {
-        const port = (server.address() as net.AddressInfo).port;
-        server.close(() => resolve(port));
-      })
-      .listen(0);
-  });
-};
-
-const PREFERRED_PORT = 5000;
-
 (async () => {
-  let server;
   try {
-    const port = await checkPort(PREFERRED_PORT);
-    if (port !== PREFERRED_PORT) {
-      log(`Using alternative port ${port} as ${PREFERRED_PORT} is not available`);
-    }
-
-    server = registerRoutes(app);
+    const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+    const server = registerRoutes(app);
 
     // Global error handler
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -110,6 +69,7 @@ const PREFERRED_PORT = 5000;
       });
     });
 
+    // Setup Vite in development mode
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
@@ -119,9 +79,7 @@ const PREFERRED_PORT = 5000;
     // Handle server shutdown gracefully
     const gracefulShutdown = (signal: string) => {
       console.log(`Received ${signal} signal. Closing server...`);
-
-      // First stop accepting new connections
-      server?.close(() => {
+      server.close(() => {
         console.log('Server closed');
         process.exit(0);
       });
@@ -138,17 +96,22 @@ const PREFERRED_PORT = 5000;
 
     // Add error handler for the server
     server.on('error', (error: any) => {
-      console.error('Server error:', error);
       if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${port} is already in use. Exiting...`);
+        console.error(`Port ${PORT} is already in use. Trying another port...`);
+        server.listen(0); // Let the OS assign a random port
+      } else {
+        console.error('Server error:', error);
+        process.exit(1);
       }
-      process.exit(1);
     });
 
-    server.listen(port, "0.0.0.0", () => {
-      log(`Server running on port ${port}`);
+    server.listen(PORT, "0.0.0.0", () => {
+      const addr = server.address();
+      const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
+      log(`Server running on port ${actualPort}`);
       log(`Environment: ${process.env.NODE_ENV}`);
     });
+
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
