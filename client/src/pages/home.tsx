@@ -35,6 +35,7 @@ interface GenerateVideoParams {
 export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [googleApiKey, setGoogleApiKey] = useState<string | null>(null);
   const [falApiKey, setFalApiKey] = useState<string | null>(null);
   const { currentMood } = useMood();
 
@@ -69,6 +70,14 @@ export default function Home() {
 
   const handleSubmit = async (data: GenerateVideoParams) => {
     await createVideo.mutate(data);
+  };
+
+  const handleGoogleApiKeySubmit = (apiKey: string) => {
+    setGoogleApiKey(apiKey);
+    toast({
+      title: "Success",
+      description: "Google API key saved",
+    });
   };
 
   const handleFalApiKeySubmit = (apiKey: string) => {
@@ -158,7 +167,7 @@ export default function Home() {
                       ease: "easeInOut"
                     }}
                   >
-                    ¿Quieres Conversar con Akiba?
+                    ¿Quieres Conversar con Akiba??
                   </motion.div>
                 </div>
 
@@ -182,7 +191,7 @@ export default function Home() {
                           "--elevenlabs-call-button-position": "relative",
                           "--elevenlabs-call-button-transform": "none",
                           "--elevenlabs-call-button-margin": "0 auto",
-                        } as React.CSSProperties}
+                        }}
                       />
                     </div>
                   </div>
@@ -190,7 +199,22 @@ export default function Home() {
 
                 {/* Voice Wave Animation */}
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                  <VoiceWaveAnimation />
+                  <div className="flex gap-3">
+                    {[1, 2, 3].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-3 bg-primary/60 rounded-full"
+                        animate={{
+                          height: ["20px", "40px", "20px"],
+                        }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          delay: i * 0.2,
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </Card>
             </div>

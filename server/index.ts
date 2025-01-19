@@ -1,26 +1,40 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { 
-  configureSecurityHeaders, 
-  configureCors,
-  apiErrorHandler 
-} from "./middleware/security";
-import { db } from "@db";
-import { users } from "@db/schema";
 
 const app = express();
-
-// Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Security middleware
-app.use(configureSecurityHeaders);
-app.use(configureCors);
-
-// Request logging middleware
 app.use((req, res, next) => {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*.replit.dev, *.repl.co');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-fal-api-key, x-google-api-key');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  // Content Security Policy
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self' https: data: *.replit.dev *.repl.co; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://apis.google.com https://*.googleapis.com https://*.google.com https://ai.google.dev https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io https://*.fal.ai *.replit.dev *.repl.co; " +
+    "style-src 'self' 'unsafe-inline' https: *.replit.dev *.repl.co; " +
+    "img-src 'self' data: https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev *.repl.co; " +
+    "connect-src 'self' https: wss: http://0.0.0.0:* ws://0.0.0.0:* https://*.googleapis.com https://generativelanguage.googleapis.com https://ai.google.dev https://ai-api.google.com https://*.fal.ai wss://* https://*.mypinata.cloud https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io *.replit.dev *.repl.co; " +
+    "media-src 'self' https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev *.repl.co; " +
+    "frame-src 'self' https://*.replit.dev https://*.repl.co https://*.elevenlabs.io; " +
+    "font-src 'self' data: https: *.replit.dev *.repl.co; " +
+    "worker-src 'self' blob: https://*.elevenlabs.io; " +
+    "child-src 'self' blob: https://*.elevenlabs.io; " +
+    "worklet-src 'self' blob: https://*.elevenlabs.io"
+  );
+
+  // Basic security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
@@ -51,62 +65,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  try {
-    // Test database connection with a simple query
-    await db.select().from(users).limit(1);
-    log("Database connection successful");
+  const server = registerRoutes(app);
 
-    const server = registerRoutes(app);
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
 
-    // API error handling
-    app.use("/api", apiErrorHandler);
+    res.status(status).json({ message });
+    throw err;
+  });
 
-    // Global error handler
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      console.error('Unhandled error:', err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-
-      res.status(status).json({ 
-        message,
-        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
-      });
-    });
-
-    // Setup Vite in development mode
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
-
-    // Handle server shutdown gracefully
-    const gracefulShutdown = (signal: string) => {
-      console.log(`Received ${signal} signal. Closing server...`);
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
-
-      // Force close after timeout
-      setTimeout(() => {
-        console.error('Could not close connections in time, forcefully shutting down');
-        process.exit(1);
-      }, 10000);
-    };
-
-    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-    // Start server on port 5000
-    const PORT = 5000;
-    server.listen(PORT, "0.0.0.0", () => {
-      log(`Server running on port ${PORT}`);
-      log(`Environment: ${process.env.NODE_ENV}`);
-    });
-
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
   }
+
+  const PORT = 5000;
+  server.listen(PORT, "0.0.0.0", () => {
+    log(`serving on port ${PORT}`);
+  });
 })();

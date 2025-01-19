@@ -11,19 +11,14 @@ const MoodContext = createContext<MoodContextType | undefined>(undefined);
 export function MoodProvider({ children }: { children: ReactNode }) {
   const [currentMood, setCurrentMood] = useState<Mood>("energetic");
 
-  const value = {
-    currentMood,
-    setMood: setCurrentMood
-  };
-
   return (
-    <MoodContext.Provider value={value}>
+    <MoodContext.Provider value={{ currentMood, setMood: setCurrentMood }}>
       {children}
     </MoodContext.Provider>
   );
 }
 
-export function useMood(): MoodContextType {
+export function useMood() {
   const context = useContext(MoodContext);
   if (context === undefined) {
     throw new Error("useMood must be used within a MoodProvider");
