@@ -12,10 +12,10 @@ export async function analyzeEmotion(text: string, apiKey: string): Promise<Emot
     const response = await fetch('/api/analyze-emotion', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ text }),
+      credentials: 'include'
     });
 
     if (!response.ok) {

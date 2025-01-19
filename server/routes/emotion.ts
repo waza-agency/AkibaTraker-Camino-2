@@ -11,25 +11,13 @@ interface EmotionAnalysisResponse {
 router.post("/analyze-emotion", async (req, res) => {
   try {
     const { text } = req.body;
-    const apiKey = process.env.GOOGLE_API_KEY || "";
-    const authHeader = req.headers.authorization;
-    const clientApiKey = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : '';
-
-    // Validate server API key
-    if (!apiKey || apiKey.trim() === "") {
+    const apiKey = process.env.GOOGLE_API_KEY;
+    
+    if (!apiKey) {
       console.error("Missing Google API key in environment");
       return res.status(401).json({ 
         error: "Authentication failed", 
-        details: "Google API key not configured. Please add GOOGLE_API_KEY in Replit Secrets."
-      });
-    }
-
-    // Validate client API key matches
-    if (!clientApiKey || clientApiKey !== apiKey) {
-      console.error("Invalid or mismatched API key from client");
-      return res.status(401).json({
-        error: "Authentication failed",
-        details: "Invalid API key provided"
+        details: "Google API key not configured"
       });
     }
 
