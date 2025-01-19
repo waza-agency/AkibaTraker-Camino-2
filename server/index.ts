@@ -8,24 +8,36 @@ app.use(express.urlencoded({ extended: false }));
 
 // Security middleware
 app.use((req, res, next) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*.replit.dev, *.repl.co');
+  // CORS headers - Only allow specific Replit domains
+  const allowedOrigins = ['*.replit.dev', '*.repl.co'];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.some(allowed => origin.match(new RegExp(allowed.replace('*', '.*'))))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Fal-Api-Key');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
 
   // Content Security Policy
   res.setHeader(
     'Content-Security-Policy-Report-Only',
-    "default-src 'self' *.replit.dev *.repl.co; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.replit.dev *.repl.co; " +
-    "style-src 'self' 'unsafe-inline' *.replit.dev *.repl.co; " +
-    "img-src 'self' data: *.replit.dev *.repl.co; " +
-    "connect-src 'self' *.replit.dev *.repl.co; " +
-    "font-src 'self' data: *.replit.dev *.repl.co; " +
-    "frame-src 'self' *.replit.dev *.repl.co; " +
-    "report-uri /api/csp/report"
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.replit.dev *.repl.co",
+      "style-src 'self' 'unsafe-inline' *.replit.dev *.repl.co",
+      "img-src 'self' data: blob: *.replit.dev *.repl.co *.fal.ai",
+      "media-src 'self' data: blob: *.replit.dev *.repl.co",
+      "connect-src 'self' *.replit.dev *.repl.co *.fal.ai api.openai.com api.anthropic.com",
+      "font-src 'self' data: *.replit.dev *.repl.co",
+      "frame-src 'self' *.replit.dev *.repl.co",
+      "worker-src 'self' blob:",
+      "manifest-src 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "report-uri /api/csp/report"
+    ].join('; ')
   );
 
   // Basic security headers
@@ -33,6 +45,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()');
 
   const start = Date.now();
   const path = req.path;
@@ -68,6 +81,7 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     res.status(status).json({ message });
+    throw err;
   });
 
   if (app.get("env") === "development") {
