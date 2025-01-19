@@ -12,10 +12,10 @@ export async function analyzeEmotion(text: string, apiKey: string): Promise<Emot
     const response = await fetch('/api/analyze-emotion', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-google-api-key': apiKey
       },
       body: JSON.stringify({ text }),
-      credentials: 'include'
     });
 
     if (!response.ok) {

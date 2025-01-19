@@ -51,14 +51,11 @@ export function registerRoutes(app: Express): Server {
   // Chat endpoint
   app.post("/api/chat", async (req, res) => {
     const { message } = req.body;
-    const apiKey = process.env.GOOGLE_API_KEY;
+    const apiKey = process.env.GOOGLE_API_KEY || "";
 
-    if (!apiKey) {
+    if (!apiKey || apiKey.trim() === "") {
       console.error("Missing Google API key in environment");
-      return res.status(401).json({ 
-        error: "Authentication failed",
-        details: "Google API key not configured"
-      });
+      return res.status(500).json({ error: "Google API key not configured in secrets" });
     }
 
     try {
@@ -315,14 +312,11 @@ export function registerRoutes(app: Express): Server {
   // Generate video captions
   app.post("/api/videos/:id/caption", async (req, res) => {
     const { id } = req.params;
-    const apiKey = process.env.GOOGLE_API_KEY;
+    const apiKey = process.env.GOOGLE_API_KEY || "";
 
-    if (!apiKey) {
+    if (!apiKey || apiKey.trim() === "") {
       console.error("Missing Google API key in environment");
-      return res.status(401).json({ 
-        error: "Authentication failed",
-        details: "Google API key not configured"
-      });
+      return res.status(500).json({ error: "Google API key not configured in secrets" });
     }
 
     try {

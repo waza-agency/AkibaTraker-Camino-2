@@ -7,27 +7,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*.replit.dev, *.repl.co');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-fal-api-key, x-google-api-key');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
-
   // Content Security Policy
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self' https: data: *.replit.dev *.repl.co; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://apis.google.com https://*.googleapis.com https://*.google.com https://ai.google.dev https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io https://*.fal.ai *.replit.dev *.repl.co; " +
-    "style-src 'self' 'unsafe-inline' https: *.replit.dev *.repl.co; " +
-    "img-src 'self' data: https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev *.repl.co; " +
-    "connect-src 'self' https: wss: http://0.0.0.0:* ws://0.0.0.0:* https://*.googleapis.com https://generativelanguage.googleapis.com https://ai.google.dev https://ai-api.google.com https://*.fal.ai wss://* https://*.mypinata.cloud https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io *.replit.dev *.repl.co; " +
-    "media-src 'self' https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev *.repl.co; " +
+    "default-src 'self' https: data: *.replit.dev; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://apis.google.com https://*.googleapis.com https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io *.replit.dev; " +
+    "style-src 'self' 'unsafe-inline' https: *.replit.dev; " +
+    "img-src 'self' data: https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev; " +
+    "connect-src 'self' http://localhost:* ws://localhost:* https://*.googleapis.com https://generativelanguage.googleapis.com https://ai-api.google.com https://*.fal.ai wss://* https://*.mypinata.cloud https://evmos-evm.publicnode.com https://*.stripe.com https://elevenlabs.io https://*.elevenlabs.io wss://*.elevenlabs.io *.replit.dev; " +
+    "media-src 'self' https: blob: https://*.mypinata.cloud https://*.fal.ai https://*.elevenlabs.io *.replit.dev; " +
     "frame-src 'self' https://*.replit.dev https://*.repl.co https://*.elevenlabs.io; " +
-    "font-src 'self' data: https: *.replit.dev *.repl.co; " +
+    "font-src 'self' data: https: *.replit.dev; " +
     "worker-src 'self' blob: https://*.elevenlabs.io; " +
     "child-src 'self' blob: https://*.elevenlabs.io; " +
-    "worklet-src 'self' blob: https://*.elevenlabs.io"
+    "worklet-src 'self' blob: https://*.elevenlabs.io;"
   );
 
   // Basic security headers
@@ -81,8 +74,8 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = 5000;
   server.listen(PORT, "0.0.0.0", () => {
-    log(`Server running on http://0.0.0.0:${PORT}`);
+    log(`serving on port ${PORT}`);
   });
 })();
