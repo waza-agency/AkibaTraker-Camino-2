@@ -1,6 +1,9 @@
 import express from "express";
 import { json, urlencoded } from "express";
-import { log } from "./vite"; // Retaining the original logging function
+import { log } from "./vite";
+import { setupSecurityHeaders } from "./middleware/security";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic } from "./vite";
 
 const app = express();
 
@@ -8,21 +11,30 @@ const app = express();
 app.use(json());
 app.use(urlencoded({ extended: false }));
 
-// Basic health check route
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' });
-  log("GET /api/health 200 in 0ms"); // Added logging for the health check route
-});
+// Apply security headers middleware
+app.use(setupSecurityHeaders());
 
-// Error handling (modified to use original log function)
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
-  const status = err.status || 500;
-  res.status(status).json({ error: 'Internal Server Error' });
-  log(`Error: ${err.message} - Status ${status}`); // Log the error
-});
+// Register all routes
+(async () => {
+  const server = registerRoutes(app);
 
-const PORT = 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  log(`Server running on port ${PORT}`);
-});
+  // Error handling middleware
+  app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error(err);
+    const status = err.status || 500;
+    res.status(status).json({ error: 'Internal Server Error' });
+    log(`Error: ${err.message} - Status ${status}`);
+  });
+
+  // Setup Vite in development or serve static files in production
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  const PORT = 5000;
+  server.listen(PORT, '0.0.0.0', () => {
+    log(`Server running on port ${PORT}`);
+  });
+})();
