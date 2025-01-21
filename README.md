@@ -11,9 +11,6 @@ An advanced AI-powered multimedia platform for generating personalized Anime Mus
 - 🎼 Multiple music style selections
 - 🖼️ Retro Japanese video game aesthetics
 - 🌐 Real-time video processing
-- 🎮 Retro Japanese video game animations and effects (from original)
-- 🖼️ Pixel art design system (from original)
-
 
 ## 🛠️ Tech Stack
 
@@ -26,42 +23,72 @@ An advanced AI-powered multimedia platform for generating personalized Anime Mus
   - Custom Flux LoRA model
   - Emotion analysis system
 
-## 🚀 Getting Started
+## 🚀 Local Development Setup
 
-1. Clone the repository
-2. Install dependencies:
+1. Prerequisites:
+   - Node.js (v20 or later)
+   - PostgreSQL (v15 or later)
+   - npm or yarn
+
+2. Clone the repository:
+```bash
+git clone <your-repository-url>
+cd akiba-amv-generator
+```
+
+3. Install dependencies:
 ```bash
 npm install
 ```
-3. Set up environment variables:  Create a `.env` file (as described below)
+
+4. Set up environment variables:
+Create a `.env` file in the root directory with the following variables:
 ```env
-DATABASE_URL=your_postgresql_url
-FAL_KEY=your_fal_ai_key
+DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
 GOOGLE_API_KEY=your_google_api_key
+FAL_KEY=your_fal_ai_key
 ```
-4. Set up the database:
+
+5. Set up the database:
 ```bash
 npm run db:push
 ```
-5. Start the development server:
+
+6. Start the development server:
 ```bash
+# Start both frontend and backend
 npm run dev
 ```
+
+The application will be available at `http://localhost:5000`
 
 ## 📁 Project Structure
 
 ```
 ├── client/           # React frontend
+│   ├── src/
+│   │   ├── components/   # React components
+│   │   ├── lib/         # Utility functions and API clients
+│   │   ├── pages/       # Page components
+│   │   └── styles/      # CSS and styling
 ├── server/           # Express backend
-├── db/               # Database schemas
-└── public/           # Static assets
+│   ├── routes/      # API routes
+│   └── index.ts     # Server entry point
+├── db/              # Database schemas and migrations
+└── public/          # Static assets
 ```
 
-## 🔑 Environment Variables
+## 🔨 Build for Production
 
-- `DATABASE_URL`: PostgreSQL connection string
-- `FAL_KEY`: FAL.ai API key
-- `GOOGLE_API_KEY`: Google Gemini AI API key
+1. Build the frontend:
+```bash
+npm run build
+```
+
+2. Start the production server:
+```bash
+npm start
+```
 
 ## 🤝 Contributing
 
@@ -74,30 +101,3 @@ npm run dev
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-## Project Structure (More Details - from original)
-
-```
-├── client/           # Frontend React application
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── lib/         # Utility functions and API clients
-│   │   ├── pages/       # Page components
-│   │   └── styles/      # CSS and styling
-├── server/           # Backend Express application
-│   ├── routes.ts    # API routes
-│   └── index.ts     # Server entry point
-├── db/              # Database schemas and migrations
-└── public/          # Static assets
-```
-
-## Features in Detail (from original, selectively included)
-
-### AMV Generation
-Upload or provide descriptions to generate custom anime music videos with various style presets.
-
-### Image Generation
-Create custom Akiba-style images using our fine-tuned LoRA model.
-
-### Chat Interface
-Interact with Akiba, our AI DJ character powered by Google's Gemini AI.
