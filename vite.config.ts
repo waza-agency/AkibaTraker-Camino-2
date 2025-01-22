@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
@@ -13,6 +14,9 @@ export default defineConfig({
     host: '0.0.0.0',
     hmr: { host: '0.0.0.0' },
     watch: { usePolling: true },
+    allowedHosts: [
+      '6e89015e-80d3-493d-9637-534d612a9631-00-1qgovcyd0rqqg.worf.replit.dev'
+    ]
   },
   resolve: {
     alias: {
