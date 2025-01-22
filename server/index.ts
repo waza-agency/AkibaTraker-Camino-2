@@ -14,6 +14,16 @@ app.use(urlencoded({ extended: false }));
 // Apply security headers middleware before routes
 app.use(setupSecurityHeaders());
 
+// Development proxy middleware to handle host blocking
+app.use((req, res, next) => {
+  const host = req.get('host') || '';
+  // Add the host to allowed origins for development
+  if (host.includes('.replit.dev') || host.includes('.worf.replit.dev')) {
+    res.setHeader('Access-Control-Allow-Origin', `https://${host}`);
+  }
+  next();
+});
+
 // Register all routes and set up error handling
 (async () => {
   try {
