@@ -5,7 +5,7 @@ import { cspViolations } from "@db/schema";
 
 const router = Router();
 
-// Endpoint para registrar violaciones de CSP
+// Endpoint to log CSP violations
 router.post("/report", async (req, res) => {
   try {
     const violation = req.body;
@@ -24,11 +24,11 @@ router.post("/report", async (req, res) => {
     res.status(201).json(savedViolation);
   } catch (error) {
     console.error("Error saving CSP violation:", error);
-    res.status(500).json({ error: "Error al guardar la violación de CSP" });
+    res.status(500).json({ error: "Error saving CSP violation" });
   }
 });
 
-// Endpoint para obtener las violaciones de CSP
+// Endpoint to get CSP violations for monitoring
 router.get("/violations", async (_req, res) => {
   try {
     const violations = await db.query.cspViolations.findMany({
@@ -39,7 +39,7 @@ router.get("/violations", async (_req, res) => {
     res.json(violations);
   } catch (error) {
     console.error("Error fetching CSP violations:", error);
-    res.status(500).json({ error: "Error al obtener las violaciones de CSP" });
+    res.status(500).json({ error: "Error fetching CSP violations" });
   }
 });
 

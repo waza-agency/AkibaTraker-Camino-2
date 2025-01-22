@@ -21,8 +21,9 @@ app.use(setupSecurityHeaders());
   // Error handling middleware
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
-    const status = err.status || 500;
-    res.status(status).json({ error: 'Internal Server Error' });
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ error: message });
     log(`Error: ${err.message} - Status ${status}`);
   });
 
@@ -33,6 +34,7 @@ app.use(setupSecurityHeaders());
     serveStatic(app);
   }
 
+  // ALWAYS serve the app on port 5000
   const PORT = 5000;
   server.listen(PORT, '0.0.0.0', () => {
     log(`Server running on port ${PORT}`);
