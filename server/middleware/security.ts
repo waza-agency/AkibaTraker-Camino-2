@@ -8,7 +8,7 @@ export function setupSecurityHeaders() {
 
     // Development CORS headers
     if (isDev) {
-      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Origin', `https://${host}`);
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Fal-Api-Key');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
