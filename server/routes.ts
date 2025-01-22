@@ -297,10 +297,10 @@ export function registerRoutes(app: Express): Server {
   // Generate Akiba image
   app.post("/api/generate-image", async (req, res) => {
     const { prompt } = req.body;
-    const falApiKey = req.headers['x-fal-api-key'] as string;
+    const falApiKey = process.env.FAL_API_KEY;
 
     if (!falApiKey) {
-      return res.status(401).json({ error: "FAL.ai API key is required" });
+      return res.status(500).json({ error: "FAL.ai API key not configured" });
     }
 
     try {

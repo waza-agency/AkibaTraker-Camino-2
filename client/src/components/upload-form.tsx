@@ -42,25 +42,11 @@ export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApi
 
   if (!isAuthenticated) {
     return (
-      <div className="space-y-4">
-        <div className="text-center">
-          <h3 className="text-lg font-bold glow-text">FAL.ai API Key Required</h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            To generate AMVs, you'll need a FAL.ai API key.
-          </p>
-        </div>
-        <form onSubmit={handleApiKeySubmit} className="space-y-4">
-          <Input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your FAL.ai API key"
-            className="pixel-borders"
-          />
-          <Button type="submit" className="w-full retro-btn">
-            Start Creating
-          </Button>
-        </form>
+      <div className="space-y-4 text-center">
+        <h3 className="text-lg font-bold glow-text">Authentication Required</h3>
+        <p className="text-sm text-muted-foreground mt-2">
+          Please log in to start creating AMVs.
+        </p>
       </div>
     );
   }
