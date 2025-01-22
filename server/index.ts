@@ -17,10 +17,9 @@ app.use(setupSecurityHeaders());
 // Development proxy middleware to handle host blocking
 app.use((req, res, next) => {
   const host = req.get('host') || '';
-  // Add the host to allowed origins for development
-  if (host.includes('.replit.dev') || host.includes('.worf.replit.dev')) {
-    res.setHeader('Access-Control-Allow-Origin', `https://${host}`);
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   next();
 });
 
