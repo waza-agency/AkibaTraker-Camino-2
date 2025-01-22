@@ -2,35 +2,52 @@ import { type Request, type Response, type NextFunction } from "express";
 
 export function setupSecurityHeaders() {
   return (req: Request, res: Response, next: NextFunction) => {
-    // Set CSP headers with more permissive settings for Google APIs
+    // Get the host from the request
+    const host = req.get('host') || '';
+    const isDev = host.includes('.replit.dev');
+
+    // Set CSP headers with development-friendly settings
     res.setHeader(
       'Content-Security-Policy',
       [
-        // Default restrictive policy
-        "default-src 'self'",
-        // Allow Google APIs and inline scripts needed for Google integration
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://apis.google.com",
-        // Allow connections to Google APIs
-        "connect-src 'self' https://*.googleapis.com https://generativelanguage.googleapis.com",
-        // Allow styles from our domain and inline styles
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        // Allow images from our domain and Google domains
-        "img-src 'self' data: blob: https: https://*.googleapis.com",
-        // Allow fonts from Google
-        "font-src 'self' https://fonts.gstatic.com",
-        // Frame ancestors restriction
-        "frame-ancestors 'none'",
-        // Report violations to our endpoint
+        // Allow everything from same origin and Replit domains
+        "default-src 'self' https://*.replit.dev",
+        // Allow necessary scripts with eval for development
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://apis.google.com https://*.replit.dev",
+        // Allow connections to all necessary APIs and WebSocket
+        `connect-src 'self' wss://${host} ws://${host} https://*.googleapis.com https://generativelanguage.googleapis.com https://*.replit.dev`,
+        // Allow styles needed for development
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.replit.dev",
+        // Allow images from trusted sources
+        "img-src 'self' data: blob: https: https://*.googleapis.com https://*.replit.dev",
+        // Allow fonts
+        "font-src 'self' https://fonts.gstatic.com https://*.replit.dev",
+        // Frame ancestors for Replit development
+        isDev ? "frame-ancestors *" : "frame-ancestors 'self' https://*.replit.com",
+        // Report violations
         "report-uri /api/csp/report"
       ].join('; ')
     );
 
-    // Additional security headers
+    // Development-friendly security headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
+    // More permissive X-Frame-Options in development
+    res.setHeader('X-Frame-Options', isDev ? 'ALLOWALL' : 'SAMEORIGIN');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+
+    // Only set HSTS in production
+    if (!isDev) {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+
+    // Development CORS headers
+    if (isDev) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
 
     next();
   };
