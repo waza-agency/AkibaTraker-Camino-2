@@ -83,22 +83,10 @@ export default function ImageGenerator() {
       <Card className="w-full retro-container p-6">
         <h2 className="text-lg font-semibold mb-4">Crea Tu Imagen Akiba</h2>
         <div className="text-center space-y-4">
-          <h3 className="text-lg font-bold glow-text">Se Requiere Clave API de FAL.ai</h3>
+          <h3 className="text-lg font-bold glow-text">Autenticación Requerida</h3>
           <p className="text-sm text-muted-foreground mt-2">
-            Para generar imágenes personalizadas de Akiba, necesitarás una clave API de FAL.ai.
+            Por favor inicia sesión para crear imágenes personalizadas de Akiba.
           </p>
-          <form onSubmit={handleApiKeySubmit} className="space-y-4">
-            <Input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Ingresa tu clave API de FAL.ai"
-              className="pixel-borders"
-            />
-            <Button type="submit" className="w-full retro-btn">
-              Comenzar a Crear
-            </Button>
-          </form>
         </div>
       </Card>
     );
