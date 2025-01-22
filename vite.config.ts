@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [react(), runtimeErrorOverlay(), themePlugin()],
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['*.replit.dev', '*.worf.replit.dev'],
+    allowedHosts: ['*.replit.dev', '*.worf.replit.dev','6e89015e-80d3-493d-9637-534d612a9631-00-1qgovcyd0rqqg.worf.replit.dev'],
   },
   resolve: {
     alias: {
