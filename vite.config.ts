@@ -16,7 +16,8 @@ export default defineConfig({
     watch: { usePolling: true },
     allowedHosts: [
       '*.worf.replit.dev',
-      '6e89015e-80d3-493d-9637-534d612a9631-00-1qgovcyd0rqqg.worf.replit.dev'
+      '6e89015e-80d3-493d-9637-534d612a9631-00-1qgovcyd0rqqg.worf.replit.dev',
+      'akiba-test-b-drunkenberger.replit.app'
     ]
   },
   resolve: {
