@@ -10,8 +10,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ImageGenerator() {
   const [prompt, setPrompt] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -20,8 +18,7 @@ export default function ImageGenerator() {
       const res = await fetch("/api/generate-image", {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json",
-          "x-fal-api-key": apiKey
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ prompt: userPrompt }),
       });
@@ -49,17 +46,6 @@ export default function ImageGenerator() {
     },
   });
 
-  const handleApiKeySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!apiKey.trim()) return;
-
-    setIsAuthenticated(true);
-    toast({
-      title: "¡Éxito!",
-      description: "¡Clave API guardada! Ahora puedes generar imágenes",
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
@@ -77,20 +63,6 @@ export default function ImageGenerator() {
       document.body.removeChild(link);
     }
   };
-
-  if (!isAuthenticated) {
-    return (
-      <Card className="w-full retro-container p-6">
-        <h2 className="text-lg font-semibold mb-4">Crea Tu Imagen Akiba</h2>
-        <div className="text-center space-y-4">
-          <h3 className="text-lg font-bold glow-text">Autenticación Requerida</h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            Por favor inicia sesión para crear imágenes personalizadas de Akiba.
-          </p>
-        </div>
-      </Card>
-    );
-  }
 
   return (
     <Card className="p-6 retro-container">

@@ -11,14 +11,11 @@ import { useState } from "react";
 interface UploadFormProps {
   onSubmit: (data: { prompt: string; style: string; music: string }) => void;
   isLoading: boolean;
-  isAuthenticated: boolean;
-  onApiKeySubmit: (apiKey: string) => void;
 }
 
-export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApiKeySubmit }: UploadFormProps) {
+export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
   const [selectedStyle, setSelectedStyle] = useState("dramatic");
   const [selectedMusic, setSelectedMusic] = useState("epic.mp3");
-  const [apiKey, setApiKey] = useState("");
 
   const form = useForm({
     defaultValues: {
@@ -33,23 +30,6 @@ export default function UploadForm({ onSubmit, isLoading, isAuthenticated, onApi
       music: selectedMusic
     });
   };
-
-  const handleApiKeySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!apiKey.trim()) return;
-    onApiKeySubmit(apiKey);
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="space-y-4 text-center">
-        <h3 className="text-lg font-bold glow-text">Authentication Required</h3>
-        <p className="text-sm text-muted-foreground mt-2">
-          Please log in to start creating AMVs.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <Form {...form}>

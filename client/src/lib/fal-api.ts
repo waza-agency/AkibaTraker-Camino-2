@@ -12,7 +12,7 @@ export async function generateVideo(prompt: string, apiKey: string): Promise<str
       "fal-ai/kling-video/v1.6/standard/text-to-video",
       {
         input: {
-          prompt,
+          prompt: `high quality, masterpiece, best quality, ${prompt}`,
           duration: "5",
           aspect_ratio: "16:9"
         },

@@ -8,6 +8,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setupAuth } from "./auth";
 import emotionRouter from "./routes/emotion";
 import cspRouter from "./routes/csp";
+import chatRouter from "./routes/chat";
 
 const MAX_GENERATION_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
@@ -49,51 +50,210 @@ export function registerRoutes(app: Express): Server {
   // Register emotion analysis routes under /api prefix
   app.use("/api", emotionRouter);
 
+  // Register chat routes
+  app.use("/api", chatRouter);
+
   // Register CSP routes
   app.use("/api/csp", cspRouter);
 
-  // Chat endpoint
-  app.post("/api/chat", async (req, res) => {
-    const { message } = req.body;
-    const apiKey = process.env.GOOGLE_API_KEY;
-
-    if (!apiKey) {
-      console.error("Missing Google API key in environment");
-      return res.status(401).json({
-        error: "Authentication failed",
-        details: "Google API key not configured"
-      });
-    }
+  // Public routes (no authentication required)
+  app.post("/api/videos", async (req, res) => {
+    const { prompt, style } = req.body;
+    const musicFile = getRandomMusic();
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 2000; // 2 seconds
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: "gemini-pro",
-        generationConfig: {
-          temperature: 0.9,
-          maxOutputTokens: 500,
-          topK: 40,
-          topP: 0.8,
+      console.log("Creating video with prompt:", prompt);
+
+      const [video] = await db.insert(videos)
+        .values({
+          prompt,
+          musicFile,
+          style,
+          status: "pending",
+          metadata: { retryCount: 0 },
+          userId: null,
+          likesCount: 0
+        })
+        .returning();
+
+      console.log("Created pending video entry:", video);
+
+      // Function to attempt video generation with retries
+      const attemptGeneration = async (retryCount = 0) => {
+        try {
+          const outputUrl = await generateVideo(prompt, process.env.FAL_API_KEY!);
+          console.log("Video generated successfully:", outputUrl);
+          
+          await db
+            .update(videos)
+            .set({
+              outputUrl,
+              status: "completed",
+              updatedAt: new Date()
+            })
+            .where(eq(videos.id, video.id));
+
+          console.log("Database updated with video URL:", {
+            videoId: video.id,
+            outputUrl,
+            status: "completed"
+          });
+        } catch (error) {
+          console.error(`Failed to generate video (attempt ${retryCount + 1}/${MAX_RETRIES}):`, error);
+          
+          if (retryCount < MAX_RETRIES - 1) {
+            console.log(`Retrying in ${RETRY_DELAY}ms...`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            return attemptGeneration(retryCount + 1);
+          }
+
+          await db
+            .update(videos)
+            .set({
+              status: "failed",
+              metadata: sql`jsonb_set(COALESCE(metadata, '{}'::jsonb), '{error}', '"Maximum retry attempts exceeded"')`,
+              updatedAt: new Date()
+            })
+            .where(eq(videos.id, video.id));
+          
+          console.log("Updated video status to failed after max retries:", video.id);
         }
+      };
+
+      // Start the generation process
+      attemptGeneration().catch(async (error) => {
+        console.error("Unexpected error in generation process:", error);
+        await db
+          .update(videos)
+          .set({
+            status: "failed",
+            metadata: sql`jsonb_set(COALESCE(metadata, '{}'::jsonb), '{error}', '"Unexpected error in generation process"')`,
+            updatedAt: new Date()
+          })
+          .where(eq(videos.id, video.id));
       });
 
-      const chat = model.startChat({
-        history: req.body.history || []
-      });
-
-      const result = await chat.sendMessage(message);
-      const response = await result.response;
-      const text = await response.text();
-
-      res.json({ message: text });
+      res.json(video);
     } catch (error) {
-      console.error("Chat error:", error);
-      res.status(500).json({ error: "Failed to process chat message" });
+      console.error("Error creating video:", error);
+      res.status(500).json({ error: "Failed to create video" });
     }
   });
 
-  // Like/Unlike video
-  app.post("/api/videos/:id/like", async (req, res) => {
+  app.post("/api/generate-image", async (req, res) => {
+    const { prompt } = req.body;
+
+    try {
+      const imageUrl = await generateAkibaImage(prompt, process.env.FAL_API_KEY!);
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error("Error generating image:", error);
+      res.status(500).json({ error: "Failed to generate image" });
+    }
+  });
+
+  // Public routes for viewing videos
+  app.get("/api/videos", async (_req, res) => {
+    try {
+      const allVideos = await db.query.videos.findMany({
+        orderBy: (videos, { desc }) => [desc(videos.createdAt)]
+      });
+      res.json(allVideos);
+    } catch (error) {
+      console.error("Failed to get videos:", error);
+      res.status(500).json({ error: "Failed to get videos" });
+    }
+  });
+
+  app.get("/api/videos/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const video = await db.query.videos.findFirst({
+        where: eq(videos.id, parseInt(id))
+      });
+
+      if (!video) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      res.json(video);
+    } catch (error) {
+      console.error("Failed to get video:", error);
+      res.status(500).json({ error: "Failed to get video" });
+    }
+  });
+
+  // Public routes (no authentication required)
+  app.post("/api/videos/:id/retry", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const video = await db.query.videos.findFirst({
+        where: eq(videos.id, parseInt(id))
+      });
+
+      if (!video) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      if (video.status !== "failed") {
+        return res.status(400).json({ error: "Can only retry failed videos" });
+      }
+
+      // Update video status to pending
+      await db
+        .update(videos)
+        .set({
+          status: "pending",
+          metadata: {},
+          updatedAt: new Date()
+        })
+        .where(eq(videos.id, video.id));
+
+      // Start video generation
+      generateVideo(video.prompt, process.env.FAL_API_KEY!)
+        .then(async (outputUrl) => {
+          console.log("Video generated successfully:", outputUrl);
+          await db
+            .update(videos)
+            .set({
+              outputUrl,
+              status: "completed",
+              updatedAt: new Date()
+            })
+            .where(eq(videos.id, video.id));
+        })
+        .catch(async (error) => {
+          console.error("Failed to generate video:", error);
+          await db
+            .update(videos)
+            .set({
+              status: "failed",
+              metadata: { error: error.message || "Failed to generate video" },
+              updatedAt: new Date()
+            })
+            .where(eq(videos.id, video.id));
+        });
+
+      res.json({ message: "Video generation restarted" });
+    } catch (error) {
+      console.error("Error retrying video:", error);
+      res.status(500).json({ error: "Failed to retry video" });
+    }
+  });
+
+  // Protected routes (require authentication)
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    next();
+  };
+
+  app.post("/api/videos/:id/like", requireAuth, async (req, res) => {
     const videoId = parseInt(req.params.id);
     const userId = req.user!.id;
 
@@ -145,8 +305,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get user's liked videos
-  app.get("/api/videos/liked", async (req, res) => {
+  app.get("/api/videos/liked", requireAuth, async (req, res) => {
     try {
       const likedVideos = await db.query.videoLikes.findMany({
         where: eq(videoLikes.userId, req.user!.id),
@@ -162,162 +321,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get top liked videos
-  app.get("/api/videos/top", async (req, res) => {
-    try {
-      const topVideos = await db
-        .select()
-        .from(videos)
-        .where(eq(videos.status, "completed"))
-        .orderBy(desc(videos.likesCount))
-        .limit(4);
-
-      res.json(topVideos);
-    } catch (error) {
-      console.error("Failed to get top videos:", error);
-      res.status(500).json({ error: "Failed to get top videos" });
-    }
-  });
-
-  // Create new video generation
-  app.post("/api/videos", async (req, res) => {
-    const { prompt, style } = req.body;
-    const falApiKey = req.headers['x-fal-api-key'] as string;
-    const musicFile = getRandomMusic();
-
-    if (!falApiKey) {
-      return res.status(401).json({ error: "FAL.ai API key is required" });
-    }
-
-    try {
-      console.log("Creating video with prompt:", prompt);
-
-      const [video] = await db.insert(videos)
-        .values({
-          prompt,
-          musicFile,
-          style,
-          status: "pending",
-          metadata: {},
-          userId: req.user!.id,
-          likesCount: 0
-        })
-        .returning();
-
-      console.log("Created pending video entry:", video);
-
-      generateVideo(prompt, falApiKey)
-        .then(async (outputUrl) => {
-          console.log("Video generated successfully:", outputUrl);
-          try {
-            await db
-              .update(videos)
-              .set({
-                outputUrl,
-                status: "completed",
-                updatedAt: new Date()
-              })
-              .where(eq(videos.id, video.id));
-
-            console.log("Database updated with video URL:", {
-              videoId: video.id,
-              outputUrl,
-              status: "completed"
-            });
-          } catch (error) {
-            console.error("Failed to update video in database:", error);
-            await db
-              .update(videos)
-              .set({
-                status: "failed",
-                updatedAt: new Date()
-              })
-              .where(eq(videos.id, video.id));
-          }
-        })
-        .catch(async (error) => {
-          console.error("Failed to generate video:", error);
-          try {
-            await db
-              .update(videos)
-              .set({
-                status: "failed",
-                updatedAt: new Date()
-              })
-              .where(eq(videos.id, video.id));
-            console.log("Updated video status to failed:", video.id);
-          } catch (dbError) {
-            console.error("Failed to update video status in database:", dbError);
-          }
-        });
-
-      res.json(video);
-    } catch (error) {
-      console.error("Failed to create video:", error);
-      res.status(500).json({
-        error: "Failed to create video",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Get video status
-  app.get("/api/videos/:id", async (req, res) => {
-    const { id } = req.params;
-
-    try {
-      const video = await db.query.videos.findFirst({
-        where: eq(videos.id, parseInt(id))
-      });
-
-      if (!video) {
-        return res.status(404).json({ error: "Video not found" });
-      }
-
-      res.json(video);
-    } catch (error) {
-      console.error("Failed to get video:", error);
-      res.status(500).json({ error: "Failed to get video" });
-    }
-  });
-
-  // Get all videos
-  app.get("/api/videos", async (_req, res) => {
-    try {
-      const allVideos = await db.query.videos.findMany({
-        orderBy: (videos, { desc }) => [desc(videos.createdAt)]
-      });
-      res.json(allVideos);
-    } catch (error) {
-      console.error("Failed to get videos:", error);
-      res.status(500).json({ error: "Failed to get videos" });
-    }
-  });
-
-  // Generate Akiba image
-  app.post("/api/generate-image", async (req, res) => {
-    const { prompt } = req.body;
-    const falApiKey = process.env.FAL_API_KEY;
-
-    if (!falApiKey) {
-      return res.status(500).json({ error: "FAL.ai API key not configured" });
-    }
-
-    try {
-      console.log("Generating image with prompt:", prompt);
-      const imageUrl = await generateAkibaImage(prompt, falApiKey);
-      res.json({ imageUrl });
-    } catch (error) {
-      console.error("Failed to generate image:", error);
-      res.status(500).json({
-        error: "Failed to generate image",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Generate video captions
-  app.post("/api/videos/:id/caption", async (req, res) => {
+  app.post("/api/videos/:id/caption", requireAuth, async (req, res) => {
     const { id } = req.params;
     const apiKey = process.env.GOOGLE_API_KEY;
 

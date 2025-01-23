@@ -10,13 +10,23 @@ import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import ShareButton from "./share-button";
 import CaptionGenerator from "./caption-generator";
 
-interface VideoWithCaption extends SelectVideo {
-  caption?: string;
+interface VideoMetadata {
+  error?: string;
+  retryCount: number;
+}
+
+interface VideoWithMetadata extends Omit<SelectVideo, 'metadata'> {
+  metadata: VideoMetadata;
 }
 
 export default function VideoGallery() {
-  const { data: videos, isLoading } = useQuery<SelectVideo[]>({
+  const { data: videos, isLoading } = useQuery<VideoWithMetadata[]>({
     queryKey: ["/api/videos"],
+    // Poll for updates every 2 seconds while a video is pending
+    refetchInterval: (data) => {
+      if (!Array.isArray(data)) return false;
+      return data.some((v) => v.status === "pending") ? 2000 : false;
+    },
   });
   const [videoCaptions, setVideoCaptions] = useState<Record<number, string>>({});
   const queryClient = useQueryClient();
@@ -28,20 +38,20 @@ export default function VideoGallery() {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Error al reintentar la generación del video");
+      if (!res.ok) throw new Error("Error retrying video generation");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
       toast({
-        title: "Éxito",
-        description: "Se ha reiniciado la generación del video",
+        title: "Success",
+        description: "Video generation restarted",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "No se pudo reintentar la generación del video",
+        description: "Could not retry video generation",
         variant: "destructive",
       });
     },
@@ -53,7 +63,7 @@ export default function VideoGallery() {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Error al dar me gusta al video");
+      if (!res.ok) throw new Error("Error liking video");
       return res.json();
     },
     onSuccess: () => {
@@ -63,7 +73,7 @@ export default function VideoGallery() {
     onError: () => {
       toast({
         title: "Error",
-        description: "No se pudo dar me gusta al video",
+        description: "Could not like video",
         variant: "destructive",
       });
     },
@@ -72,7 +82,7 @@ export default function VideoGallery() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Tus Videos Generados</h2>
+        <h2 className="text-lg font-semibold">Your Generated Videos</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Card key={i} className="p-4 h-[200px] animate-pulse bg-muted" />
@@ -87,7 +97,7 @@ export default function VideoGallery() {
   if (!allVideos.length) {
     return (
       <Card className="p-4 text-center text-muted-foreground">
-        Aún no has generado ningún video. ¡Intenta crear uno!
+        You haven't generated any videos yet. Try creating one!
       </Card>
     );
   }
@@ -101,17 +111,37 @@ export default function VideoGallery() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Tus Videos Generados</h2>
+      <h2 className="text-lg font-semibold">Your Generated Videos</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {allVideos.map((video) => (
           <Card key={video.id} className="p-4 space-y-3 overflow-hidden">
             {video.status === "pending" && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Generando{" "}
+                  Generating{" "}
                   {new Date(video.createdAt).toLocaleTimeString()}
                 </p>
-                <Progress value={30} />
+                <Progress value={30} className="animate-pulse" />
+              </div>
+            )}
+
+            {video.status === "failed" && (
+              <div className="space-y-3">
+                <div className="p-4 rounded-lg bg-destructive/10 text-destructive">
+                  <p className="text-sm font-medium">Generation failed</p>
+                  <p className="text-xs mt-1 text-muted-foreground">
+                    {video.metadata?.error || "An error occurred during generation"}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => retryGeneration.mutate(video.id)}
+                  disabled={retryGeneration.isPending}
+                >
+                  {retryGeneration.isPending ? "Retrying..." : "Retry Generation"}
+                </Button>
               </div>
             )}
 

@@ -35,8 +35,6 @@ interface GenerateVideoParams {
 export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [googleApiKey, setGoogleApiKey] = useState<string | null>(null);
-  const [falApiKey, setFalApiKey] = useState<string | null>(null);
   const { currentMood } = useMood();
 
   const createVideo = useMutation({
@@ -44,8 +42,7 @@ export default function Home() {
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "x-fal-api-key": falApiKey || "",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ prompt, style, music }),
       });
@@ -71,41 +68,6 @@ export default function Home() {
   const handleSubmit = async (data: GenerateVideoParams) => {
     await createVideo.mutate(data);
   };
-
-  const handleGoogleApiKeySubmit = (apiKey: string) => {
-    setGoogleApiKey(apiKey);
-    toast({
-      title: "Success",
-      description: "Google API key saved",
-    });
-  };
-
-  const handleFalApiKeySubmit = (apiKey: string) => {
-    setFalApiKey(apiKey);
-    toast({
-      title: "Success",
-      description: "FAL.ai API key saved",
-    });
-  };
-
-  const VoiceWaveAnimation = () => (
-    <div className="flex gap-3 mt-4">
-      {[1, 2, 3].map((i) => (
-        <motion.div
-          key={i}
-          className="w-3 bg-primary/60 rounded-full"
-          animate={{
-            height: ["20px", "40px", "20px"],
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            delay: i * 0.2,
-          }}
-        />
-      ))}
-    </div>
-  );
 
   return (
     <div
@@ -167,7 +129,7 @@ export default function Home() {
                       ease: "easeInOut"
                     }}
                   >
-                    ¿Quieres Conversar con Akiba??
+                    ¿Quieres Conversar con Akiba?
                   </motion.div>
                 </div>
 
@@ -184,13 +146,6 @@ export default function Home() {
                           alignItems: "center",
                           justifyContent: "center",
                           margin: "0 auto",
-                          "--elevenlabs-button-background": "transparent",
-                          "--elevenlabs-button-color": "white",
-                          "--elevenlabs-button-border": "2px solid white",
-                          "--elevenlabs-button-hover-background": "rgba(255, 255, 255, 0.1)",
-                          "--elevenlabs-call-button-position": "relative",
-                          "--elevenlabs-call-button-transform": "none",
-                          "--elevenlabs-call-button-margin": "0 auto",
                         }}
                       />
                     </div>
@@ -234,8 +189,6 @@ export default function Home() {
                 <UploadForm
                   onSubmit={handleSubmit}
                   isLoading={createVideo.isPending}
-                  isAuthenticated={!!falApiKey}
-                  onApiKeySubmit={handleFalApiKeySubmit}
                 />
               </div>
             </Card>

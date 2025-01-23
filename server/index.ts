@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import { json, urlencoded } from "express";
 import { log } from "./vite";
