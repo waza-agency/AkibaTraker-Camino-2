@@ -1,68 +1,46 @@
 import 'dotenv/config';
 import express from "express";
 import { json, urlencoded } from "express";
-import { log } from "./vite";
+import cors from 'cors';
 import { setupSecurityHeaders } from "./middleware/security";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic } from "./vite";
+import { setupAuth } from "./auth";
+import { createServer } from 'http';
 
 const app = express();
+const httpServer = createServer(app);
+const PORT = process.env.PORT || 3000;
+
+// Debug environment
+console.log('Starting server with env:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DATABASE_URL: process.env.DATABASE_URL ? 'exists' : 'missing'
+});
 
 // Basic middleware
 app.use(json());
 app.use(urlencoded({ extended: false }));
 
-// Apply security headers middleware before routes
-app.use(setupSecurityHeaders());
+// CORS setup
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 
-// Development proxy middleware to handle host blocking
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', '*');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
+// Security and auth
+app.use(setupSecurityHeaders());
+setupAuth(app);
+
+// Routes
+registerRoutes(app);
+
+// Start server
+httpServer.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
-// Register all routes and set up error handling
-(async () => {
-  try {
-    const server = registerRoutes(app);
-
-    // Error handling middleware
-    app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-      console.error("Application error:", err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-      throw err;
-    });
-
-    // Set up error handling before Vite middleware
-    app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-      console.error("Application error:", err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-    });
-
-    const PORT = process.env.PORT || 3000;
-    
-    // Setup Vite in development, static serving in production
-    if (process.env.NODE_ENV === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
-
-    server.listen(PORT, "0.0.0.0", () => {
-      log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-})();
+// Error handling
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Application error:", err);
+  res.status(500).json({ error: "Internal Server Error" });
+});
