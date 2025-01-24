@@ -12,8 +12,8 @@ export async function generateVideo(prompt: string, apiKey: string): Promise<str
       "fal-ai/kling-video/v1.6/standard/text-to-video",
       {
         input: {
-          prompt: `high quality, masterpiece, best quality, ${prompt}`,
-          duration: "5",
+          prompt: `anime cartoon, high quality, masterpiece, best quality, anime style, ${prompt}`,
+          duration: "10",
           aspect_ratio: "16:9"
         },
         logs: true,
