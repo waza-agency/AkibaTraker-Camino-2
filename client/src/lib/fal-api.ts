@@ -21,13 +21,14 @@ export async function generateVideo(prompt: string, apiKey: string, onProgress?:
     let lastProgress = 0;
 
     // Start the video generation
-    const result = await fal.subscribe("fal-ai/fast-video", {
+    const result = await fal.subscribe("fal-ai/kling-video/v1.6/standard/text-to-video", {
       input: {
         prompt: `anime cartoon, high quality, masterpiece, best quality, anime style, ${prompt}`,
         duration: "10",
         aspect_ratio: "16:9"
       },
-      pollInterval: 5000, // Poll every 5 seconds
+      pollInterval: 10000, // Poll every 10 seconds
+      logs: true,
       onQueueUpdate: async (update) => {
         console.log('Video generation status:', update.status);
         
@@ -41,6 +42,8 @@ export async function generateVideo(prompt: string, apiKey: string, onProgress?:
             const timeElapsed = (Date.now() - startTime) / 1000;
             progress = Math.min(95, (timeElapsed / 60) * 100); // Assume ~1 minute generation time
             lastProgress = progress;
+            // Log any messages from the API
+            update.logs.map((log) => log.message).forEach(console.log);
           } else if (update.status === 'COMPLETED') {
             status = 'COMPLETED';
             progress = 100;
@@ -56,13 +59,14 @@ export async function generateVideo(prompt: string, apiKey: string, onProgress?:
       }
     });
 
-    const videoUrl = (result as any).video_url || (result as any).data?.video?.url;
-    if (!videoUrl) {
+    console.log("Video generation result:", result);
+
+    if (!result.data?.video?.url) {
       throw new Error('No video URL in response');
     }
 
     return {
-      url: videoUrl,
+      url: result.data.video.url,
       duration: "10s"
     };
   } catch (error) {
