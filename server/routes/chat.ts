@@ -41,7 +41,13 @@ router.post("/chat", async (req, res) => {
       }
     });
 
-    console.log("Starting chat with history:", history ? "Present" : "Missing");
+    // Format history for Gemini's expected structure
+    const formattedHistory = history ? history.map((entry: any) => ({
+      role: entry.role === 'user' ? 'user' : 'model',
+      parts: [{ text: entry.content }]
+    })) : [];
+
+    console.log("Starting chat with history:", formattedHistory.length > 0 ? "Present" : "Missing");
     const chat = model.startChat({
       history: history || [],
       generationConfig: {

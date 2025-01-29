@@ -1,7 +1,5 @@
 import 'dotenv/config';
 import { db } from "./db";
-import { musicLibrary } from "./db/schema";
-import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 // Log environment for debugging
@@ -32,12 +30,12 @@ console.log('Parsed flags:', {
 });
 
 async function listAllSongs() {
-  const { rows: songs } = await db.query('SELECT * FROM music_library');
+  const result = await db.query('SELECT * FROM music_library');
   console.log('\nCurrent songs in database:');
-  if (songs.length === 0) {
+  if (result.rows.length === 0) {
     console.log('No songs found in database');
   } else {
-    songs.forEach(song => {
+    result.rows.forEach(song => {
       console.log(`- ${song.title} by ${song.artist} (ID: ${song.id})`);
     });
   }
@@ -53,12 +51,13 @@ async function cleanupDuplicates() {
     console.log('Cleaning up duplicate songs...');
     
     // Get all songs
-    const songs = await db.query('SELECT * FROM music_library');
+    const result = await db.query('SELECT * FROM music_library');
+    const songs = result.rows;
     console.log('Current total songs:', songs.length);
     
     // Track unique songs by title and artist
     const seen = new Set();
-    const duplicates = [];
+    const duplicates: number[] = [];
     
     songs.forEach(song => {
       const key = `${song.title}-${song.artist}`;
@@ -90,22 +89,20 @@ async function seedDatabase() {
   
   const songs = [
     {
-      title: "Cupid",
-      artist: "Fifty Fifty",
-      mood: "Kawaii",
-      storageUrl: "https://ipfs.io/ipfs/bafybeigyzxrntpqjwkzxzs7m4jk6tqykan7uagabipo27av2q34s7yi7eq"
+      title: "Pon Pon Pon",
+      artist: "Kyary Pamyu Pamyu",
+      mood: "Party",
+      storageUrl: "https://ipfs.io/ipfs/bafybeiexrz2iyivgepluiurdcfbfgtctfcdkwggv4ec3b3suumkrwk6k5i"
     }
   ];
 
   try {
     console.log('Seeding music library...');
     for (const song of songs) {
-      await db.query('INSERT INTO music_library (title, artist, mood, storageUrl) VALUES ($1, $2, $3, $4)', [
-        song.title,
-        song.artist,
-        song.mood,
-        song.storageUrl
-      ]);
+      await db.query(
+        'INSERT INTO music_library (title, artist, mood, storage_url) VALUES ($1, $2, $3, $4)',
+        [song.title, song.artist, song.mood, song.storageUrl]
+      );
       console.log(`Added song: ${song.title} by ${song.artist}`);
     }
     console.log('Music library seeded successfully!');
@@ -117,15 +114,6 @@ async function seedDatabase() {
 
 async function removeSongByTitle(title: string) {
   await db.query('DELETE FROM music_library WHERE title = $1', [title]);
-}
-
-// Add temporary debug code
-async function checkUserPassword() {
-  const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-  const user = result.rows[0];
-  console.log('Stored password hash:', user.password);
-  console.log('Input password:', password);
-  console.log('Comparison result:', await bcrypt.compare(password, user.password));
 }
 
 async function main() {

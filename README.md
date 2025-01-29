@@ -47,6 +47,7 @@ Create a `.env` file in the root directory with the following variables:
 DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
 GOOGLE_API_KEY=your_google_api_key
 FAL_KEY=your_fal_ai_key
+PINATA_JWT=your_pinata_jwt_token  # Required for IPFS storage
 ```
 
 5. Set up the database:

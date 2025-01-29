@@ -24,6 +24,11 @@ export default function ChatInterface() {
   const { setMood } = useMood();
   const [messageCount, setMessageCount] = useState(0);
 
+  // Keep focus on input
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [messages]); // Re-focus when messages change
+
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -154,7 +159,7 @@ export default function ChatInterface() {
       });
     }
 
-    inputRef.current?.focus();
+    // Focus will be handled by the useEffect
   };
 
 
@@ -244,6 +249,7 @@ export default function ChatInterface() {
                 disabled={sendMessage.isPending}
                 aria-label="Chat message"
                 ref={inputRef}
+                autoFocus
               />
               <Button
                 type="submit"

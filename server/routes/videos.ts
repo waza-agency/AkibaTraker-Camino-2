@@ -7,6 +7,7 @@ import fs from 'fs';
 import express, { Router } from 'express';
 import { db } from '../../db';
 import { requireAuth } from "../auth/middleware";
+import { uploadToIPFS, getGatewayUrl } from '../lib/ipfs';
 
 const router = Router();
 
@@ -277,30 +278,42 @@ async function integrateAudio(videoId: number) {
         .on('end', async () => {
           console.log('FFmpeg process completed');
           
-          // Update video with final status and metadata
-          await db.query(
-            `UPDATE videos SET 
-              status = $1, 
-              output_url = $2, 
-              metadata = $3,
-              updated_at = NOW()
-            WHERE id = $4`,
-            [
-              'completed',
-              `/generated-videos/${outputFileName}`,
-              JSON.stringify({ 
-                progress: 100,
-                duration: video.metadata?.duration || '10s',
-                style: video.style,
-                audioFile: video.music_file
-              }),
-              videoId
-            ]
-          );
+          try {
+            // Upload to IPFS
+            console.log('Uploading to IPFS...');
+            const ipfsUrl = await uploadToIPFS(outputPath, outputFileName);
+            console.log('Uploaded to IPFS:', ipfsUrl);
+            
+            // Update video with final status and metadata
+            await db.query(
+              `UPDATE videos SET 
+                status = $1, 
+                output_url = $2, 
+                metadata = $3,
+                updated_at = NOW()
+              WHERE id = $4`,
+              [
+                'completed',
+                ipfsUrl,
+                JSON.stringify({ 
+                  progress: 100,
+                  duration: video.metadata?.duration || '10s',
+                  style: video.style,
+                  audioFile: video.music_file
+                }),
+                videoId
+              ]
+            );
 
-          // Clean up temporary video file
-          await fs.promises.unlink(tempVideoPath);
-          resolve(null);
+            // Clean up temporary files
+            await fs.promises.unlink(tempVideoPath);
+            await fs.promises.unlink(outputPath);
+            
+            resolve(null);
+          } catch (error) {
+            console.error('Error in IPFS upload:', error);
+            reject(error);
+          }
         })
         .on('error', (err) => {
           console.error('FFmpeg process failed:', err);
@@ -392,35 +405,31 @@ router.get("/", async (req, res) => {
         u.username as "creatorName"
       FROM videos v
       LEFT JOIN users u ON v.user_id = u.id
-      WHERE v.status != 'failed'  -- Exclude failed videos
+      WHERE v.status = 'completed'  -- Only show completed videos
+      AND v.output_url IS NOT NULL  -- Must have an output URL
+      AND v.output_url != ''  -- URL must not be empty
       AND (
-        v.status = 'completed'  -- Show completed videos
-        OR (  -- Show recent pending/generating videos
-          v.status IN ('pending', 'generating', 'merging')
-          AND v.created_at > NOW() - INTERVAL '2 hours'
-        )
+        v.output_url LIKE 'ipfs://%'  -- Must be IPFS URL
+        OR v.output_url LIKE 'http%'  -- Or valid HTTP URL
       )
-      ORDER BY 
-        CASE 
-          WHEN v.status = 'completed' THEN 0
-          ELSE 1
-        END,
-        v.created_at DESC`
+      ORDER BY v.created_at DESC`
     );
 
-    // Format the response for the gallery
-    const videos = result.rows.map(video => ({
-      id: video.id,
-      prompt: video.prompt,
-      style: video.style,
-      videoUrl: video.videoUrl,
-      audioUrl: video.audioUrl,
-      status: video.status,
-      metadata: video.metadata,
-      likesCount: video.likesCount,
-      createdAt: video.createdAt,
-      creatorName: video.creatorName || 'Anonymous'
-    }));
+    // Format the response for the gallery and convert IPFS URLs to gateway URLs
+    const videos = result.rows
+      .map(video => ({
+        id: video.id,
+        prompt: video.prompt,
+        style: video.style,
+        videoUrl: video.videoUrl ? getGatewayUrl(video.videoUrl) : null,
+        audioUrl: video.audioUrl,
+        status: video.status,
+        metadata: video.metadata,
+        likesCount: video.likesCount,
+        createdAt: video.createdAt,
+        creatorName: video.creatorName || 'Anonymous'
+      }))
+      .filter(video => video.videoUrl && video.videoUrl.startsWith('http')); // Ensure only valid URLs are returned
 
     console.log('Sending videos to client:', videos.length);
     res.json(videos);
