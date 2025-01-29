@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { stylePresets } from "@db/schema";
+import { stylePresets } from "../lib/style-presets";
 
 interface StyleSelectorProps {
   selected: string;

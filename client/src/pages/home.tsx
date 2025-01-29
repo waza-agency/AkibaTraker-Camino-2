@@ -1,19 +1,18 @@
-import { useState } from "react";
+import React from "react";
+import { useUser } from "@/hooks/use-user";
+import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
-import UploadForm from "@/components/upload-form";
-import VideoPreview from "@/components/video-preview";
-import VideoGallery from "@/components/video-gallery";
-import TopVideos from "@/components/top-videos";
+import { motion } from "framer-motion";
 import HeroBanner from "@/components/hero-banner";
+import VideoGallery from "@/components/video-gallery";
+import UploadForm from "@/components/upload-form";
 import CharacterCard from "@/components/character-card";
 import ChatInterface from "@/components/chat-interface";
-import { useToast } from "@/hooks/use-toast";
 import ImageGenerator from "@/components/image-generator";
 import Navbar from "@/components/navbar";
-import { motion } from "framer-motion";
 import { MoodIndicator } from "@/components/mood-indicator";
 import { useMood } from "@/hooks/use-mood";
+import { Card } from "@/components/ui/card";
 
 // Add ElevenLabs component type definition
 declare global {
@@ -26,25 +25,20 @@ declare global {
   }
 }
 
-interface GenerateVideoParams {
-  prompt: string;
-  style: string;
-  music: string;
-}
-
 export default function Home() {
+  const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentMood } = useMood();
 
   const createVideo = useMutation({
-    mutationFn: async ({ prompt, style, music }: GenerateVideoParams) => {
+    mutationFn: async (data: { prompt: string; style: string; music: string; musicStartTime?: number; musicEndTime?: number }) => {
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ prompt, style, music }),
+        body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to create video");
       return res.json();
@@ -64,10 +58,6 @@ export default function Home() {
       });
     },
   });
-
-  const handleSubmit = async (data: GenerateVideoParams) => {
-    await createVideo.mutate(data);
-  };
 
   return (
     <div
@@ -180,23 +170,22 @@ export default function Home() {
             <ImageGenerator />
           </div>
 
-          <div className="space-y-8">
-            <Card className="p-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-4">
-                  Create Your AMV
-                </h2>
-                <UploadForm
-                  onSubmit={handleSubmit}
-                  isLoading={createVideo.isPending}
-                />
-              </div>
+          {/* AMV Creation Section */}
+          <section>
+            <h2 className="text-2xl font-bold mb-6 glow-text">Create Your AMV</h2>
+            <Card className="bg-card/50 backdrop-blur-sm p-6">
+              <UploadForm 
+                onSubmit={(data) => createVideo.mutate(data)}
+                isLoading={createVideo.isPending}
+              />
             </Card>
+          </section>
 
-            <VideoPreview />
-            <TopVideos />
+          {/* Video Gallery Section */}
+          <section>
+            <h2 className="text-2xl font-bold mb-6 glow-text">Latest Creations</h2>
             <VideoGallery />
-          </div>
+          </section>
         </div>
       </div>
     </div>

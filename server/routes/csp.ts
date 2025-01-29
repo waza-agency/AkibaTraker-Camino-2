@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { db } from "@db";
-import { eq, desc } from "drizzle-orm";
-import { cspViolations } from "@db/schema";
 
 const router = Router();
 
@@ -11,17 +9,21 @@ router.post("/report", async (req, res) => {
     const violation = req.body;
     console.log("CSP Violation:", JSON.stringify(violation, null, 2));
 
-    const [savedViolation] = await db.insert(cspViolations)
-      .values({
-        blockedUri: violation["blocked-uri"] || "",
-        documentUri: violation["document-uri"] || "",
-        violatedDirective: violation["violated-directive"] || "",
-        originalPolicy: violation["original-policy"] || "",
-        timestamp: new Date(),
-      })
-      .returning();
+    const result = await db.query(
+      `INSERT INTO csp_violations 
+       (blocked_uri, document_uri, violated_directive, original_policy, timestamp)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [
+        violation["blocked-uri"] || "",
+        violation["document-uri"] || "",
+        violation["violated-directive"] || "",
+        violation["original-policy"] || "",
+        new Date(),
+      ]
+    );
 
-    res.status(201).json(savedViolation);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error("Error saving CSP violation:", error);
     res.status(500).json({ error: "Error saving CSP violation" });
@@ -31,12 +33,13 @@ router.post("/report", async (req, res) => {
 // Endpoint to get CSP violations for monitoring
 router.get("/violations", async (_req, res) => {
   try {
-    const violations = await db.query.cspViolations.findMany({
-      orderBy: [desc(cspViolations.timestamp)],
-      limit: 100
-    });
+    const result = await db.query(
+      `SELECT * FROM csp_violations 
+       ORDER BY timestamp DESC 
+       LIMIT 100`
+    );
 
-    res.json(violations);
+    res.json(result.rows);
   } catch (error) {
     console.error("Error fetching CSP violations:", error);
     res.status(500).json({ error: "Error fetching CSP violations" });

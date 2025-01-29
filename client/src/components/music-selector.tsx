@@ -1,336 +1,355 @@
-import { FC, useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { RefreshCw, Play, Pause, SkipBack } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import ReactPlayer from "react-player";
 
-interface MusicOption {
-  id: string;
-  name: string;
-  file: string;
-  color: string;
+interface Song {
+  id: number;
+  title: string;
+  artist: string;
+  mood: string;
+  storageUrl: string;
 }
-
-interface MusicOptions {
-  [key: string]: MusicOption[];
-}
-
-const MUSIC_OPTIONS: MusicOptions = {
-  "Anime y J-Pop": [
-    {
-      id: "jpop-1",
-      name: "Sueños de Sakura",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
-      color: "bg-pink-500"
-    },
-    {
-      id: "jpop-2",
-      name: "Vibras City Pop",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
-      color: "bg-blue-400"
-    }
-  ],
-  "Épica y Orquestal": [
-    {
-      id: "epic-flute",
-      name: "Flauta Épica",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
-      color: "bg-red-500"
-    },
-    {
-      id: "fantasy-orchestra",
-      name: "Orquesta Fantástica",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
-      color: "bg-purple-500"
-    }
-  ],
-  "Tradicional Japonesa": [
-    {
-      id: "trad-1",
-      name: "Jardín Zen",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
-      color: "bg-green-500"
-    },
-    {
-      id: "trad-2",
-      name: "Sueños de Koto",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
-      color: "bg-emerald-500"
-    }
-  ],
-  "Electrónica": [
-    {
-      id: "electronic-1",
-      name: "Future Bass",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
-      color: "bg-cyan-500"
-    },
-    {
-      id: "electronic-2",
-      name: "Noche Synthwave",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
-      color: "bg-indigo-500"
-    }
-  ],
-  "Lo-fi y Chill": [
-    {
-      id: "lofi-1",
-      name: "Ambiente Lluvioso",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeih3mms7mj4ajx3mwntpz7t6wqqrc5tno4jjwptfddxqflrwn74brm",
-      color: "bg-violet-500"
-    },
-    {
-      id: "lofi-2",
-      name: "Ritmos de Estudio",
-      file: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiedtm3ghqodbgfqbasddtn6hxka3ihytz6dfuscofgbx77ahbzzli",
-      color: "bg-rose-500"
-    }
-  ]
-};
-
-const DEFAULT_GENRE = "Anime y J-Pop";
-const DEFAULT_TRACK = MUSIC_OPTIONS[DEFAULT_GENRE][0].file;
-const VIDEO_DURATION = 5; // Duration in seconds
 
 interface MusicSelectorProps {
-  selected: string;
-  onSelect: (file: string) => void;
+  onSelect: (data: { song: Song; startTime: number; endTime: number }) => void;
+  addLog?: (message: string, type?: 'info' | 'error' | 'success') => void;
 }
 
-const MusicSelector: FC<MusicSelectorProps> = ({ selected, onSelect }) => {
-  const [currentGenre, setCurrentGenre] = useState(DEFAULT_GENRE);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+// Helper function to get proper URL for IPFS content
+function getProperUrl(url: string): string {
+  if (!url) return '';
+  
+  console.log('Original URL:', url);
+  
+  // If it's already a gateway URL, return as is
+  if (url.startsWith('http')) {
+    console.log('Using direct HTTP URL:', url);
+    return url;
+  }
+  
+  // If it's a bare CID (no protocol or path)
+  if (url.match(/^[a-zA-Z0-9]{46,59}$/)) {
+    const gatewayUrl = `https://ipfs.io/ipfs/${url}`;
+    console.log('Converted CID:', url, 'to:', gatewayUrl);
+    return gatewayUrl;
+  }
+  
+  // Handle IPFS protocol URLs
+  if (url.startsWith('ipfs://')) {
+    const cid = url.replace('ipfs://', '');
+    const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+    console.log('Converted IPFS URL:', url, 'to:', gatewayUrl);
+    return gatewayUrl;
+  }
+
+  // Handle IPFS paths
+  if (url.startsWith('/ipfs/')) {
+    const cid = url.replace('/ipfs/', '');
+    const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+    console.log('Converted IPFS path:', url, 'to:', gatewayUrl);
+    return gatewayUrl;
+  }
+
+  // If none of the above, assume it's a CID
+  const gatewayUrl = `https://ipfs.io/ipfs/${url}`;
+  console.log('Using URL as CID:', url, 'to:', gatewayUrl);
+  return gatewayUrl;
+}
+
+export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [startTime, setStartTime] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayingFull, setIsPlayingFull] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isTrimming, setIsTrimming] = useState(false);
+  const playerRef = useRef<ReactPlayer>(null);
+  const TEN_SECONDS = 10;
   const { toast } = useToast();
 
-  const handleReset = () => {
-    onSelect(DEFAULT_TRACK);
-    if (audioRef.current) {
-      audioRef.current.currentTime = startTime;
-      setCurrentTime(startTime);
-    }
-  };
-
-  const resetPlayback = () => {
-    setIsPlaying(false);
-    setIsLoading(false);
-    setHasError(false);
-  };
-
-  const togglePlayPause = () => {
-    if (hasError) {
-      if (audioRef.current) {
-        audioRef.current.load();
-        setHasError(false);
+  useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch("/api/music", {
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error("Failed to fetch music library");
+        const data = await response.json();
+        console.log("Fetched songs:", data);
+        setSongs(data);
+        addLog?.('Music library loaded successfully', 'success');
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load music library",
+          variant: "destructive",
+        });
+        console.error("Error fetching songs:", error);
+        addLog?.('Failed to load music library', 'error');
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchSongs();
+  }, [toast, addLog]);
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % songs.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + songs.length) % songs.length);
+  };
+
+  const handleSongSelect = (song: Song) => {
+    console.log("Selected song:", song);
+    setSelectedSong(song);
+    setStartTime(0);
+    setIsPlaying(false);
+    setIsPlayingFull(false);
+    addLog?.(`Selected song: ${song.title} by ${song.artist}`, 'info');
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedSong) {
+      toast({
+        title: "Error",
+        description: "Please select a song first",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        setIsLoading(true);
-        setHasError(false);
-        audioRef.current.currentTime = startTime;
-        audioRef.current.play().catch((error) => {
-          console.error("Error de reproducción:", error);
-          toast({
-            title: "Error",
-            description: "No se pudo reproducir la pista de audio. Por favor, inténtalo de nuevo.",
-            variant: "destructive",
-          });
-          resetPlayback();
-        });
+    setIsPlaying(false);
+    setIsPlayingFull(false);
+    setIsTrimming(true);
+
+    try {
+      // Call the trim endpoint
+      const response = await fetch('/api/audio/trim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sourceUrl: selectedSong.storageUrl,
+          startTime: startTime,
+          endTime: startTime + TEN_SECONDS
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to trim audio');
+      }
+
+      const data = await response.json();
+      console.log("Trim response:", data);
+
+      // Pass the trimmed audio URL to the parent component
+      onSelect({
+        song: selectedSong,
+        startTime: startTime,
+        endTime: startTime + TEN_SECONDS
+      });
+
+      addLog?.(`Confirmed music segment: ${selectedSong.title}`, 'success');
+      addLog?.(`Time range: ${startTime}s to ${startTime + TEN_SECONDS}s`, 'info');
+
+    } catch (error) {
+      console.error('Error trimming audio:', error);
+      toast({
+        title: "Error",
+        description: "Failed to trim audio segment",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTrimming(false);
+    }
+  };
+
+  const togglePreview = () => {
+    if (!selectedSong) return;
+    
+    if (isPlaying) {
+      setIsPlaying(false);
+      addLog?.('Preview stopped', 'info');
+    } else {
+      setIsPlayingFull(false);
+      setIsPlaying(true);
+      if (playerRef.current) {
+        playerRef.current.seekTo(startTime, 'seconds');
+      }
+      addLog?.('Previewing segment...', 'info');
+    }
+  };
+
+  const toggleFullPlay = () => {
+    if (!selectedSong) return;
+    
+    if (isPlayingFull) {
+      setIsPlayingFull(false);
+      addLog?.('Stopped full song', 'info');
+    } else {
+      setIsPlaying(false);
+      setIsPlayingFull(true);
+      if (playerRef.current) {
+        playerRef.current.seekTo(0, 'seconds');
+      }
+      addLog?.('Playing full song...', 'info');
+    }
+  };
+
+  const handleDuration = (duration: number) => {
+    console.log("Audio duration:", duration);
+    setDuration(duration);
+  };
+
+  const handleProgress = (state: { playedSeconds: number }) => {
+    console.log("Playback progress:", state.playedSeconds);
+    if (isPlaying && state.playedSeconds >= startTime + TEN_SECONDS) {
+      setIsPlaying(false);
+      if (playerRef.current) {
+        playerRef.current.seekTo(startTime, 'seconds');
       }
     }
   };
 
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const time = audioRef.current.currentTime;
-      setCurrentTime(time);
-
-      if (time >= startTime + VIDEO_DURATION) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
-    }
-  };
-
-  const handleSliderChange = (value: number[]) => {
-    const newStartTime = value[0];
+  const handleSliderChange = (values: number[]) => {
+    const newStartTime = values[0];
+    console.log("Slider changed to:", newStartTime);
     setStartTime(newStartTime);
-    if (audioRef.current) {
-      audioRef.current.currentTime = newStartTime;
-      setCurrentTime(newStartTime);
+    if (playerRef.current) {
+      playerRef.current.seekTo(newStartTime, 'seconds');
     }
   };
 
-  useEffect(() => {
-    resetPlayback();
-    if (audioRef.current) {
-      audioRef.current.currentTime = startTime;
-      audioRef.current.load();
-    }
-  }, [selected]);
+  if (loading) {
+    return <div className="text-center p-4">Loading music library...</div>;
+  }
+
+  const currentUrl = selectedSong ? getProperUrl(selectedSong.storageUrl) : '';
+  console.log("Current audio URL:", currentUrl);
 
   return (
-    <div className="space-y-8" onClick={(e) => e.stopPropagation()}>
-      {/* Genre Selector */}
-      <div className="relative z-20">
-        <Select
-          value={currentGenre}
-          onValueChange={(value) => {
-            setCurrentGenre(value);
-            const firstTrack = MUSIC_OPTIONS[value][0].file;
-            onSelect(firstTrack);
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecciona un género" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.keys(MUSIC_OPTIONS).map((genre) => (
-              <SelectItem key={genre} value={genre}>
-                {genre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="space-y-4">
+      <div className="relative">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrev}
+            className="absolute left-0 z-10"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
 
-      {/* Track Selection Wheel */}
-      <div className="relative w-[400px] h-[400px] mx-auto">
-        {MUSIC_OPTIONS[currentGenre].map((option, index) => {
-          const totalItems = MUSIC_OPTIONS[currentGenre].length;
-          const angle = (index / totalItems) * 2 * Math.PI;
-          const radius = 150;
-          const x = radius * Math.cos(angle);
-          const y = radius * Math.sin(angle);
-
-          return (
-            <motion.button
-              key={option.id}
-              onClick={() => onSelect(option.file)}
-              className={cn(
-                "absolute w-20 h-20 rounded-full retro-container transform -translate-x-1/2 -translate-y-1/2",
-                "hover:scale-110 transition-transform duration-200 cursor-pointer",
-                "flex items-center justify-center text-center text-sm font-bold text-white",
-                "shadow-lg hover:shadow-xl",
-                option.color,
-                selected === option.file && "ring-4 ring-white ring-opacity-50 scale-110"
-              )}
-              style={{
-                left: "50%",
-                top: "50%",
-                transform: `translate(${x}px, ${y}px)`,
-              }}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.95 }}
+          <div className="flex overflow-hidden mx-8">
+            <div 
+              className="flex transition-transform duration-300 ease-in-out"
+              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
-              <span className="glow-text px-2">{option.name}</span>
-            </motion.button>
-          );
-        })}
-
-        {/* Central Play Controls */}
-        <div className="absolute left-1/2 top-1/2 w-32 h-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 retro-container flex flex-col items-center justify-center gap-2">
-          <span className="text-sm font-bold text-primary glow-text">Vista Previa</span>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={togglePlayPause}
-              className="h-8 w-8 p-0"
-              disabled={isLoading}
-            >
-              {isPlaying ? (
-                <Pause className="h-4 w-4" />
-              ) : hasError ? (
-                <RefreshCw className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleReset}
-              className="h-8 w-8 p-0"
-            >
-              <SkipBack className="h-4 w-4" />
-            </Button>
+              {songs.map((song) => (
+                <Card
+                  key={song.id}
+                  className={`flex-shrink-0 w-64 p-4 m-2 cursor-pointer transition-all ${
+                    selectedSong?.id === song.id 
+                      ? 'ring-2 ring-primary' 
+                      : 'hover:ring-2 hover:ring-primary/50'
+                  }`}
+                  onClick={() => handleSongSelect(song)}
+                >
+                  <h3 className="font-bold">{song.title}</h3>
+                  <p className="text-sm text-muted-foreground">{song.artist}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Mood: {song.mood}</p>
+                </Card>
+              ))}
+            </div>
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNext}
+            className="absolute right-0 z-10"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
         </div>
       </div>
 
-      {/* Time Slider */}
-      <div className="w-full max-w-md mx-auto space-y-2">
-        <Slider
-          value={[startTime]}
-          min={0}
-          max={audioRef.current?.duration || 30}
-          step={0.1}
-          onValueChange={handleSliderChange}
-          className="w-full"
-        />
-        <div className="text-sm text-center text-muted-foreground">
-          Tiempo de inicio: {startTime.toFixed(1)}s
-        </div>
-      </div>
+      {selectedSong && (
+        <div className="space-y-4 p-4 bg-secondary/50 rounded-lg mt-4">
+          <div className="space-y-2">
+            <Label>Preview Controls</Label>
+            <div className="flex space-x-2">
+              <Button onClick={togglePreview} disabled={isTrimming}>
+                {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                {isPlaying ? 'Stop Preview' : 'Preview Segment'}
+              </Button>
+              <Button onClick={toggleFullPlay} disabled={isTrimming}>
+                {isPlayingFull ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                {isPlayingFull ? 'Stop Full Song' : 'Play Full Song'}
+              </Button>
+            </div>
+          </div>
 
-      {/* Hidden Audio Element */}
-      <audio
-        ref={audioRef}
-        src={selected}
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
-        onLoadedMetadata={() => {
-          if (audioRef.current) {
-            audioRef.current.currentTime = startTime;
-          }
-        }}
-        onLoadStart={() => {
-          setIsLoading(true);
-          setHasError(false);
-        }}
-        onCanPlay={() => {
-          setIsLoading(false);
-          if (isPlaying) {
-            audioRef.current?.play().catch(() => {
-              resetPlayback();
-            });
-          }
-        }}
-        onError={(e) => {
-          console.error("Error de audio:", e);
-          setIsLoading(false);
-          setIsPlaying(false);
-          setHasError(true);
-          toast({
-            title: "Error",
-            description: "No se pudo cargar la pista de audio. Por favor, intenta con otra o vuelve a intentar.",
-            variant: "destructive",
-          });
-        }}
-      />
+          <div className="space-y-2">
+            <Label>Segment Start Time: {startTime.toFixed(1)}s</Label>
+            <Slider
+              value={[startTime]}
+              min={0}
+              max={Math.max(0, duration - TEN_SECONDS)}
+              step={0.1}
+              onValueChange={handleSliderChange}
+              disabled={isTrimming}
+            />
+          </div>
+
+          <Button 
+            onClick={handleConfirm} 
+            className="w-full"
+            disabled={isTrimming}
+          >
+            {isTrimming ? 'Trimming...' : 'Confirm This Segment'}
+          </Button>
+
+          <ReactPlayer
+            ref={playerRef}
+            url={currentUrl}
+            playing={isPlaying || isPlayingFull}
+            onDuration={handleDuration}
+            onProgress={handleProgress}
+            onError={(e) => {
+              console.error("Player error:", e);
+              addLog?.('Error playing audio', 'error');
+              toast({
+                title: "Playback Error",
+                description: "Failed to play audio. Please try again.",
+                variant: "destructive",
+              });
+            }}
+            width="0"
+            height="0"
+            config={{
+              file: {
+                forceAudio: true,
+                attributes: {
+                  crossOrigin: "anonymous"
+                }
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   );
-};
-
-export default MusicSelector;
+}

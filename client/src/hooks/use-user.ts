@@ -37,20 +37,22 @@ async function handleRequest(
 }
 
 async function fetchUser(): Promise<SelectUser | null> {
+  console.log('Fetching user data...');
   const response = await fetch('/api/user', {
-    credentials: 'include'
+    credentials: 'include',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    }
   });
+  console.log('User response status:', response.status);
+
+  if (response.status === 401) {
+    return null;
+  }
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return null;
-    }
-
-    if (response.status >= 500) {
-      throw new Error(`${response.status}: ${response.statusText}`);
-    }
-
-    throw new Error(`${response.status}: ${await response.text()}`);
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
 
   return response.json();
@@ -59,11 +61,34 @@ async function fetchUser(): Promise<SelectUser | null> {
 export function useUser() {
   const queryClient = useQueryClient();
 
-  const { data: user, error, isLoading } = useQuery<SelectUser | null, Error>({
+  const { data: user, isLoading, error } = useQuery<SelectUser | null>({
     queryKey: ['user'],
-    queryFn: fetchUser,
-    staleTime: Infinity,
-    retry: false
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (response.status === 401) {
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        return null;
+      }
+    },
+    retry: false,
+    staleTime: 30000,
   });
 
   const loginMutation = useMutation<RequestResult, Error, InsertUser>({

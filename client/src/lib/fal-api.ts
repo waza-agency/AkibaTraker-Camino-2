@@ -1,38 +1,73 @@
 import { fal } from "@fal-ai/client";
 
-export async function generateVideo(prompt: string, apiKey: string): Promise<string> {
+type GenerationStatus = 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+type ProgressCallback = (status: GenerationStatus, progress?: number) => Promise<void>;
+
+interface VideoGenerationResult {
+  video_url: string;
+  seed?: number;
+}
+
+export async function generateVideo(prompt: string, apiKey: string, onProgress?: ProgressCallback) {
   try {
-    // Configure FAL client with API key
+    console.log('Starting video generation with prompt:', prompt);
+    
+    // Configure FAL client
     fal.config({
-      credentials: apiKey
+      credentials: apiKey,
     });
 
-    // Submit request using fal.subscribe for real-time updates
-    const result = await fal.subscribe(
-      "fal-ai/kling-video/v1.6/standard/text-to-video",
-      {
-        input: {
-          prompt: `anime cartoon, high quality, masterpiece, best quality, anime style, ${prompt}`,
-          duration: "10",
-          aspect_ratio: "16:9"
-        },
-        logs: true,
-        onQueueUpdate: (update) => {
-          if (update.status === "IN_PROGRESS") {
-            update.logs.map((log) => log.message).forEach(console.log);
-          }
-        },
-      }
-    );
+    let startTime = Date.now();
+    let lastProgress = 0;
 
-    if (!result.data?.video?.url) {
-      throw new Error("No video URL in response");
+    // Start the video generation
+    const result = await fal.subscribe("fal-ai/fast-video", {
+      input: {
+        prompt: `anime cartoon, high quality, masterpiece, best quality, anime style, ${prompt}`,
+        duration: "10",
+        aspect_ratio: "16:9"
+      },
+      pollInterval: 5000, // Poll every 5 seconds
+      onQueueUpdate: async (update) => {
+        console.log('Video generation status:', update.status);
+        
+        if (onProgress) {
+          let status: GenerationStatus = 'IN_PROGRESS';
+          let progress = lastProgress;
+
+          // Calculate progress based on status
+          if (update.status === 'IN_PROGRESS') {
+            // Estimate progress based on time elapsed
+            const timeElapsed = (Date.now() - startTime) / 1000;
+            progress = Math.min(95, (timeElapsed / 60) * 100); // Assume ~1 minute generation time
+            lastProgress = progress;
+          } else if (update.status === 'COMPLETED') {
+            status = 'COMPLETED';
+            progress = 100;
+          } else {
+            // Any other status (FAILED, CANCELLED, etc.) is treated as failure
+            status = 'FAILED';
+            progress = 0;
+          }
+          
+          console.log('Estimated progress:', progress, '%');
+          await onProgress(status, progress);
+        }
+      }
+    });
+
+    const videoUrl = (result as any).video_url || (result as any).data?.video?.url;
+    if (!videoUrl) {
+      throw new Error('No video URL in response');
     }
 
-    return result.data.video.url;
+    return {
+      url: videoUrl,
+      duration: "10s"
+    };
   } catch (error) {
-    console.error("FAL.ai API error:", error);
-    throw new Error(error instanceof Error ? error.message : "Failed to generate video");
+    console.error('Error generating video:', error);
+    throw error;
   }
 }
 

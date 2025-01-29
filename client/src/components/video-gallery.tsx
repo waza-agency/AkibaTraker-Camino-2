@@ -5,7 +5,6 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { SelectVideo } from "@db/schema";
 import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import ShareButton from "./share-button";
 import CaptionGenerator from "./caption-generator";
@@ -13,19 +12,31 @@ import CaptionGenerator from "./caption-generator";
 interface VideoMetadata {
   error?: string;
   retryCount: number;
+  progress: number;
+  duration?: string;
+  style?: string;
+  audioFile?: string;
 }
 
-interface VideoWithMetadata extends Omit<SelectVideo, 'metadata'> {
+interface Video {
+  id: number;
+  prompt: string;
+  style: string;
+  videoUrl: string;
+  audioUrl: string;
+  status: string;
   metadata: VideoMetadata;
+  likesCount: number;
+  createdAt: string;
+  creatorName: string;
 }
 
 export default function VideoGallery() {
-  const { data: videos, isLoading } = useQuery<VideoWithMetadata[]>({
+  const { data: videos, isLoading } = useQuery<Video[]>({
     queryKey: ["/api/videos"],
-    // Poll for updates every 2 seconds while a video is pending
     refetchInterval: (data) => {
       if (!Array.isArray(data)) return false;
-      return data.some((v) => v.status === "pending") ? 2000 : false;
+      return data.some((v) => ["pending", "generating", "merging"].includes(v.status)) ? 2000 : false;
     },
   });
   const [videoCaptions, setVideoCaptions] = useState<Record<number, string>>({});
@@ -68,7 +79,6 @@ export default function VideoGallery() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/videos/top"] });
     },
     onError: () => {
       toast({
@@ -109,19 +119,39 @@ export default function VideoGallery() {
     }));
   };
 
+  // Helper function to get proper video URL
+  const getVideoUrl = (url: string) => {
+    if (!url) return '';
+    return url.startsWith('/') ? `${window.location.origin}${url}` : url;
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Your Generated Videos</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {allVideos.map((video) => (
-          <Card key={video.id} className="p-4 space-y-3 overflow-hidden">
-            {video.status === "pending" && (
+          <Card key={video.id} className="p-4 space-y-3 overflow-hidden bg-card/50 backdrop-blur-sm">
+            {(video.status === "pending" || video.status === "generating") && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Generating{" "}
-                  {new Date(video.createdAt).toLocaleTimeString()}
+                  Generating video... {Math.round(video.metadata?.progress || 0)}%
                 </p>
-                <Progress value={30} className="animate-pulse" />
+                <Progress 
+                  value={video.metadata?.progress || 0} 
+                  className="animate-pulse" 
+                />
+              </div>
+            )}
+
+            {video.status === "merging" && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Merging audio... {Math.round(video.metadata?.progress || 0)}%
+                </p>
+                <Progress 
+                  value={video.metadata?.progress || 0} 
+                  className="animate-pulse" 
+                />
               </div>
             )}
 
@@ -145,15 +175,15 @@ export default function VideoGallery() {
               </div>
             )}
 
-            {video.status === "completed" && video.outputUrl && (
+            {video.status === "completed" && video.videoUrl && (
               <div className="space-y-3">
                 <div className="relative group">
                   <VideoPreviewThumbnail
-                    src={video.outputUrl}
+                    src={getVideoUrl(video.videoUrl)}
                     className="w-full rounded-lg aspect-video"
                   />
                   <ShareButton 
-                    url={video.outputUrl} 
+                    url={getVideoUrl(video.videoUrl)} 
                     title={video.prompt}
                   />
                   <div className="absolute top-2 right-2 flex gap-2">
@@ -182,9 +212,14 @@ export default function VideoGallery() {
                       {videoCaptions[video.id]}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(video.createdAt).toLocaleString()}
-                  </p>
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(video.createdAt).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      By {video.creatorName}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

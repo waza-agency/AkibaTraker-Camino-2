@@ -9,9 +9,24 @@ import ProfilePage from "@/pages/profile";
 import { useUser } from "@/hooks/use-user";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { MoodProvider } from "@/hooks/use-mood";
+import { Button } from "@/components/ui/button";
 
 function Router() {
-  const { user, isLoading } = useUser();
+  const { user, isLoading, error } = useUser();
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <div className="text-destructive">Failed to load user data</div>
+        <Button 
+          onClick={() => window.location.reload()}
+          variant="outline"
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

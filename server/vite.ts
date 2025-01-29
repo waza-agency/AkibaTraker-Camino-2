@@ -41,7 +41,7 @@ export async function setupVite(app: Express, server: Server) {
       strictPort: true,
       origin: '*'
     },
-    appType: "custom",
+    appType: 'spa'
   });
 
   app.use(vite.middlewares);

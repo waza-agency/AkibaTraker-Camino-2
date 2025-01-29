@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const authSchema = z.object({
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  email: z.string().email("Por favor, ingrese una dirección de correo electrónico válida"),
 });
 
 type AuthFormData = z.infer<typeof authSchema>;
@@ -26,8 +27,14 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
+      email: "",
     },
   });
+
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [tokenParam] = useState(new URLSearchParams(window.location.search).get('token'));
+  const [newPassword, setNewPassword] = useState("");
 
   const onSubmit = async (data: AuthFormData) => {
     try {
@@ -52,6 +59,35 @@ export default function AuthPage() {
         description: error instanceof Error ? error.message : "Algo salió mal",
         variant: "destructive",
       });
+    }
+  };
+
+  const handlePasswordResetRequest = async () => {
+    const response = await fetch('/api/auth/request-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: resetEmail })
+    });
+    
+    if (response.ok) {
+      alert('Check your email for reset instructions');
+    } else {
+      alert('Error sending reset request');
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    const response = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: tokenParam, newPassword })
+    });
+    
+    if (response.ok) {
+      alert('Password reset successfully');
+      setShowReset(false);
+    } else {
+      alert('Error resetting password');
     }
   };
 
@@ -148,6 +184,20 @@ export default function AuthPage() {
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <Button type="submit" className="w-full retro-btn">
                   {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
                 </Button>
@@ -165,6 +215,42 @@ export default function AuthPage() {
                 </div>
               </form>
             </Form>
+
+            <div className="reset-section">
+              <button onClick={() => setShowReset(!showReset)}>
+                Forgot Password?
+              </button>
+
+              {showReset && (
+                <div className="reset-form">
+                  {tokenParam ? (
+                    <>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New password"
+                      />
+                      <input type="hidden" value={tokenParam} />
+                    </>
+                  ) : (
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="Enter your email"
+                    />
+                  )}
+                  <button onClick={handlePasswordResetRequest}>
+                    Send Reset Link
+                  </button>
+
+                  <button onClick={handlePasswordReset}>
+                    Reset Password
+                  </button>
+                </div>
+              )}
+            </div>
           </motion.div>
         </Card>
       </div>

@@ -4,11 +4,17 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useState } from "react";
-import type { SelectVideo } from "@db/schema";
+
+interface Video {
+  id: number;
+  outputUrl: string;
+  status: string;
+  // ... other fields ...
+}
 
 export default function VideoPreview() {
   const [aspectRatio, setAspectRatio] = useState<"16:9" | "9:16" | "1:1">("16:9");
-  const { data: videos, refetch } = useQuery<SelectVideo[]>({
+  const { data: videos, refetch } = useQuery<Video[]>({
     queryKey: ["/api/videos"],
     // Poll for updates every 2 seconds while a video is pending
     refetchInterval: (data) => {
