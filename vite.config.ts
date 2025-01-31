@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [react(), runtimeErrorOverlay(), themePlugin()],
   server: {
     host: true,
-    allowedHosts: true,
+    allowedHosts: ['akiba.club', 'www.akiba.club', 'akiba.world', 'www.akiba.world'],
     port: 3001,
     strictPort: true
   },
