@@ -12,7 +12,8 @@ export default defineConfig({
   plugins: [react(), runtimeErrorOverlay(), themePlugin()],
   server: {
     host: true,
-    port: 3000,
+    allowedHosts: true,
+    port: 3001,
     strictPort: true
   },
   resolve: {
