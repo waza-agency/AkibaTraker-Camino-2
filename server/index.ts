@@ -13,6 +13,7 @@ import { videosRouter } from './routes/videos';
 import musicRoutes from './routes/music';
 import audioRoutes from './routes/audio';
 import { registerRoutes } from "./routes";
+import { ErrorRequestHandler } from 'express';
 
 // Log environment for debugging
 console.log('Environment:', {
@@ -53,19 +54,28 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
+// Add process-level error handling
+process.on('uncaughtException', (error) => {
+  console.error('UNCAUGHT EXCEPTION:', error);
+  // Don't crash the app, but log the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION:', reason);
+  // Don't crash the app, but log the error
+});
+
+// Update session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
   store: new MemoryStore({
     checkPeriod: 86400000 // prune expired entries every 24h
   }),
+  secret: process.env.SESSION_SECRET || 'your-fallback-secret',
+  resave: false,
+  saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
@@ -100,6 +110,31 @@ if (process.env.NODE_ENV !== 'production') {
     }
   });
 }
+
+// Add global error handling middleware
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.error('Global error:', err);
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production' 
+      ? 'An internal error occurred' 
+      : err.message
+  });
+};
+
+// Add after your routes registration
+app.use(errorHandler);
+
+// Add graceful shutdown
+function gracefulShutdown(signal: string) {
+  console.log(`Received ${signal}, starting graceful shutdown`);
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Initialize routes and start server
 const PORT = process.env.PORT || 3000;

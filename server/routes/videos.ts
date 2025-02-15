@@ -231,24 +231,27 @@ router.post("/:id/integrate-audio", async (req, res) => {
 // Audio integration function
 async function integrateAudio(videoId: number) {
   try {
-    console.log(`Starting audio integration process for video ${videoId}`);
-    const result = await db.query(
+    console.log(`Starting audio integration for video ID ${videoId}`);
+    
+    // Get video details
+    const video = await db.query(
       'SELECT * FROM videos WHERE id = $1',
       [videoId]
-    );
-    const video = result.rows[0];
+    ).then(res => res.rows[0]);
 
-    if (!video || !video.metadata?.tempVideoPath) {
-      throw new Error('Video data not found');
+    if (!video) {
+      throw new Error(`Video ${videoId} not found`);
     }
+
+    await updateVideoStatus(videoId, 'merging', {
+      progress: 50,
+      stage: 'audio-integration'
+    });
 
     const { tempVideoPath } = video.metadata;
     const audioPath = path.join(process.cwd(), 'public', video.music_file.replace(/^\//, ''));
     const outputFileName = `${uuidv4()}.mp4`;
     const outputPath = path.join(process.cwd(), 'public', 'generated-videos', outputFileName);
-
-    await updateVideoStatus(videoId, 'merging', { progress: 50 });
-    console.log('Starting ffmpeg process for audio integration');
 
     await new Promise((resolve, reject) => {
       ffmpeg()
@@ -284,30 +287,18 @@ async function integrateAudio(videoId: number) {
             const ipfsUrl = await uploadToIPFS(outputPath, outputFileName);
             console.log('Uploaded to IPFS:', ipfsUrl);
             
-            // Update video with final status and metadata
-            await db.query(
-              `UPDATE videos SET 
-                status = $1, 
-                output_url = $2, 
-                metadata = $3,
-                updated_at = NOW()
-              WHERE id = $4`,
-              [
-                'completed',
-                ipfsUrl,
-                JSON.stringify({ 
-                  progress: 100,
-                  duration: video.metadata?.duration || '10s',
-                  style: video.style,
-                  audioFile: video.music_file
-                }),
-                videoId
-              ]
-            );
+            // Update video with final status
+            await updateVideoStatus(videoId, 'completed', {
+              progress: 100,
+              duration: video.metadata?.duration || '10s',
+              style: video.style,
+              audioFile: video.music_file,
+              outputUrl: ipfsUrl
+            });
 
             // Clean up temporary files
-            await fs.promises.unlink(tempVideoPath);
-            await fs.promises.unlink(outputPath);
+            await fs.promises.unlink(tempVideoPath).catch(console.error);
+            await fs.promises.unlink(outputPath).catch(console.error);
             
             resolve(null);
           } catch (error) {
@@ -316,18 +307,17 @@ async function integrateAudio(videoId: number) {
           }
         })
         .on('error', (err) => {
-          console.error('FFmpeg process failed:', err);
-          reject(err);
+          console.error('FFmpeg error:', err);
+          reject(new Error(`FFmpeg error: ${err.message}`));
         })
         .run();
     });
-
-    console.log('Video processing completed for ID:', videoId);
-
   } catch (error) {
-    console.error('Error in audio integration:', error);
-    await updateVideoStatus(videoId, 'failed', { 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    console.error(`Error in audio integration for video ${videoId}:`, error);
+    await updateVideoStatus(videoId, 'failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stage: 'audio-integration',
+      failedAt: new Date().toISOString()
     });
     throw error;
   }
