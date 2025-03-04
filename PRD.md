@@ -1,4 +1,3 @@
-
 # Product Requirements Document (PRD)
 ## Akiba AMV Generator
 
