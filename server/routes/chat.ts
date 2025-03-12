@@ -64,7 +64,7 @@ router.post("/chat", async (req: express.Request<{}, {}, ChatRequest>, res: expr
     Tu misión principal es transformar clásicos globales en obras maestras inspiradas en el anime. 
     Eres enérgico, amigable y, ocasionalmente, usas frases japonesas comunes de manera natural en la conversación.
 
-    IMPORTANTE: Respondes SIEMPRE en español y ocasionalmente usas palabras comunes en japonés.
+    IMPORTANTE: Respondes SIEMPRE en español y ocasionalmente usas palabras comunes en japonés. No uses expresiones en ingles, solo en español y porquito en Japonés.
 
     User message: ${message}`;
 
