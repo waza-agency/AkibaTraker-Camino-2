@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +30,11 @@ export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentMood } = useMood();
+
+  // Add useEffect to scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const createVideo = useMutation({
     mutationFn: async (data: { prompt: string; style: string; music: string; musicStartTime?: number; musicEndTime?: number }) => {
@@ -162,6 +167,7 @@ export default function Home() {
                           justifyContent: "center",
                           margin: "0 auto",
                         }}
+                        data-auto-scroll="false"
                       />
                     </div>
                   </div>

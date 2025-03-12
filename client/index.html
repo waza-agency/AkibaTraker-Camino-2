@@ -11,6 +11,16 @@
       }
     </style>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script>
+      // Ensure page starts at the top when loaded
+      window.onload = function() {
+        window.scrollTo(0, 0);
+      };
+      // Also reset scroll position when navigating
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
