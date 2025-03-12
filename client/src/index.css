@@ -68,6 +68,51 @@
     100% { background-position: 0 100% }
   }
 
+  /* Neon screen effect */
+  .neon-screen {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .neon-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(
+        transparent 50%,
+        rgba(124, 58, 237, 0.12) 50%
+      ),
+      linear-gradient(
+        90deg,
+        rgba(124, 58, 237, 0.05),
+        rgba(124, 58, 237, 0.08),
+        rgba(124, 58, 237, 0.05)
+      );
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 1;
+    mix-blend-mode: overlay;
+    animation: scanline-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes scanline-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Enhanced neon glow for container */
+  .neon-screen.retro-container {
+    box-shadow: 
+      inset 0 0 20px rgba(0, 0, 0, 0.5),
+      0 0 20px theme('colors.primary.DEFAULT/0.7'),
+      0 0 30px theme('colors.primary.DEFAULT/0.4');
+  }
+
   /* Enhanced pixel borders */
   .pixel-borders {
     border-style: solid;
@@ -147,6 +192,38 @@
         0 0 20px theme('colors.primary.DEFAULT/0.5'),
         0 0 30px theme('colors.primary.DEFAULT/0.3'),
         2px 2px 0 rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  /* Neon text effect for Akiba title */
+  .neon-akiba {
+    color: #fff;
+    text-shadow: 
+      0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 15px #fff,
+      0 0 20px theme('colors.primary.DEFAULT'),
+      0 0 35px theme('colors.primary.DEFAULT'),
+      0 0 40px theme('colors.primary.DEFAULT'),
+      0 0 50px theme('colors.primary.DEFAULT'),
+      0 0 75px theme('colors.primary.DEFAULT');
+    animation: neon-flicker 2.5s infinite alternate-reverse;
+  }
+
+  @keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+      text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 15px #fff,
+        0 0 20px theme('colors.primary.DEFAULT'),
+        0 0 35px theme('colors.primary.DEFAULT'),
+        0 0 40px theme('colors.primary.DEFAULT'),
+        0 0 50px theme('colors.primary.DEFAULT'),
+        0 0 75px theme('colors.primary.DEFAULT');
+    }
+    20%, 24%, 55% {
+      text-shadow: none;
     }
   }
 
