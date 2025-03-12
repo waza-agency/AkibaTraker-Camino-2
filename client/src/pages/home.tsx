@@ -80,6 +80,31 @@ export default function Home() {
           <HeroBanner />
           <CharacterCard />
 
+          {/* Spotify Playlist Section */}
+          <section className="mt-8">
+            <Card className="bg-card/50 backdrop-blur-sm p-6 border border-primary/20">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold glow-text text-center">Warner Music Latin Vibes</h2>
+                <p className="text-center text-muted-foreground">
+                  Here you can listen to some of my Favorite tracks from my colleagues at Warner Music Latin
+                </p>
+                <div className="relative rounded-xl overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 animate-gradient" />
+                  <iframe 
+                    className="relative z-10"
+                    style={{ borderRadius: "12px" }}
+                    src="https://open.spotify.com/embed/playlist/3YFBFlUlgFM7HonQqwTnuM?utm_source=generator&theme=0"
+                    width="100%"
+                    height={352}
+                    frameBorder={0}
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </Card>
+          </section>
+
           {/* Chat Sections */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Gemini Chat Section */}

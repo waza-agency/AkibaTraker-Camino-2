@@ -29,14 +29,20 @@ async function cleanupStalledVideos() {
 
     console.log("Cleaned up stalled videos older than:", staleTime);
   } catch (error) {
-    console.error("Failed to cleanup stalled videos:", error);
+    console.warn("Failed to cleanup stalled videos (database may be unavailable):", error);
+    // Continue execution even if database is unavailable
   }
 }
 
 export function registerRoutes(app: Express): void {
-  // Clean up stalled videos on startup
-  cleanupStalledVideos();
-  setInterval(cleanupStalledVideos, 5 * 60 * 1000);
+  try {
+    // Clean up stalled videos on startup
+    cleanupStalledVideos();
+    setInterval(cleanupStalledVideos, 5 * 60 * 1000);
+  } catch (error) {
+    console.warn("Could not set up video cleanup (database may be unavailable):", error);
+    // Continue execution even if database is unavailable
+  }
 
   // Set up auth
   setupAuth(app);

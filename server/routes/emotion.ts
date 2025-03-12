@@ -88,6 +88,12 @@ Response to analyze: "${text}"`;
     }
   } catch (error) {
     console.error("Error in emotion analysis:", error);
+    console.error("Error details:", error);
+    console.error("Request body:", req.body);
+    console.error("Environment variables:", {
+      GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ? "Present" : "Missing",
+      NODE_ENV: process.env.NODE_ENV
+    });
     res.status(500).json({ 
       error: "Internal server error during emotion analysis",
       mood: "energetic", // Default to energetic

@@ -9,19 +9,25 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
+import React from "react";
 
-const authSchema = z.object({
-  username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  email: z.string().email("Por favor, ingrese una dirección de correo electrónico válida"),
-});
-
-type AuthFormData = z.infer<typeof authSchema>;
+type AuthFormData = {
+  username: string;
+  password: string;
+  email?: string;
+};
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const { login, register } = useUser();
   const { toast } = useToast();
+
+  const authSchema = z.object({
+    username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+    email: isLogin ? z.string().optional() : z.string().email("Por favor, ingrese una dirección de correo electrónico válida"),
+  });
+
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
     defaultValues: {
@@ -36,9 +42,20 @@ export default function AuthPage() {
   const [tokenParam] = useState(new URLSearchParams(window.location.search).get('token'));
   const [newPassword, setNewPassword] = useState("");
 
+  // Reset form when switching between login and register
+  React.useEffect(() => {
+    form.reset({
+      username: "",
+      password: "",
+      email: "",
+    });
+  }, [isLogin, form]);
+
   const onSubmit = async (data: AuthFormData) => {
     try {
-      const result = isLogin ? await login(data) : await register(data);
+      const result = isLogin 
+        ? await login({ username: data.username, password: data.password })
+        : await register(data);
 
       if (!result.ok) {
         toast({
@@ -184,19 +201,26 @@ export default function AuthPage() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {!isLogin && (
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="email" 
+                            {...field} 
+                            className="pixel-borders"
+                            placeholder="Tu correo electrónico"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <Button type="submit" className="w-full retro-btn">
                   {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}

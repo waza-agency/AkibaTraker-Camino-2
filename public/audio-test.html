@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Playback Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .log {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Audio Playback Test</h1>
+    
+    <div class="container">
+        <h2>Direct Audio Test</h2>
+        <p>Test audio playback using the native HTML5 audio element:</p>
+        <audio id="audioPlayer" controls style="width: 100%;">
+            <source src="https://cloudflare-ipfs.com/ipfs/bafybeiexrz2iyivgepluiurdcfbfgtctfcdkwggv4ec3b3suumkrwk6k5i" type="audio/mp3">
+            Your browser does not support the audio element.
+        </audio>
+        <div>
+            <button id="playBtn">Play</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="stopBtn">Stop</button>
+        </div>
+        <p>Current Time: <span id="currentTime">0</span> / <span id="duration">0</span></p>
+        <input type="range" id="seekSlider" min="0" max="100" value="0">
+    </div>
+
+    <div class="container">
+        <h2>Trimming Test</h2>
+        <p>Test audio trimming functionality:</p>
+        <div>
+            <label for="startTime">Start Time (seconds):</label>
+            <input type="number" id="startTime" min="0" value="10" style="width: 60px;">
+            
+            <label for="endTime">End Time (seconds):</label>
+            <input type="number" id="endTime" min="0" value="20" style="width: 60px;">
+            
+            <button id="previewBtn">Preview Segment</button>
+        </div>
+    </div>
+
+    <div class="log" id="logContainer">
+        <div>Log messages will appear here...</div>
+    </div>
+
+    <script>
+        // Elements
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const seekSlider = document.getElementById('seekSlider');
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+        const previewBtn = document.getElementById('previewBtn');
+        const logContainer = document.getElementById('logContainer');
+
+        // Log function
+        function log(message) {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Initialize
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = audioPlayer.duration.toFixed(2);
+            seekSlider.max = audioPlayer.duration;
+            log(`Audio loaded. Duration: ${audioPlayer.duration.toFixed(2)} seconds`);
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            currentTimeEl.textContent = audioPlayer.currentTime.toFixed(2);
+            seekSlider.value = audioPlayer.currentTime;
+        });
+
+        audioPlayer.addEventListener('error', (e) => {
+            log(`Error loading audio: ${e.target.error.message || 'Unknown error'}`);
+        });
+
+        // Button controls
+        playBtn.addEventListener('click', () => {
+            audioPlayer.play().catch(error => {
+                log(`Error playing audio: ${error.message}`);
+            });
+            log('Play button clicked');
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            audioPlayer.pause();
+            log('Pause button clicked');
+        });
+
+        stopBtn.addEventListener('click', () => {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            log('Stop button clicked');
+        });
+
+        // Seek slider
+        seekSlider.addEventListener('input', () => {
+            audioPlayer.currentTime = seekSlider.value;
+        });
+
+        // Preview segment
+        previewBtn.addEventListener('click', () => {
+            const startTime = parseFloat(startTimeInput.value);
+            const endTime = parseFloat(endTimeInput.value);
+            
+            if (isNaN(startTime) || isNaN(endTime) || startTime >= endTime) {
+                log('Invalid time range');
+                return;
+            }
+            
+            log(`Previewing segment from ${startTime}s to ${endTime}s`);
+            audioPlayer.currentTime = startTime;
+            
+            const previewEndHandler = () => {
+                if (audioPlayer.currentTime >= endTime) {
+                    audioPlayer.pause();
+                    log('Preview segment ended');
+                    audioPlayer.removeEventListener('timeupdate', previewEndHandler);
+                }
+            };
+            
+            audioPlayer.addEventListener('timeupdate', previewEndHandler);
+            audioPlayer.play().catch(error => {
+                log(`Error playing segment: ${error.message}`);
+            });
+        });
+
+        // Initial log
+        log('Audio test page loaded');
+    </script>
+</body>
+</html> 

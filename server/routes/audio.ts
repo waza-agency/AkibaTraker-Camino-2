@@ -27,19 +27,25 @@ function getGatewayUrl(ipfsUrl: string): string {
   console.log('Converting URL:', ipfsUrl);
   
   if (ipfsUrl.startsWith('http')) {
+    // Use cloudflare gateway instead of ipfs.io for better reliability
+    if (ipfsUrl.includes('ipfs.io')) {
+      const newUrl = ipfsUrl.replace('ipfs.io', 'cloudflare-ipfs.com');
+      console.log('Using Cloudflare gateway:', newUrl);
+      return newUrl;
+    }
     console.log('Using direct HTTP URL:', ipfsUrl);
     return ipfsUrl;
   }
   
   if (ipfsUrl.startsWith('ipfs://')) {
     const cid = ipfsUrl.replace('ipfs://', '');
-    const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+    const gatewayUrl = `https://cloudflare-ipfs.com/ipfs/${cid}`;
     console.log('Converted IPFS URL:', ipfsUrl, 'to:', gatewayUrl);
     return gatewayUrl;
   }
   
   const cid = ipfsUrl.replace('/ipfs/', '');
-  const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+  const gatewayUrl = `https://cloudflare-ipfs.com/ipfs/${cid}`;
   console.log('Converted CID/path:', ipfsUrl, 'to:', gatewayUrl);
   return gatewayUrl;
 }
@@ -69,14 +75,17 @@ router.post('/trim', async (req, res) => {
     try {
       // Download the source audio from IPFS
       const gatewayUrl = getGatewayUrl(sourceUrl);
+      console.log('Attempting to download from:', gatewayUrl);
+      
       const response = await fetch(gatewayUrl, {
         headers: {
-          'Authorization': `Bearer ${process.env.PINATA_JWT}`
+          'User-Agent': 'AkibaTracker/1.0',
+          'Accept': 'audio/*'
         }
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch source audio: ${response.statusText}`);
+        throw new Error(`Failed to fetch source audio: ${response.statusText} (${response.status})`);
       }
 
       const body = response.body;
@@ -92,6 +101,8 @@ router.post('/trim', async (req, res) => {
           .on('error', reject);
       });
 
+      console.log('Audio downloaded successfully to:', tempPath);
+
       // Trim the audio
       await new Promise((resolve, reject) => {
         ffmpeg(tempPath)
@@ -100,11 +111,20 @@ router.post('/trim', async (req, res) => {
           .audioCodec('libmp3lame')
           .audioBitrate('192k')
           .output(outputPath)
+          .on('start', (commandLine) => {
+            console.log('FFmpeg command:', commandLine);
+          })
           .on('progress', (progress) => {
             console.log('Processing: ' + progress.percent + '% done');
           })
-          .on('end', resolve)
-          .on('error', (err) => reject(new Error(`FFmpeg error: ${err.message}`)))
+          .on('end', () => {
+            console.log('Audio trimming completed successfully');
+            resolve(null);
+          })
+          .on('error', (err) => {
+            console.error('FFmpeg error:', err);
+            reject(new Error(`FFmpeg error: ${err.message}`));
+          })
           .run();
       });
 

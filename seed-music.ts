@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { db } from "./db";
-import bcrypt from "bcrypt";
 
 // Log environment for debugging
 console.log('Current environment variables:', {
@@ -92,7 +91,7 @@ async function seedDatabase() {
       title: "Pon Pon Pon",
       artist: "Kyary Pamyu Pamyu",
       mood: "Party",
-      storageUrl: "https://ipfs.io/ipfs/bafybeiexrz2iyivgepluiurdcfbfgtctfcdkwggv4ec3b3suumkrwk6k5i"
+      storageUrl: "https://lime-zygomorphic-vicuna-674.mypinata.cloud/ipfs/bafybeiexrz2iyivgepluiurdcfbfgtctfcdkwggv4ec3b3suumkrwk6k5i"
     }
   ];
 

@@ -28,22 +28,11 @@ const server = createServer(app);
 const MemoryStore = memorystore(session);
 
 // Add security headers
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-    "img-src * data: blob: 'unsafe-inline'; " +
-    "media-src * data: blob: 'unsafe-inline'; " +
-    "script-src * 'unsafe-inline' 'unsafe-eval' blob:; " +
-    "style-src * 'unsafe-inline'; " +
-    "connect-src * data: blob: 'unsafe-inline';"
-  );
-  next();
-});
+app.use(setupSecurityHeaders());
 
 // Configure CORS
 app.use(cors({
-  origin: true, // Allow all origins
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],

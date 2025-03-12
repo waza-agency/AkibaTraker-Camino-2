@@ -22,12 +22,11 @@ export default function ChatInterface() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { setMood } = useMood();
-  const [messageCount, setMessageCount] = useState(0);
 
   // Keep focus on input
   useEffect(() => {
     inputRef.current?.focus();
-  }, [messages]); // Re-focus when messages change
+  }, [messages]);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -39,30 +38,33 @@ export default function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
-  const [chatHistory, setChatHistory] = useState<{role: string, parts: {text: string}[]}[]>([
-    {
-      role: "user",
-      parts: [{text: "You are Akiba, an innovative AI DJ born in the neon-lit heart of Akihabara. Your core mission is to transform global classics into anime-inspired masterpieces."}]
-    },
-    {
-      role: "model",
-      parts: [{text: "¡Oigan, raza! Akiba al micrófono, ready to transform your musical reality into an epic anime opening sequence!"}]
-    }
-  ]);
+  const formatMessagesForAPI = (messages: Message[]) => {
+    return messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
+  };
 
   const analyzeConversationMood = async (messages: Message[]) => {
-    const lastMessages = messages.slice(-3).map(m => m.content).join("\n");
-    const emotionRes = await fetch('/api/analyze-emotion', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ text: lastMessages }),
-    });
+    if (messages.length < 2) return; // Only analyze if there's a conversation
+    
+    try {
+      const lastMessages = messages.slice(-3).map(m => m.content).join("\n");
+      const emotionRes = await fetch('/api/analyze-emotion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: lastMessages }),
+      });
 
-    if (emotionRes.ok) {
-      const emotionData = await emotionRes.json();
-      setMood(emotionData.mood);
+      if (emotionRes.ok) {
+        const emotionData = await emotionRes.json();
+        setMood(emotionData.mood);
+      }
+    } catch (error) {
+      console.error("Error analyzing mood:", error);
+      // Don't show error toast for mood analysis failures
     }
   };
 
@@ -73,95 +75,72 @@ export default function ChatInterface() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
           },
           body: JSON.stringify({ 
             message,
-            history: chatHistory 
+            history: formatMessagesForAPI(messages)
           }),
           credentials: 'include'
         });
 
-        const data = await res.json();
-        
-        // Update chat history
-        const newHistory = [
-          ...chatHistory,
-          { role: "user", parts: [{text: message}] },
-          { role: "model", parts: [{text: data.message}] }
-        ];
-        setChatHistory(newHistory);
-
-        // Analyze combined mood
-        await analyzeConversationMood([...messages, {
-          role: "user",
-          content: message,
-          id: `msg-${Date.now()}-user`
-        }, {
-          role: "assistant",
-          content: data.message,
-          id: `msg-${Date.now()}-assistant`
-        }]);
-
-        return data;
-        
         if (!res.ok) {
-          throw new Error(data.error || `HTTP error! status: ${res.status}`);
+          const errorData = await res.json();
+          throw new Error(errorData.details || `HTTP error! status: ${res.status}`);
         }
 
+        const data = await res.json();
+        
         if (!data || typeof data.message !== 'string') {
-          console.error("Invalid response:", data);
           throw new Error("Invalid response format from server");
         }
 
         return data;
       } catch (error) {
         console.error("Chat API error:", error);
-        throw new Error(error instanceof Error ? error.message : "Failed to send message");
+        throw error;
       }
     },
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const userMessage = input.trim();
-    setInput("");
-
-    const userMessageId = `msg-${Date.now()}-user`;
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: userMessage,
-        id: userMessageId,
-      },
-    ]);
-
-    try {
-      const data = await sendMessage.mutateAsync(userMessage);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: data.message,
-          id: `msg-${Date.now()}-assistant`,
-        },
-      ]);
-    } catch (error) {
-      console.error("Chat message error:", error);
+    onError: (error) => {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to send message",
         variant: "destructive",
       });
     }
+  });
 
-    // Focus will be handled by the useEffect
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || sendMessage.isPending) return;
+
+    const userMessage = input.trim();
+    setInput("");
+
+    const userMessageObj = {
+      role: "user" as const,
+      content: userMessage,
+      id: `msg-${Date.now()}-user`,
+    };
+
+    setMessages(prev => [...prev, userMessageObj]);
+
+    try {
+      const data = await sendMessage.mutateAsync(userMessage);
+
+      const assistantMessage = {
+        role: "assistant" as const,
+        content: data.message,
+        id: `msg-${Date.now()}-assistant`,
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Analyze mood after adding both messages
+      await analyzeConversationMood([...messages, userMessageObj, assistantMessage]);
+    } catch (error) {
+      // Error handling is done in mutation's onError
+    }
   };
-
 
   const messageVariants = {
     initial: {
@@ -199,69 +178,65 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col h-full">
-        <>
-          <ScrollArea className="flex-1 px-4 py-2">
-            <div className="space-y-4 min-h-full">
-              <AnimatePresence mode="popLayout">
-                {messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[80%] px-4 py-2 rounded-2xl ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
-                    >
-                      <p className="text-sm">{message.content}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {sendMessage.isPending && (
-                <motion.div
-                  className="flex justify-start"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="max-w-[80%] px-4 py-2 rounded-2xl bg-muted">
-                    <p className="text-sm">Akiba is typing...</p>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </ScrollArea>
-
-          <div className="p-4 border-t bg-background/50">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1"
-                disabled={sendMessage.isPending}
-                aria-label="Chat message"
-                ref={inputRef}
-                autoFocus
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={sendMessage.isPending}
-                aria-label="Send message"
+      <ScrollArea className="flex-1 px-4 py-2" ref={scrollAreaRef}>
+        <div className="space-y-4 min-h-full">
+          <AnimatePresence mode="popLayout">
+            {messages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
+                }`}
               >
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
-        </>
+                <div
+                  className={`max-w-[80%] px-4 py-2 rounded-2xl ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {sendMessage.isPending && (
+            <motion.div
+              className="flex justify-start"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="max-w-[80%] px-4 py-2 rounded-2xl bg-muted">
+                <p className="text-sm">Akiba is typing...</p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </ScrollArea>
+
+      <form onSubmit={handleSubmit} className="flex gap-2 p-4">
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          className="flex-1"
+          disabled={sendMessage.isPending}
+          aria-label="Chat message"
+          ref={inputRef}
+          autoFocus
+        />
+        <Button
+          type="submit"
+          size="icon"
+          disabled={sendMessage.isPending}
+          aria-label="Send message"
+        >
+          <Send className="w-4 h-4" />
+        </Button>
+      </form>
     </div>
   );
 }
