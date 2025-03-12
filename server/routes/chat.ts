@@ -22,7 +22,6 @@ router.post("/chat", async (req, res) => {
         error: "Bad Request",
         details: "Message is required"
       });
-    }
 
     const apiKey = process.env.GOOGLE_API_KEY;
     
@@ -37,7 +36,7 @@ router.post("/chat", async (req, res) => {
     // Initialize the Gemini AI client
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-pro",
+      model: "gemini-1.0-pro",
       generationConfig: {
         temperature: 0.9,
         maxOutputTokens: 800,
