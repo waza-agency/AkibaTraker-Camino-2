@@ -49,7 +49,7 @@ router.post("/chat", async (req: express.Request<{}, {}, ChatRequest>, res: expr
     // Initialize the Gemini AI client
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.0-pro",
+      model: "gemini-1.5-flash",
       generationConfig: {
         temperature: 0.9,
         maxOutputTokens: 800,
