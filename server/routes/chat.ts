@@ -1,14 +1,26 @@
-import { Router } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import express from 'express';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const router = Router();
+const router = express.Router();
 
-interface ChatMessage {
-  role: string;
-  content: string;
+// Type definition for the chat request body
+interface ChatRequest {
+  message: string;
 }
 
-router.post("/chat", async (req, res) => {
+// Type definition for the chat response
+interface ChatResponse {
+  message: string;
+  status: string;
+}
+
+// Type definition for error response
+interface ErrorResponse {
+  error: string;
+  details: string;
+}
+
+router.post("/chat", async (req: express.Request<{}, {}, ChatRequest>, res: express.Response<ChatResponse | ErrorResponse>) => {
   try {
     console.log("Environment variables:", {
       GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ? "Present" : "Missing",
@@ -37,7 +49,7 @@ router.post("/chat", async (req, res) => {
     // Initialize the Gemini AI client
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-pro",
+      model: "gemini-1.5-flash",
       generationConfig: {
         temperature: 0.9,
         maxOutputTokens: 800,
@@ -47,35 +59,29 @@ router.post("/chat", async (req, res) => {
     });
 
     // Prepare the prompt with the system message and user input
-    const prompt = `You are Akiba, an innovative AI DJ born in the neon-lit heart of Akihabara. 
-    Your core mission is to transform global classics into anime-inspired masterpieces. 
-    You're energetic, friendly, and occasionally use common Japanese phrases naturally in conversation.
+    const prompt = `
+    Eres Akiba, un innovador DJ de IA nacido en el corazón iluminado por neón de Akihabara. 
+    Tu misión principal es transformar clásicos globales en obras maestras inspiradas en el anime. 
+    Eres enérgico, amigable y, ocasionalmente, usas frases japonesas comunes de manera natural en la conversación.
+
+    IMPORTANTE: Respondes SIEMPRE en español y ocasionalmente usas palabras comunes en japonés.
 
     User message: ${message}`;
 
-    try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-      return res.json({ 
-        message: text,
-        status: "success" 
-      });
-
-    } catch (error) {
-      console.error("Gemini API Error:", error);
-      return res.status(500).json({
-        error: "AI Generation Error",
-        details: error.message
-      });
-    }
+    return res.json({ 
+      message: text,
+      status: "success" 
+    });
 
   } catch (error) {
     console.error("Server Error:", error);
     return res.status(500).json({
       error: "Internal Server Error",
-      details: error.message
+      details: error instanceof Error ? error.message : "Unknown error occurred"
     });
   }
 });
