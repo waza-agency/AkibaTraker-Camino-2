@@ -1,14 +1,26 @@
-import { Router } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import express from 'express';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const router = Router();
+const router = express.Router();
 
-interface ChatMessage {
-  role: string;
-  content: string;
+// Type definition for the chat request body
+interface ChatRequest {
+  message: string;
 }
 
-router.post("/chat", async (req, res) => {
+// Type definition for the chat response
+interface ChatResponse {
+  message: string;
+  status: string;
+}
+
+// Type definition for error response
+interface ErrorResponse {
+  error: string;
+  details: string;
+}
+
+router.post("/chat", async (req: express.Request<{}, {}, ChatRequest>, res: express.Response<ChatResponse | ErrorResponse>) => {
   try {
     console.log("Environment variables:", {
       GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ? "Present" : "Missing",
@@ -22,6 +34,7 @@ router.post("/chat", async (req, res) => {
         error: "Bad Request",
         details: "Message is required"
       });
+    }
 
     const apiKey = process.env.GOOGLE_API_KEY;
     
@@ -52,29 +65,20 @@ router.post("/chat", async (req, res) => {
 
     User message: ${message}`;
 
-    try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-      return res.json({ 
-        message: text,
-        status: "success" 
-      });
-
-    } catch (error) {
-      console.error("Gemini API Error:", error);
-      return res.status(500).json({
-        error: "AI Generation Error",
-        details: error.message
-      });
-    }
+    return res.json({ 
+      message: text,
+      status: "success" 
+    });
 
   } catch (error) {
     console.error("Server Error:", error);
     return res.status(500).json({
       error: "Internal Server Error",
-      details: error.message
+      details: error instanceof Error ? error.message : "Unknown error occurred"
     });
   }
 });
