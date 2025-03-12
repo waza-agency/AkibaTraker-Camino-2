@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import ReactPlayer from "react-player";
+import { translations } from "@/lib/translations";
 
 interface Song {
   id: number;
@@ -95,15 +96,15 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
         
         setSongs(hardcodedSongs);
         setLoading(false);
-        addLog?.('Music library loaded successfully', 'success');
+        addLog?.(translations.music.libraryLoaded, 'success');
       } catch (error) {
         toast({
-          title: "Error",
-          description: "Failed to load music library",
+          title: translations.general.error,
+          description: translations.music.failedToLoad,
           variant: "destructive",
         });
         console.error("Error loading songs:", error);
-        addLog?.('Failed to load music library', 'error');
+        addLog?.(translations.music.failedToLoad, 'error');
         setLoading(false);
       }
     };
@@ -125,14 +126,14 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
     setStartTime(0);
     setIsPlaying(false);
     setIsPlayingFull(false);
-    addLog?.(`Selected song: ${song.title} by ${song.artist}`, 'info');
+    addLog?.(`${translations.music.selectedSong}: ${song.title} ${translations.music.by} ${song.artist}`, 'info');
   };
 
   const handleConfirm = async () => {
     if (!selectedSong) {
       toast({
-        title: "Error",
-        description: "Please select a song first",
+        title: translations.general.error,
+        description: translations.music.pleaseSelect,
         variant: "destructive",
       });
       return;
@@ -170,14 +171,14 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
         endTime: startTime + TEN_SECONDS
       });
 
-      addLog?.(`Confirmed music segment: ${selectedSong.title}`, 'success');
-      addLog?.(`Time range: ${startTime}s to ${startTime + TEN_SECONDS}s`, 'info');
+      addLog?.(`${translations.music.confirmedMusicSegment}: ${selectedSong.title}`, 'success');
+      addLog?.(`${translations.music.timeRange}: ${startTime}s to ${startTime + TEN_SECONDS}s`, 'info');
 
     } catch (error) {
       console.error('Error trimming audio:', error);
       toast({
-        title: "Error",
-        description: "Failed to trim audio segment",
+        title: translations.general.error,
+        description: translations.music.failedToTrim,
         variant: "destructive",
       });
     } finally {
@@ -190,14 +191,14 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
     
     if (isPlaying) {
       setIsPlaying(false);
-      addLog?.('Preview stopped', 'info');
+      addLog?.(translations.music.previewStopped, 'info');
     } else {
       setIsPlayingFull(false);
       setIsPlaying(true);
       if (playerRef.current) {
         playerRef.current.seekTo(startTime, 'seconds');
       }
-      addLog?.('Previewing segment...', 'info');
+      addLog?.(translations.music.previewingSegment, 'info');
     }
   };
 
@@ -206,14 +207,14 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
     
     if (isPlayingFull) {
       setIsPlayingFull(false);
-      addLog?.('Stopped full song', 'info');
+      addLog?.(translations.music.stoppedFullSong, 'info');
     } else {
       setIsPlaying(false);
       setIsPlayingFull(true);
       if (playerRef.current) {
         playerRef.current.seekTo(0, 'seconds');
       }
-      addLog?.('Playing full song...', 'info');
+      addLog?.(translations.music.playingFullSong, 'info');
     }
   };
 
@@ -242,7 +243,7 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
   };
 
   if (loading) {
-    return <div className="text-center p-4">Loading music library...</div>;
+    return <div className="text-center p-4">{translations.music.loadingLibrary}</div>;
   }
 
   const currentUrl = selectedSong ? getProperUrl(selectedSong.storageUrl) : '';
@@ -278,7 +279,7 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
                 >
                   <h3 className="font-bold">{song.title}</h3>
                   <p className="text-sm text-muted-foreground">{song.artist}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Mood: {song.mood}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{translations.music.mood}: {song.mood}</p>
                 </Card>
               ))}
             </div>
@@ -298,21 +299,21 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
       {selectedSong && (
         <div className="space-y-4 p-4 bg-secondary/50 rounded-lg mt-4">
           <div className="space-y-2">
-            <Label>Preview Controls</Label>
+            <Label>{translations.music.previewControls}</Label>
             <div className="flex space-x-2">
               <Button onClick={togglePreview} disabled={isTrimming}>
                 {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                {isPlaying ? 'Stop Preview' : 'Preview Segment'}
+                {isPlaying ? translations.music.stopPreview : translations.music.previewSegment}
               </Button>
               <Button onClick={toggleFullPlay} disabled={isTrimming}>
                 {isPlayingFull ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                {isPlayingFull ? 'Stop Full Song' : 'Play Full Song'}
+                {isPlayingFull ? translations.music.stopFullSong : translations.music.playFullSong}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Segment Start Time: {startTime.toFixed(1)}s</Label>
+            <Label>{translations.music.segmentStartTime}: {startTime.toFixed(1)}s</Label>
             <Slider
               value={[startTime]}
               min={0}
@@ -328,7 +329,7 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
             className="w-full"
             disabled={isTrimming}
           >
-            {isTrimming ? 'Trimming...' : 'Confirm This Segment'}
+            {isTrimming ? translations.music.trimming : translations.music.confirmThisSegment}
           </Button>
 
           <ReactPlayer
@@ -339,10 +340,10 @@ export function MusicSelector({ onSelect, addLog }: MusicSelectorProps) {
             onProgress={handleProgress}
             onError={(e) => {
               console.error("Player error:", e);
-              addLog?.(`Error playing audio: ${e}`, 'error');
+              addLog?.(`${translations.music.errorPlayingAudio}: ${e}`, 'error');
               toast({
-                title: "Playback Error",
-                description: "Failed to play audio. Please try another song or refresh the page.",
+                title: translations.general.error,
+                description: translations.music.failedToPlay,
                 variant: "destructive",
               });
             }}

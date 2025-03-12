@@ -1,9 +1,11 @@
+import { translations } from "./translations";
+
 export const stylePresets = {
-  dramatic: "Dramatic and intense Anime scenes with high contrast",
-  romantic: "Soft and emotional Anime scenes with warm colors", 
-  action: "Fast-paced Anime action sequences with dynamic transitions",
-  aesthetic: "Aesthetic and dreamy Anime scenes with pastel colors",
-  retro: "Retro Anime style with film grain effect",
+  dramatic: translations.styles.dramatic.description,
+  romantic: translations.styles.romantic.description,
+  action: translations.styles.action.description,
+  aesthetic: translations.styles.aesthetic.description,
+  retro: translations.styles.retro.description,
 } as const;
 
 export type StylePresetKey = keyof typeof stylePresets; 

@@ -8,6 +8,7 @@ import StyleSelector from "./style-selector";
 import { MusicSelector } from "./music-selector";
 import { useState, useCallback } from "react";
 import { LogConsole } from './log-console';
+import { translations } from "@/lib/translations";
 
 interface UploadFormProps {
   onSubmit: (data: { prompt: string; style: string; music: string; musicStartTime?: number; musicEndTime?: number }) => void;
@@ -45,8 +46,8 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
     endTime: number 
   }) => {
     try {
-      addLog(`Selecting music: ${songData.song.title}`);
-      addLog(`Time segment: ${songData.startTime}s to ${songData.endTime}s`);
+      addLog(`${translations.logs.selectingMusic}: ${songData.song.title}`);
+      addLog(`${translations.logs.timeSegment}: ${songData.startTime}s to ${songData.endTime}s`);
 
       const response = await fetch('/api/audio/trim', {
         method: 'POST',
@@ -61,7 +62,7 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
       if (!response.ok) throw new Error('Failed to trim audio');
       
       const { trimmedAudioUrl } = await response.json();
-      addLog('Audio segment trimmed successfully', 'success');
+      addLog(translations.logs.audioTrimmed, 'success');
       
       setSelectedMusic({
         url: trimmedAudioUrl,
@@ -70,194 +71,68 @@ export default function UploadForm({ onSubmit, isLoading }: UploadFormProps) {
       });
     } catch (error) {
       console.error('Error trimming audio:', error);
-      addLog(`Error: ${error instanceof Error ? error.message : 'Failed to trim audio'}`, 'error');
+      addLog(`${translations.general.error}: ${error instanceof Error ? error.message : translations.logs.failedToTrimAudio}`, 'error');
     }
   };
 
-  const handleSubmit = async (data: { prompt: string }) => {
+  const handleFormSubmit = (data: { prompt: string }) => {
     if (!selectedMusic.url) {
-      addLog('No music selected!', 'error');
+      addLog(translations.logs.noMusicSelected, 'error');
       return;
     }
 
-    setIsProcessing(true);
-    addLog('Starting video generation process...', 'info');
-    addLog(`Prompt: ${data.prompt}`, 'info');
-    addLog(`Style: ${selectedStyle}`, 'info');
-    addLog(`Music: ${selectedMusic.url}`, 'info');
-
-    try {
-      const response = await fetch('/api/videos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: data.prompt,
-          style: selectedStyle,
-          music: selectedMusic.url,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      
-      if (!responseData.id) {
-        throw new Error('No video ID received from server');
-      }
-
-      addLog(`Video generation started with ID: ${responseData.id}`, 'info');
-
-      const pollInterval = setInterval(async () => {
-        try {
-          console.log('Polling status for video:', responseData.id);
-          
-          const statusResponse = await fetch(`/api/videos/${responseData.id}/status`, {
-            headers: {
-              'Accept': 'application/json'
-            }
-          });
-
-          console.log('Status response:', {
-            ok: statusResponse.ok,
-            status: statusResponse.status,
-            contentType: statusResponse.headers.get('content-type')
-          });
-
-          if (!statusResponse.ok) {
-            const errorText = await statusResponse.text();
-            console.error('Status response error:', {
-              status: statusResponse.status,
-              statusText: statusResponse.statusText,
-              body: errorText
-            });
-            throw new Error(`Status fetch failed: ${statusResponse.status} ${statusResponse.statusText}`);
-          }
-
-          if (!statusResponse.headers.get('content-type')?.includes('application/json')) {
-            throw new Error('Invalid response format from status endpoint');
-          }
-
-          const statusData = await statusResponse.json();
-          console.log('Received status:', statusData);
-
-          if (!statusData) {
-            throw new Error('Empty response from status endpoint');
-          }
-
-          switch(statusData.status) {
-            case 'pending':
-              addLog('Waiting for video generation to start...', 'info');
-              break;
-            case 'generating':
-              addLog(`Generating video: ${statusData.progress || 0}%`, 'info');
-              break;
-            case 'ready_for_audio':
-              addLog('Video generated, starting audio integration...', 'info');
-              try {
-                const audioResponse = await fetch(`/api/videos/${responseData.id}/integrate-audio`, {
-                  method: 'POST'
-                });
-                if (!audioResponse.ok) {
-                  throw new Error('Failed to start audio integration');
-                }
-              } catch (error) {
-                console.error('Audio integration error:', error);
-                addLog('Failed to start audio integration', 'error');
-              }
-              break;
-            case 'merging':
-              addLog(`Merging audio: ${statusData.progress || 0}%`, 'info');
-              break;
-            case 'completed':
-              addLog('Video generation completed!', 'success');
-              clearInterval(pollInterval);
-              setIsProcessing(false);
-              break;
-            case 'failed':
-              const errorMessage = statusData.error || 'Unknown error';
-              addLog(`Failed: ${errorMessage}`, 'error');
-              console.error('Video generation failed:', errorMessage);
-              clearInterval(pollInterval);
-              setIsProcessing(false);
-              break;
-            default:
-              addLog(`Unknown status: ${statusData.status}`, 'warning');
-          }
-        } catch (error) {
-          console.error('Error polling status:', error);
-          addLog(`Error checking status: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
-          clearInterval(pollInterval);
-          setIsProcessing(false);
-        }
-      }, 2000);
-
-      // Cleanup on component unmount
-      return () => {
-        if (pollInterval) {
-          clearInterval(pollInterval);
-        }
-      };
-
-    } catch (error) {
-      console.error('Error submitting video:', error);
-      addLog(`Error: ${error instanceof Error ? error.message : 'Failed to generate video'}`, 'error');
-      setIsProcessing(false);
-    }
+    onSubmit({
+      prompt: data.prompt,
+      style: selectedStyle,
+      music: selectedMusic.url,
+      musicStartTime: selectedMusic.startTime,
+      musicEndTime: selectedMusic.endTime
+    });
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="prompt"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prompt or Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Describe your AMV scene or paste an image URL..."
-                  className="h-32 resize-none pixel-borders"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">{translations.upload.title}</h2>
+      </div>
 
-        <div>
-          <FormLabel>Music Track</FormLabel>
-          <MusicSelector onSelect={handleMusicSelect} addLog={addLog} />
-        </div>
-
-        <div>
-          <FormLabel>Visual Style</FormLabel>
-          <StyleSelector
-            selected={selectedStyle}
-            onSelect={setSelectedStyle}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="prompt"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{translations.upload.prompt}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={translations.upload.promptPlaceholder}
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
 
-        <LogConsole logs={logs} isProcessing={isProcessing} />
+          <div className="space-y-2">
+            <FormLabel>{translations.upload.style}</FormLabel>
+            <StyleSelector selected={selectedStyle} onSelect={setSelectedStyle} />
+          </div>
 
-        <Button
-          type="submit"
-          className="w-full retro-btn"
-          disabled={isLoading || isProcessing}
-        >
-          <Image className="mr-2 h-4 w-4" />
-          {isLoading || isProcessing ? (
-            <span className="retro-loading">Generating...</span>
-          ) : (
-            "Generate AMV"
-          )}
-        </Button>
-      </form>
-    </Form>
+          <div className="space-y-2">
+            <FormLabel>{translations.upload.music}</FormLabel>
+            <MusicSelector onSelect={handleMusicSelect} addLog={addLog} />
+          </div>
+
+          <Button type="submit" disabled={isLoading || isProcessing || !selectedMusic.url}>
+            {isLoading || isProcessing ? translations.upload.generating : translations.upload.generate}
+          </Button>
+        </form>
+      </Form>
+
+      <LogConsole logs={logs} isProcessing={isProcessing} />
+    </div>
   );
 }

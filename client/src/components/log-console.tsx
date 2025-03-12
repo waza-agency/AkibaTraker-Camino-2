@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from './ui/scroll-area';
+import { translations } from '@/lib/translations';
 
 interface Log {
   message: string;
@@ -59,11 +60,11 @@ export function LogConsole({ logs, isProcessing = false }: LogConsoleProps) {
   return (
     <div className="border-2 border-primary/50 rounded-lg bg-black/90 p-2 font-mono text-sm">
       <div className="flex items-center justify-between mb-2 px-2">
-        <div className="text-primary/70">System.log</div>
+        <div className="text-primary/70">{translations.logs.systemLog}</div>
         <div className="flex items-center gap-4">
           {isProcessing && (
             <span className="text-xs text-primary/70">
-              Time: {formatTime(elapsedTime)}
+              {translations.logs.time}: {formatTime(elapsedTime)}
             </span>
           )}
           <div className="flex gap-2">
@@ -91,7 +92,7 @@ export function LogConsole({ logs, isProcessing = false }: LogConsoleProps) {
           {isProcessing && (
             <div className="font-mono text-xs text-primary/80 flex items-center">
               <span className="text-muted-foreground">[{new Date().toLocaleTimeString()}]</span>{' '}
-              Generating{'.'.repeat(elapsedTime % 4)}
+              {translations.logs.generating}{'.'.repeat(elapsedTime % 4)}
               <span className={`ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`}>▊</span>
             </div>
           )}

@@ -13,6 +13,7 @@ import Navbar from "@/components/navbar";
 import { MoodIndicator } from "@/components/mood-indicator";
 import { useMood } from "@/hooks/use-mood";
 import { Card } from "@/components/ui/card";
+import { translations } from "@/lib/translations";
 
 // Add ElevenLabs component type definition
 declare global {
@@ -89,9 +90,9 @@ export default function Home() {
           <section className="mt-8">
             <Card className="bg-card/50 backdrop-blur-sm p-6 border border-primary/20">
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold glow-text text-center">Warner Music Latin Vibes</h2>
+                <h2 className="text-2xl font-bold glow-text text-center">{translations.home.warnerMusicTitle}</h2>
                 <p className="text-center text-muted-foreground">
-                  Here you can listen to some of my Favorite tracks from my colleagues at Warner Music Latin
+                  {translations.home.warnerMusicDescription}
                 </p>
                 <div className="relative rounded-xl overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 animate-gradient" />
@@ -116,7 +117,7 @@ export default function Home() {
             <div className="flex flex-col space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold glow-text">
-                  Chat with Akiba
+                  {translations.home.chatWithAkiba}
                 </h2>
                 <MoodIndicator mood={currentMood} className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full" />
               </div>
@@ -203,7 +204,7 @@ export default function Home() {
 
           {/* AMV Creation Section */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 glow-text">Create Your AMV</h2>
+            <h2 className="text-2xl font-bold mb-6 glow-text">{translations.home.createAMV}</h2>
             <Card className="bg-card/50 backdrop-blur-sm p-6">
               <UploadForm 
                 onSubmit={(data) => createVideo.mutate(data)}
@@ -214,7 +215,7 @@ export default function Home() {
 
           {/* Video Gallery Section */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 glow-text">Latest Creations</h2>
+            <h2 className="text-2xl font-bold mb-6 glow-text">{translations.home.latestCreations}</h2>
             <VideoGallery />
           </section>
         </div>

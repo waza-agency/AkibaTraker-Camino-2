@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { MoodProvider } from "@/hooks/use-mood";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import { translations } from "@/lib/translations";
 
 // ScrollToTop component to handle scrolling to top on route changes
 function ScrollToTop() {
@@ -29,12 +30,12 @@ function Router() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col gap-4">
-        <div className="text-destructive">Failed to load user data</div>
+        <div className="text-destructive">{translations.general.failedToLoad}</div>
         <Button 
           onClick={() => window.location.reload()}
           variant="outline"
         >
-          Retry
+          {translations.general.retry}
         </Button>
       </div>
     );

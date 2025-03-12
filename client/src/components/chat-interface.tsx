@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { analyzeEmotion } from "@/lib/emotion-analysis";
 import { useMood } from "@/hooks/use-mood";
 import { motion, AnimatePresence } from "framer-motion";
+import { translations } from "@/lib/translations";
 
 interface Message {
   role: "user" | "assistant";
@@ -100,13 +101,22 @@ export default function ChatInterface() {
         throw error;
       }
     },
+    onSuccess: (data) => {
+      const newMessage: Message = {
+        role: "assistant",
+        content: data.message,
+        id: Date.now().toString(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      analyzeConversationMood([...messages, newMessage]);
+    },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
+        title: translations.general.error,
+        description: translations.chat.errorSending,
         variant: "destructive",
       });
-    }
+    },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,66 +187,60 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 px-4 py-2" ref={scrollAreaRef}>
-        <div className="space-y-4 min-h-full">
-          <AnimatePresence mode="popLayout">
+    <div className="flex flex-col h-[500px] border rounded-lg overflow-hidden bg-card/50 backdrop-blur-sm">
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <div className="space-y-4">
+          <AnimatePresence>
             {messages.map((message) => (
               <motion.div
                 key={message.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                exit={{ opacity: 0 }}
                 className={`flex ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-2 rounded-2xl ${
+                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  {message.content}
                 </div>
               </motion.div>
             ))}
+            {sendMessage.isPending && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-start"
+              >
+                <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
+                  <span className="text-sm opacity-70">{translations.chat.thinking}</span>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
-          {sendMessage.isPending && (
-            <motion.div
-              className="flex justify-start"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="max-w-[80%] px-4 py-2 rounded-2xl bg-muted">
-                <p className="text-sm">Akiba is typing...</p>
-              </div>
-            </motion.div>
-          )}
         </div>
       </ScrollArea>
-
-      <form onSubmit={handleSubmit} className="flex gap-2 p-4">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1"
-          disabled={sendMessage.isPending}
-          aria-label="Chat message"
-          ref={inputRef}
-          autoFocus
-        />
-        <Button
-          type="submit"
-          size="icon"
-          disabled={sendMessage.isPending}
-          aria-label="Send message"
-        >
-          <Send className="w-4 h-4" />
-        </Button>
-      </form>
+      <div className="p-4 border-t">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={translations.chat.placeholder}
+            className="flex-1"
+            disabled={sendMessage.isPending}
+          />
+          <Button type="submit" size="icon" disabled={sendMessage.isPending || !input.trim()}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

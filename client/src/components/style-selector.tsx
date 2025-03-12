@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { stylePresets } from "../lib/style-presets";
+import { translations } from "@/lib/translations";
 
 interface StyleSelectorProps {
   selected: string;
@@ -9,6 +10,12 @@ interface StyleSelectorProps {
 }
 
 export default function StyleSelector({ selected, onSelect }: StyleSelectorProps) {
+  // Función para obtener el nombre traducido del estilo
+  const getStyleName = (style: string) => {
+    return translations.styles[style as keyof typeof translations.styles]?.name || 
+           style.charAt(0).toUpperCase() + style.slice(1);
+  };
+
   return (
     <RadioGroup
       value={selected}
@@ -27,7 +34,7 @@ export default function StyleSelector({ selected, onSelect }: StyleSelectorProps
             <RadioGroupItem value={style} id={style} />
             <div className="flex-1">
               <Label htmlFor={style} className="font-medium">
-                {style.charAt(0).toUpperCase() + style.slice(1)}
+                {getStyleName(style)}
               </Label>
               <p className="text-sm text-muted-foreground">{description}</p>
             </div>

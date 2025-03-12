@@ -10,6 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
+import { translations } from "@/lib/translations";
 
 type AuthFormData = {
   username: string;
@@ -23,9 +24,9 @@ export default function AuthPage() {
   const { toast } = useToast();
 
   const authSchema = z.object({
-    username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
-    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-    email: isLogin ? z.string().optional() : z.string().email("Por favor, ingrese una dirección de correo electrónico válida"),
+    username: z.string().min(3, translations.auth.usernameMinLength),
+    password: z.string().min(6, translations.auth.passwordMinLength),
+    email: isLogin ? z.string().optional() : z.string().email(translations.auth.invalidEmail),
   });
 
   const form = useForm<AuthFormData>({
@@ -59,7 +60,7 @@ export default function AuthPage() {
 
       if (!result.ok) {
         toast({
-          title: "Error",
+          title: translations.general.error,
           description: result.message,
           variant: "destructive",
         });
@@ -67,13 +68,13 @@ export default function AuthPage() {
       }
 
       toast({
-        title: "¡Éxito!",
-        description: isLogin ? "¡Bienvenido de nuevo!" : "¡Cuenta creada exitosamente!",
+        title: translations.general.success,
+        description: isLogin ? translations.auth.loginSuccess : translations.auth.registerSuccess,
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Algo salió mal",
+        title: translations.general.error,
+        description: error instanceof Error ? error.message : translations.errors.somethingWentWrong,
         variant: "destructive",
       });
     }
@@ -87,9 +88,9 @@ export default function AuthPage() {
     });
     
     if (response.ok) {
-      alert('Check your email for reset instructions');
+      alert(translations.auth.checkEmail);
     } else {
-      alert('Error sending reset request');
+      alert(translations.auth.errorSendingReset);
     }
   };
 

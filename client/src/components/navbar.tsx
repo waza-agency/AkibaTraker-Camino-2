@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { User, LogOut, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { translations } from "@/lib/translations";
 
 export default function Navbar() {
   const { user, logout } = useUser();
@@ -15,13 +16,13 @@ export default function Navbar() {
         throw new Error(result.message);
       }
       toast({
-        title: "Success",
-        description: "Logged out successfully",
+        title: translations.general.success,
+        description: translations.auth.loginSuccess,
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to logout",
+        title: translations.general.error,
+        description: error instanceof Error ? error.message : translations.errors.somethingWentWrong,
         variant: "destructive",
       });
     }
@@ -34,7 +35,7 @@ export default function Navbar() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2 retro-btn">
               <Home className="h-4 w-4" />
-              HOME
+              {translations.general.home}
             </Button>
           </Link>
         </div>

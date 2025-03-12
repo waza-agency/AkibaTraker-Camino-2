@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import ShareButton from "./share-button";
 import CaptionGenerator from "./caption-generator";
+import { translations } from "@/lib/translations";
 
 interface VideoMetadata {
   error?: string;
@@ -55,14 +56,14 @@ export default function VideoGallery() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
       toast({
-        title: "Success",
-        description: "Video generation restarted",
+        title: translations.general.success,
+        description: translations.videos.videoGenStarted,
       });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Could not retry video generation",
+        title: translations.general.error,
+        description: translations.videos.failedToStartGen,
         variant: "destructive",
       });
     },
@@ -82,8 +83,8 @@ export default function VideoGallery() {
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Could not like video",
+        title: translations.general.error,
+        description: "No se pudo dar like al video",
         variant: "destructive",
       });
     },
@@ -92,7 +93,7 @@ export default function VideoGallery() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Your Generated Videos</h2>
+        <h2 className="text-lg font-semibold">{translations.videos.title}</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Card key={i} className="p-4 h-[200px] animate-pulse bg-muted" />
@@ -107,7 +108,7 @@ export default function VideoGallery() {
   if (!allVideos.length) {
     return (
       <Card className="p-4 text-center text-muted-foreground">
-        You haven't generated any videos yet. Try creating one!
+        {translations.home.noVideosYet}
       </Card>
     );
   }
@@ -127,14 +128,14 @@ export default function VideoGallery() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Your Generated Videos</h2>
+      <h2 className="text-lg font-semibold">{translations.videos.yourGeneratedVideos}</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {allVideos.map((video) => (
           <Card key={video.id} className="p-4 space-y-3 overflow-hidden bg-card/50 backdrop-blur-sm">
             {(video.status === "pending" || video.status === "generating") && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Generating video... {Math.round(video.metadata?.progress || 0)}%
+                  {translations.videos.generatingVideo} {Math.round(video.metadata?.progress || 0)}%
                 </p>
                 <Progress 
                   value={video.metadata?.progress || 0} 
@@ -146,7 +147,7 @@ export default function VideoGallery() {
             {video.status === "merging" && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Merging audio... {Math.round(video.metadata?.progress || 0)}%
+                  {translations.videos.mergingAudio} {Math.round(video.metadata?.progress || 0)}%
                 </p>
                 <Progress 
                   value={video.metadata?.progress || 0} 
@@ -158,9 +159,9 @@ export default function VideoGallery() {
             {video.status === "failed" && (
               <div className="space-y-3">
                 <div className="p-4 rounded-lg bg-destructive/10 text-destructive">
-                  <p className="text-sm font-medium">Generation failed</p>
+                  <p className="text-sm font-medium">{translations.general.error}</p>
                   <p className="text-xs mt-1 text-muted-foreground">
-                    {video.metadata?.error || "An error occurred during generation"}
+                    {video.metadata?.error || translations.errors.somethingWentWrong}
                   </p>
                 </div>
                 <Button
@@ -170,7 +171,7 @@ export default function VideoGallery() {
                   onClick={() => retryGeneration.mutate(video.id)}
                   disabled={retryGeneration.isPending}
                 >
-                  {retryGeneration.isPending ? "Retrying..." : "Retry Generation"}
+                  {retryGeneration.isPending ? translations.upload.generating : translations.general.retry}
                 </Button>
               </div>
             )}
