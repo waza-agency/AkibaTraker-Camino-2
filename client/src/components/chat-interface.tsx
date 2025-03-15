@@ -16,6 +16,85 @@ interface Message {
   id: string;
 }
 
+// Japanese characters for the code cascade effect
+const japaneseChars = [
+  'あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ',
+  'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と',
+  'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ',
+  'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り',
+  'る', 'れ', 'ろ', 'わ', 'を', 'ん',
+  '漢', '字', '日', '本', '語', '文', '化', '学', '習', '言',
+  '愛', '平', '和', '美', '空', '海', '山', '川', '雨', '雪',
+  '花', '鳥', '風', '月', '星', '夢', '希', '望', '未', '来'
+];
+
+// CodeCascade component for the matrix-like effect
+function CodeCascade() {
+  interface Column {
+    chars: string[];
+    speed: number;
+    delay: number;
+  }
+  
+  const [columns, setColumns] = useState<Column[]>([]);
+  
+  useEffect(() => {
+    // Create columns based on available width
+    const columnCount = Math.floor(Math.random() * 10) + 15; // 15-25 columns
+    const newColumns: Column[] = [];
+    
+    for (let i = 0; i < columnCount; i++) {
+      const charCount = Math.floor(Math.random() * 10) + 5; // 5-15 characters per column
+      const chars = Array(charCount).fill(0).map(() => 
+        japaneseChars[Math.floor(Math.random() * japaneseChars.length)]
+      );
+      
+      newColumns.push({
+        chars,
+        speed: 0.5 + Math.random() * 2, // Random speed between 0.5-2.5s
+        delay: Math.random() * 5 // Random delay between 0-5s
+      });
+    }
+    
+    setColumns(newColumns);
+  }, []);
+  
+  return (
+    <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
+      {columns.map((column, colIndex) => (
+        <div 
+          key={colIndex}
+          className="absolute top-0 text-primary"
+          style={{ 
+            left: `${(colIndex / columns.length) * 100}%`,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          {column.chars.map((char, charIndex) => (
+            <motion.div
+              key={`${colIndex}-${charIndex}`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ 
+                opacity: [0, 1, 0],
+                y: [charIndex * -20, (charIndex + column.chars.length) * 20]
+              }}
+              transition={{
+                duration: column.speed,
+                delay: column.delay + (charIndex * 0.1),
+                repeat: Infinity,
+                repeatDelay: Math.random() * 2
+              }}
+              className="text-sm sm:text-base"
+            >
+              {char}
+            </motion.div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -187,9 +266,10 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-[500px] border rounded-lg overflow-hidden bg-card/50 backdrop-blur-sm">
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
+    <div className="flex flex-col h-[500px] border rounded-lg overflow-hidden bg-card/50 backdrop-blur-sm relative">
+      <ScrollArea className="flex-1 p-4 relative" ref={scrollAreaRef}>
+        {messages.length === 0 && <CodeCascade />}
+        <div className="space-y-4 relative z-10">
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
