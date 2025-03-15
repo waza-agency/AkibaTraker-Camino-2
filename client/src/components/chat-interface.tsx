@@ -186,7 +186,7 @@ export default function ChatInterface() {
         content: data.message,
         id: Date.now().toString(),
       };
-      setMessages((prev) => [...prev, newMessage]);
+      // TODO andres. checar si es necesario o borrar este msg setMessages((prev) => [...prev, newMessage]);
       analyzeConversationMood([...messages, newMessage]);
     },
     onError: (error) => {
