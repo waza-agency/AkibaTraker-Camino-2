@@ -3,28 +3,145 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add preconnect for Eleven Labs -->
+    <link rel="preconnect" href="https://elevenlabs.io" crossorigin />
+    <link rel="dns-prefetch" href="https://elevenlabs.io" />
     <style>
       elevenlabs-convai {
         width: 100%;
         height: 100%;
         display: block;
+        contain: content;
+      }
+      
+      /* Prevent unwanted scrolling when interacting with the widget */
+      body.widget-active {
+        overflow: hidden;
+      }
+      
+      /* Add styles to prevent iframe interactions from causing page scrolls */
+      iframe {
+        pointer-events: auto;
       }
     </style>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script>
       // Ensure page starts at the top when loaded
       window.onload = function() {
-        window.scrollTo(0, 0);
+        // Only scroll to top on initial page load
+        const initialLoad = sessionStorage.getItem('initialPageLoad') !== 'true';
+        if (initialLoad) {
+          window.scrollTo(0, 0);
+          sessionStorage.setItem('initialPageLoad', 'true');
+        }
       };
-      // Also reset scroll position when navigating
+      
+      // Disable automatic scroll restoration
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
       }
+      
+      // Listen for errors to catch worklet loading issues
+      window.addEventListener('error', function(event) {
+        console.error('Error detected:', event.message);
+        
+        // Check if the error is related to worklet loading
+        if (event.message && (
+            event.message.includes('worklet') || 
+            event.message.includes('Unable to load') ||
+            event.message.includes('AudioWorklet')
+          )) {
+          console.error('Detected AudioWorklet loading error:', event.message);
+          
+          // Wait for DOM to be fully loaded
+          setTimeout(() => {
+            const errorElement = document.getElementById('elevenlabs-error-message');
+            if (errorElement) {
+              errorElement.classList.remove('hidden');
+            }
+          }, 2000);
+        }
+      }, true);
+
+      // Make the function available globally
+      window.loadElevenLabsScript = function() {
+        console.log('Loading Eleven Labs script...');
+        // Remove any existing script first to avoid duplicates
+        const existingScript = document.querySelector('script[src="https://elevenlabs.io/convai-widget/index.js"]');
+        if (existingScript) {
+          existingScript.remove();
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://elevenlabs.io/convai-widget/index.js';
+        script.type = 'text/javascript';
+        script.async = true;
+        script.defer = true; // Add defer attribute
+        script.onerror = function() {
+          console.error('Failed to load Eleven Labs script');
+          setTimeout(() => {
+            const errorElement = document.getElementById('elevenlabs-error-message');
+            if (errorElement) {
+              errorElement.classList.remove('hidden');
+            }
+          }, 1000);
+        };
+        script.onload = function() {
+          console.log('Eleven Labs script loaded successfully');
+          
+          // Add event listeners to prevent scrolling when interacting with the widget
+          setTimeout(() => {
+            const widget = document.querySelector('elevenlabs-convai');
+            if (widget) {
+              widget.addEventListener('click', function(e) {
+                // Add a class to the body to prevent scrolling
+                document.body.classList.add('widget-active');
+                e.stopPropagation();
+              });
+              
+              // Listen for focus events on the widget
+              widget.addEventListener('focus', function() {
+                document.body.classList.add('widget-active');
+              }, true);
+              
+              // Listen for blur events to restore scrolling
+              document.addEventListener('click', function(e) {
+                if (!e.target.closest('elevenlabs-convai')) {
+                  document.body.classList.remove('widget-active');
+                }
+              });
+            }
+          }, 1000);
+        };
+        document.body.appendChild(script);
+        return true; // Indicate success
+      };
+      
+      // Prevent scrolling when interacting with the widget
+      document.addEventListener('wheel', function(e) {
+        if (document.body.classList.contains('widget-active') && e.target.closest('elevenlabs-convai')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, { passive: false });
+      
+      document.addEventListener('touchmove', function(e) {
+        if (document.body.classList.contains('widget-active') && e.target.closest('elevenlabs-convai')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, { passive: false });
     </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+    <!-- Load the Eleven Labs script after the page has loaded -->
+    <script>
+      // Load the script after a short delay to ensure the DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(window.loadElevenLabsScript, 1000);
+      });
+    </script>
   </body>
 </html>

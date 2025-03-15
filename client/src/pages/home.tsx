@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,15 +26,99 @@ declare global {
   }
 }
 
+// Add global window type for loadElevenLabsScript
+declare global {
+  interface Window {
+    loadElevenLabsScript: () => boolean;
+  }
+}
+
 export default function Home() {
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentMood } = useMood();
+  // Add a ref to track if the component is mounted
+  const isMountedRef = useRef(true);
 
-  // Add useEffect to scroll to top when component mounts
+  // Modify the scroll effect to only run once on initial mount
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Only scroll to top on initial page load, not during widget interactions
+    const initialLoad = sessionStorage.getItem('initialPageLoad') !== 'true';
+    if (initialLoad) {
+      window.scrollTo(0, 0);
+      sessionStorage.setItem('initialPageLoad', 'true');
+    }
+    
+    // Prevent automatic scrolling behavior
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    
+    // Cleanup function to set mounted ref to false when component unmounts
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Add useEffect for Eleven Labs widget initialization and error handling
+  useEffect(() => {
+    // Check if the Eleven Labs widget script is loaded
+    const checkElevenLabsWidget = () => {
+      if (!isMountedRef.current) return;
+      
+      if (document.querySelector('elevenlabs-convai')) {
+        console.log('Eleven Labs widget found in DOM');
+        
+        // Add event listener for errors on the widget
+        const widget = document.querySelector('elevenlabs-convai');
+        if (widget) {
+          // Remove any existing event listeners to prevent duplicates
+          widget.removeEventListener('error', handleWidgetError);
+          widget.addEventListener('error', handleWidgetError);
+          
+          // Prevent default behavior for any click events inside the widget
+          widget.addEventListener('click', (e) => {
+            e.stopPropagation();
+          });
+        }
+      } else {
+        console.warn('Eleven Labs widget not found in DOM');
+        // Try to load the script again if widget is not found
+        if (typeof window.loadElevenLabsScript === 'function') {
+          window.loadElevenLabsScript();
+        }
+      }
+    };
+    
+    // Handler function for widget errors
+    const handleWidgetError = (e) => {
+      console.error('ElevenLabs widget error event:', e);
+      const errorElement = document.getElementById('elevenlabs-error-message');
+      if (errorElement) {
+        errorElement.classList.remove('hidden');
+      }
+    };
+    
+    // Run the check after a delay to ensure the DOM has been updated
+    const timer = setTimeout(checkElevenLabsWidget, 2000);
+    
+    // Prevent scroll events from bubbling up when interacting with the widget
+    const preventScrollReset = (e) => {
+      if (e.target.closest('elevenlabs-convai')) {
+        e.stopPropagation();
+      }
+    };
+    
+    // Add event listeners to prevent unwanted scrolling
+    document.addEventListener('wheel', preventScrollReset, { passive: false });
+    document.addEventListener('touchmove', preventScrollReset, { passive: false });
+    
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('wheel', preventScrollReset);
+      document.removeEventListener('touchmove', preventScrollReset);
+    };
   }, []);
 
   const createVideo = useMutation({
@@ -158,18 +242,65 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-full max-w-2xl px-4 pt-20 flex flex-col items-center justify-center">
                     <div className="w-full">
-                      <elevenlabs-convai
-                        agent-id="5PqK0LFTDnnE0wBvIR46"
-                        style={{
-                          width: "100%",
-                          height: "450px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          margin: "0 auto",
-                        }}
-                        data-auto-scroll="false"
-                      />
+                      {/* Error handling wrapper */}
+                      <div className="relative">
+                        {/* Eleven Labs widget */}
+                        <elevenlabs-convai
+                          agent-id="5PqK0LFTDnnE0wBvIR46"
+                          style={{
+                            width: "100%",
+                            height: "450px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto",
+                          }}
+                          data-auto-scroll="false"
+                          onClick={(e) => e.stopPropagation()}
+                          onError={(e) => {
+                            console.error("ElevenLabs widget error:", e);
+                            const errorElement = document.getElementById('elevenlabs-error-message');
+                            if (errorElement) {
+                              errorElement.classList.remove('hidden');
+                            }
+                          }}
+                        />
+                        
+                        {/* Fallback message for errors */}
+                        <div 
+                          id="elevenlabs-error-message" 
+                          className="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm p-6 rounded-lg"
+                        >
+                          <h3 className="text-xl font-bold text-red-400 mb-4">Error al cargar el chat de voz</h3>
+                          <p className="text-center mb-4">
+                            No se pudo cargar el módulo de audio necesario para la conversación por voz.
+                          </p>
+                          <div className="space-y-2 text-sm">
+                            <p className="text-center">Intenta lo siguiente:</p>
+                            <ul className="list-disc pl-6 space-y-1">
+                              <li>Actualiza tu navegador a la última versión</li>
+                              <li>Desactiva extensiones de bloqueo de contenido</li>
+                              <li>Prueba en modo incógnito o en otro navegador</li>
+                              <li>Verifica tu conexión a internet</li>
+                            </ul>
+                          </div>
+                          <button 
+                            className="mt-6 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition-colors"
+                            onClick={() => {
+                              // Try to reload the Eleven Labs script
+                              if (typeof window.loadElevenLabsScript === 'function') {
+                                // If the function exists in the global scope
+                                window.loadElevenLabsScript();
+                              } else {
+                                // Otherwise just reload the page
+                                window.location.reload();
+                              }
+                            }}
+                          >
+                            Reintentar
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

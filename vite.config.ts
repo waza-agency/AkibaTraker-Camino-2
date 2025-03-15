@@ -26,4 +26,15 @@ export default defineConfig({
     outDir: '../server/public',
     emptyOutDir: true,
   },
+  optimizeDeps: {
+    exclude: [
+      // Exclude the problematic chunks that are causing errors
+      'chunk-HBJRLGLT',
+      'chunk-VKGVKUH7',
+      'chunk-FT22PXXA',
+      'chunk-FIFRWQGC',
+      // Also exclude the ElevenLabs widget itself to prevent optimization issues
+      'elevenlabs-convai'
+    ]
+  },
 });
