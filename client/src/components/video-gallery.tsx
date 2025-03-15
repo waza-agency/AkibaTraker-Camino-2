@@ -9,6 +9,7 @@ import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import ShareButton from "./share-button";
 import CaptionGenerator from "./caption-generator";
 import { translations } from "@/lib/translations";
+import React from "react";
 
 interface VideoMetadata {
   error?: string;
@@ -33,13 +34,29 @@ interface Video {
 }
 
 export default function VideoGallery() {
-  const { data: videos, isLoading } = useQuery<Video[]>({
+  const { data: videos, isLoading, error } = useQuery<Video[]>({
     queryKey: ["/api/videos"],
     refetchInterval: (data) => {
       if (!Array.isArray(data)) return false;
       return data.some((v) => ["pending", "generating", "merging"].includes(v.status)) ? 2000 : false;
-    },
+    }
   });
+
+  // Log data for debugging
+  React.useEffect(() => {
+    if (videos) {
+      console.log("Videos fetched successfully:", videos.length);
+      if (videos.length > 0) {
+        console.log("First video:", videos[0]);
+      } else {
+        console.log("No videos returned from API");
+      }
+    }
+    if (error) {
+      console.error("Error fetching videos:", error);
+    }
+  }, [videos, error]);
+
   const [videoCaptions, setVideoCaptions] = useState<Record<number, string>>({});
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -122,7 +139,11 @@ export default function VideoGallery() {
 
   // Helper function to get proper video URL
   const getVideoUrl = (url: string) => {
-    if (!url) return '';
+    if (!url) {
+      console.log("Empty video URL");
+      return '';
+    }
+    console.log("Processing video URL:", url);
     return url.startsWith('/') ? `${window.location.origin}${url}` : url;
   };
 
@@ -139,6 +160,21 @@ export default function VideoGallery() {
                 </p>
                 <Progress 
                   value={video.metadata?.progress || 0} 
+                  className="animate-pulse" 
+                />
+              </div>
+            )}
+
+            {video.status === "ready_for_audio" && (
+              <div className="space-y-3">
+                <div className="p-4 rounded-lg bg-amber-500/10 text-amber-500">
+                  <p className="text-sm font-medium">Audio Integration in Progress</p>
+                  <p className="text-xs mt-1 text-muted-foreground">
+                    Video is being processed with audio automatically
+                  </p>
+                </div>
+                <Progress 
+                  value={50} 
                   className="animate-pulse" 
                 />
               </div>

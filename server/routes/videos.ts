@@ -20,17 +20,18 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const { prompt, style, music } = req.body;
-    console.log('Received video generation request:', { prompt, style, musicUrl: music });
+    const userId = req.user!.id;
+    console.log('Received video generation request:', { prompt, style, musicUrl: music, userId });
 
     // Create database entry
     const result = await db.query(
-      `INSERT INTO videos (prompt, style, music_file, status, metadata)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO videos (prompt, style, music_file, status, metadata, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [prompt, style, music, 'pending', JSON.stringify({ progress: 0 })]
+      [prompt, style, music, 'pending', JSON.stringify({ progress: 0 }), userId]
     );
     const video = result.rows[0];
 
@@ -115,6 +116,20 @@ async function generateFalVideo(videoId: number, prompt: string) {
     });
 
     console.log(`Video ${videoId} ready for audio integration`);
+    
+    // Automatically trigger audio integration
+    try {
+      console.log(`Automatically starting audio integration for video ${videoId}`);
+      await integrateAudio(videoId);
+    } catch (audioError) {
+      console.error(`Error during automatic audio integration for video ${videoId}:`, audioError);
+      // If audio integration fails, we'll update the status but not throw an error
+      // This allows the video generation to be considered successful even if audio integration fails
+      await updateVideoStatus(videoId, 'failed', { 
+        error: audioError instanceof Error ? audioError.message : 'Unknown error during audio integration',
+        stage: 'auto-audio-integration'
+      });
+    }
 
   } catch (error) {
     console.error(`Video generation failed for ID ${videoId}:`, error);
@@ -128,29 +143,54 @@ async function generateFalVideo(videoId: number, prompt: string) {
 // Helper function to download files
 async function downloadFile(url: string, outputPath: string): Promise<void> {
   console.log(`Downloading file from ${url} to ${outputPath}`);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to download file: ${response.statusText}`);
-  }
   
-  const fileStream = fs.createWriteStream(outputPath);
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  
-  return new Promise((resolve, reject) => {
-    fileStream.write(buffer, (error) => {
-      if (error) {
-        console.error('Error writing to file:', error);
-        reject(error);
-        return;
-      }
-      
-      fileStream.end(() => {
-        console.log('File download completed');
-        resolve();
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to download file: ${response.statusText}`);
+    }
+    
+    // Create a write stream
+    const fileStream = fs.createWriteStream(outputPath);
+    
+    // Get the file as an array buffer and convert to Buffer
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Write the buffer to the file
+    return new Promise((resolve, reject) => {
+      fileStream.write(buffer, (error) => {
+        if (error) {
+          console.error('Error writing to file:', error);
+          reject(error);
+          return;
+        }
+        
+        fileStream.end(() => {
+          // Verify the file was created and has content
+          fs.stat(outputPath, (err, stats) => {
+            if (err) {
+              console.error('Error checking file stats:', err);
+              reject(err);
+              return;
+            }
+            
+            if (stats.size === 0) {
+              console.error('Downloaded file is empty');
+              reject(new Error('Downloaded file is empty'));
+              return;
+            }
+            
+            console.log(`File download completed: ${outputPath} (${stats.size} bytes)`);
+            resolve();
+          });
+        });
       });
     });
-  });
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    throw error;
+  }
 }
 
 // Status endpoint
@@ -243,19 +283,85 @@ async function integrateAudio(videoId: number) {
       throw new Error(`Video ${videoId} not found`);
     }
 
+    // Only proceed if the video is in the ready_for_audio state
+    if (video.status !== 'ready_for_audio') {
+      console.log(`Video ${videoId} is not ready for audio integration (status: ${video.status})`);
+      return;
+    }
+
     await updateVideoStatus(videoId, 'merging', {
       progress: 50,
       stage: 'audio-integration'
     });
 
     const { tempVideoPath } = video.metadata;
+    
+    // Check if the temporary video file exists
+    let videoExists = false;
+    try {
+      await fs.promises.access(tempVideoPath, fs.constants.F_OK);
+      videoExists = true;
+      console.log(`Temporary video file exists at ${tempVideoPath}`);
+    } catch (error) {
+      console.log(`Temporary video file does not exist at ${tempVideoPath}`);
+      
+      // Try alternative paths (handle Windows/Linux path differences)
+      const alternativePaths = [
+        // Original path
+        tempVideoPath,
+        // Convert Windows path to Linux path
+        tempVideoPath.replace(/\\/g, '/'),
+        // Convert Linux path to Windows path
+        tempVideoPath.replace(/\//g, '\\'),
+        // Try with process.cwd()
+        path.join(process.cwd(), 'public', 'generated-videos', `temp-${videoId}.mp4`),
+        // Try with absolute path for Docker
+        `/usr/src/app/public/generated-videos/temp-${videoId}.mp4`
+      ];
+      
+      for (const altPath of alternativePaths) {
+        try {
+          await fs.promises.access(altPath, fs.constants.F_OK);
+          console.log(`Found video file at alternative path: ${altPath}`);
+          videoExists = true;
+          // Update the tempVideoPath to the working path
+          video.metadata.tempVideoPath = altPath;
+          break;
+        } catch (e) {
+          // Continue to next path
+        }
+      }
+    }
+
+    if (!videoExists) {
+      // If the video doesn't exist, we need to regenerate it
+      console.log(`Temporary video file not found. Restarting video generation for ID ${videoId}`);
+      await updateVideoStatus(videoId, 'pending', { 
+        progress: 0,
+        retryCount: (video.metadata?.retryCount || 0) + 1
+      });
+      
+      // Start video generation again
+      generateFalVideo(videoId, video.prompt);
+      return;
+    }
+
     const audioPath = path.join(process.cwd(), 'public', video.music_file.replace(/^\//, ''));
     const outputFileName = `${uuidv4()}.mp4`;
     const outputPath = path.join(process.cwd(), 'public', 'generated-videos', outputFileName);
 
+    // Verify audio file exists
+    try {
+      await fs.promises.access(audioPath, fs.constants.F_OK);
+      console.log(`Audio file exists at ${audioPath}`);
+    } catch (error) {
+      console.error(`Audio file does not exist at ${audioPath}`);
+      throw new Error(`Audio file not found: ${audioPath}`);
+    }
+
     await new Promise((resolve, reject) => {
       ffmpeg()
-        .input(tempVideoPath)
+        .input(video.metadata.tempVideoPath) // Use the potentially updated path
         .input(audioPath)
         .outputOptions([
           '-c:v copy',           // Copy video stream without re-encoding
@@ -284,20 +390,28 @@ async function integrateAudio(videoId: number) {
           try {
             // Upload to IPFS
             console.log('Uploading to IPFS...');
-            const ipfsUrl = await uploadToIPFS(outputPath, outputFileName);
+            const ipfsUrl = await uploadToIPFS(outputPath);
             console.log('Uploaded to IPFS:', ipfsUrl);
             
-            // Update video with final status
-            await updateVideoStatus(videoId, 'completed', {
-              progress: 100,
-              duration: video.metadata?.duration || '10s',
-              style: video.style,
-              audioFile: video.music_file,
-              outputUrl: ipfsUrl
-            });
+            // Update video with final status and set output_url field directly
+            await db.query(
+              'UPDATE videos SET status = $1, metadata = $2, output_url = $3, updated_at = NOW() WHERE id = $4',
+              [
+                'completed', 
+                JSON.stringify({
+                  progress: 100,
+                  duration: video.metadata?.duration || '10s',
+                  style: video.style,
+                  audioFile: video.music_file,
+                  outputUrl: ipfsUrl
+                }), 
+                ipfsUrl, 
+                videoId
+              ]
+            );
 
             // Clean up temporary files
-            await fs.promises.unlink(tempVideoPath).catch(console.error);
+            await fs.promises.unlink(video.metadata.tempVideoPath).catch(console.error);
             await fs.promises.unlink(outputPath).catch(console.error);
             
             resolve(null);
@@ -381,6 +495,7 @@ router.get("/liked", requireAuth, async (req, res) => {
 // Get all videos endpoint with enhanced metadata
 router.get("/", async (req, res) => {
   try {
+    console.log('Fetching videos for gallery...');
     const result = await db.query(
       `SELECT 
         v.id,
@@ -395,31 +510,26 @@ router.get("/", async (req, res) => {
         u.username as "creatorName"
       FROM videos v
       LEFT JOIN users u ON v.user_id = u.id
-      WHERE v.status = 'completed'  -- Only show completed videos
-      AND v.output_url IS NOT NULL  -- Must have an output URL
-      AND v.output_url != ''  -- URL must not be empty
-      AND (
-        v.output_url LIKE 'ipfs://%'  -- Must be IPFS URL
-        OR v.output_url LIKE 'http%'  -- Or valid HTTP URL
-      )
       ORDER BY v.created_at DESC`
     );
 
     // Format the response for the gallery and convert IPFS URLs to gateway URLs
     const videos = result.rows
-      .map(video => ({
-        id: video.id,
-        prompt: video.prompt,
-        style: video.style,
-        videoUrl: video.videoUrl ? getGatewayUrl(video.videoUrl) : null,
-        audioUrl: video.audioUrl,
-        status: video.status,
-        metadata: video.metadata,
-        likesCount: video.likesCount,
-        createdAt: video.createdAt,
-        creatorName: video.creatorName || 'Anonymous'
-      }))
-      .filter(video => video.videoUrl && video.videoUrl.startsWith('http')); // Ensure only valid URLs are returned
+      .map(video => {
+        console.log('Processing video:', video.id, video.status, video.videoUrl);
+        return {
+          id: video.id,
+          prompt: video.prompt,
+          style: video.style,
+          videoUrl: video.videoUrl ? getGatewayUrl(video.videoUrl) : null,
+          audioUrl: video.audioUrl,
+          status: video.status,
+          metadata: video.metadata,
+          likesCount: video.likesCount,
+          createdAt: video.createdAt,
+          creatorName: video.creatorName || 'Anonymous'
+        };
+      });
 
     console.log('Sending videos to client:', videos.length);
     res.json(videos);
@@ -616,5 +726,5 @@ router.post("/retry-stuck", async (req, res) => {
   }
 });
 
-// Export the router
-export { router as videosRouter }; 
+// Export the router and the integrateAudio function
+export { router as videosRouter, integrateAudio }; 

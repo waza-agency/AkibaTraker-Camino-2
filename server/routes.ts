@@ -9,7 +9,7 @@ import cspRouter from "./routes/csp";
 import chatRouter from "./routes/chat";
 import musicRoutes from "./routes/music";
 import audioRoutes from './routes/audio';
-import { videosRouter } from "./routes/videos";
+import { videosRouter, integrateAudio } from "./routes/videos";
 
 const MAX_GENERATION_TIME = 10 * 60 * 1000;
 
@@ -34,11 +34,43 @@ async function cleanupStalledVideos() {
   }
 }
 
+// Function to automatically process videos that are stuck in ready_for_audio state
+async function processReadyForAudioVideos() {
+  try {
+    console.log("Checking for videos ready for audio integration...");
+    const result = await db.query(
+      `SELECT id FROM videos WHERE status = 'ready_for_audio'`
+    );
+    
+    if (result.rows.length > 0) {
+      console.log(`Found ${result.rows.length} videos ready for audio integration`);
+      
+      for (const video of result.rows) {
+        try {
+          console.log(`Automatically processing audio integration for video ${video.id}`);
+          // We don't await this to allow parallel processing
+          integrateAudio(video.id).catch(err => {
+            console.error(`Error processing audio for video ${video.id}:`, err);
+          });
+        } catch (error) {
+          console.error(`Failed to process audio for video ${video.id}:`, error);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to process ready-for-audio videos:", error);
+  }
+}
+
 export function registerRoutes(app: Express): void {
   try {
     // Clean up stalled videos on startup
     cleanupStalledVideos();
     setInterval(cleanupStalledVideos, 5 * 60 * 1000);
+    
+    // Process videos ready for audio integration
+    processReadyForAudioVideos();
+    setInterval(processReadyForAudioVideos, 1 * 60 * 1000); // Check every minute
   } catch (error) {
     console.warn("Could not set up video cleanup (database may be unavailable):", error);
     // Continue execution even if database is unavailable

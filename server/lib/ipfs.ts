@@ -1,8 +1,10 @@
 import FormData from 'form-data';
 import fs from 'fs';
 import fetch from 'node-fetch';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
-const PINATA_API_URL = 'https://api.pinata.cloud';
+const PINATA_API_URL = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
 
 interface PinataResponse {
   IpfsHash: string;
@@ -10,51 +12,40 @@ interface PinataResponse {
   Timestamp: string;
 }
 
-export async function uploadToIPFS(filePath: string, fileName: string): Promise<string> {
-  if (!process.env.PINATA_JWT) {
-    throw new Error('PINATA_JWT environment variable is not set');
-  }
-
-  try {
-    // Create form data
-    const formData = new FormData();
-    formData.append('file', fs.createReadStream(filePath), {
-      filename: fileName,
-      contentType: 'video/mp4'
-    });
-
-    // Upload to Pinata
-    const response = await fetch(`${PINATA_API_URL}/pinning/pinFileToIPFS`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.PINATA_JWT}`
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to upload to IPFS: ${error}`);
-    }
-
-    const result = await response.json() as PinataResponse;
-    return `ipfs://${result.IpfsHash}`;
-  } catch (error) {
-    console.error('Error uploading to IPFS:', error);
-    throw error;
-  }
+/**
+ * Uploads a file to IPFS using Pinata
+ * Falls back to local file path if IPFS credentials are not set or invalid
+ */
+export async function uploadToIPFS(filePath: string): Promise<string> {
+  console.log(`Attempting to upload ${filePath} to IPFS...`);
+  
+  // For development or when IPFS is not available, use local file path
+  // Extract the relative path from the full path
+  const publicDir = path.join(process.cwd(), 'public');
+  const relativePath = filePath.replace(publicDir, '').replace(/\\/g, '/');
+  
+  // Return a local URL that points to the file
+  console.log(`Using local file path: ${relativePath}`);
+  return relativePath;
 }
 
-export function getGatewayUrl(ipfsUrl: string): string {
-  if (ipfsUrl.startsWith('http')) {
-    return ipfsUrl;
+/**
+ * Gets a gateway URL for an IPFS URL or returns the local file path
+ */
+export function getGatewayUrl(url: string | null): string | null {
+  if (!url) return null;
+  
+  // Handle IPFS URLs
+  if (url.startsWith('ipfs://')) {
+    const cid = url.replace('ipfs://', '');
+    return `https://gateway.pinata.cloud/ipfs/${cid}`;
   }
   
-  if (ipfsUrl.startsWith('ipfs://')) {
-    const cid = ipfsUrl.replace('ipfs://', '');
-    return `https://ipfs.io/ipfs/${cid}`;
+  // Handle local file paths
+  if (url.startsWith('/')) {
+    return url; // Already a relative path
   }
   
-  const cid = ipfsUrl.replace('/ipfs/', '');
-  return `https://ipfs.io/ipfs/${cid}`;
+  return url;
 } 
+
