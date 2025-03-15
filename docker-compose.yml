@@ -18,3 +18,6 @@ services:
       - GIT_URL=${GIT_URL}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     restart: always
+    volumes:
+      - ./public/generated-videos:/usr/src/app/public/generated-videos
+      - ./public/trimmed-audio:/usr/src/app/public/trimmed-audio
