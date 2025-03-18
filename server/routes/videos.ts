@@ -110,6 +110,12 @@ async function generateFalVideo(videoId: number, prompt: string) {
     console.log(`Downloading video to ${tempVideoPath}`);
     await downloadFile(result.url, tempVideoPath);
     
+    console.log(`Verifying downloaded video: ${tempVideoPath}`);
+    const isValid = await verifyVideoFile(tempVideoPath);
+    if (!isValid) {
+      throw new Error(`Downloaded video is invalid or corrupt: ${tempVideoPath}`);
+    }
+    
     await updateVideoStatus(videoId, 'ready_for_audio', { 
       progress: 50,
       tempVideoPath
@@ -728,3 +734,42 @@ router.post("/retry-stuck", async (req, res) => {
 
 // Export the router and the integrateAudio function
 export { router as videosRouter, integrateAudio }; 
+
+async function verifyVideoFile(filePath: string): Promise<boolean> {
+  try {
+    // Check if file exists
+    await fs.promises.access(filePath, fs.constants.F_OK);
+    
+    // Check file size (should be > 10KB for a real video)
+    const stats = await fs.promises.stat(filePath);
+    if (stats.size < 10000) {
+      console.error(`Video file too small (${stats.size} bytes): ${filePath}`);
+      return false;
+    }
+    
+    // Try to get video metadata using ffmpeg
+    return new Promise((resolve) => {
+      ffmpeg.ffprobe(filePath, (err, metadata) => {
+        if (err) {
+          console.error(`Failed to probe video file: ${filePath}`, err);
+          resolve(false);
+          return;
+        }
+        
+        // Verify it has video streams
+        const hasVideoStream = metadata.streams.some(stream => stream.codec_type === 'video');
+        if (!hasVideoStream) {
+          console.error(`File exists but contains no video streams: ${filePath}`);
+          resolve(false);
+          return;
+        }
+        
+        console.log(`Verified valid video file: ${filePath}`);
+        resolve(true);
+      });
+    });
+  } catch (error) {
+    console.error(`Error verifying video file: ${filePath}`, error);
+    return false;
+  }
+}
