@@ -14,6 +14,7 @@ import musicRoutes from './routes/music';
 import audioRoutes from './routes/audio';
 import { registerRoutes } from "./routes";
 import { ErrorRequestHandler } from 'express';
+import fs from 'fs';
 
 // Log environment for debugging
 console.log('Environment:', {
@@ -79,6 +80,33 @@ setupAuth(app);
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use('/generated-videos', express.static(path.join(process.cwd(), 'public', 'generated-videos')));
 app.use('/trimmed-audio', express.static(path.join(process.cwd(), 'public', 'trimmed-audio')));
+
+// Add custom middleware for video files with proper error handling
+app.use('/generated-videos', (req, res, next) => {
+  const videoPath = path.join(process.cwd(), 'public', 'generated-videos', path.basename(req.path));
+  
+  // Check if file exists
+  fs.access(videoPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      // File doesn't exist - return a proper 404 with JSON instead of HTML
+      res.status(404).set('Content-Type', 'application/json').send({
+        error: 'Video not found',
+        path: req.path
+      });
+      return;
+    }
+    
+    // File exists, set the correct MIME type and continue
+    if (req.path.endsWith('.mp4')) {
+      res.set('Content-Type', 'video/mp4');
+    } else if (req.path.endsWith('.webm')) {
+      res.set('Content-Type', 'video/webm');
+    }
+    
+    // Continue to the static file middleware
+    next();
+  });
+});
 
 // Register all API routes
 registerRoutes(app);
