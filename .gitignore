@@ -1,3 +1,6 @@
+trimmed-audio/
+generated-videos/
+
 # Dependencies
 node_modules/
 .pnp
