@@ -418,7 +418,8 @@ async function integrateAudio(videoId: number) {
 
             // Clean up temporary files
             await fs.promises.unlink(video.metadata.tempVideoPath).catch(console.error);
-            await fs.promises.unlink(outputPath).catch(console.error);
+            // Don't delete the final output file
+            // await fs.promises.unlink(outputPath).catch(console.error);
             
             resolve(null);
           } catch (error) {
