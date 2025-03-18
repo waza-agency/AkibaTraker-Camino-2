@@ -8,6 +8,7 @@ import express, { Router } from 'express';
 import { db } from '../../db';
 import { requireAuth } from "../auth/middleware";
 import { uploadToIPFS, getGatewayUrl } from '../lib/ipfs';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = Router();
 
@@ -730,6 +731,73 @@ router.post("/retry-stuck", async (req, res) => {
   } catch (error) {
     console.error("Failed to retry stuck videos:", error);
     res.status(500).json({ error: "Failed to retry stuck videos" });
+  }
+});
+
+// Caption generation endpoint
+router.post("/:id/caption", async (req, res) => {
+  try {
+    const videoId = parseInt(req.params.id);
+    
+    if (isNaN(videoId)) {
+      return res.status(400).json({ error: 'Invalid video ID' });
+    }
+
+    const videoQuery = await db.query(
+      'SELECT * FROM videos WHERE id = $1',
+      [videoId]
+    );
+    const video = videoQuery.rows[0];
+
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+
+    const apiKey = process.env.GOOGLE_API_KEY;
+    
+    if (!apiKey) {
+      console.error("Missing Google API key in environment");
+      return res.status(500).json({ 
+        error: "Server Configuration Error", 
+        details: "Google API key not configured"
+      });
+    }
+
+    // Initialize the Gemini AI client
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.9,
+        maxOutputTokens: 150,
+      }
+    });
+
+    // Create a prompt that asks Gemini to generate a creative caption
+    const prompt = `Como Akiba, genera una descripción creativa y atractiva para un video de anime con el siguiente prompt: "${video.prompt}"
+
+La descripción debe:
+- Ser breve (máximo 2 líneas)
+- Capturar la esencia del video
+- Usar un tono divertido y energético
+- Incluir emojis relevantes
+- Ser en español
+- Ser apropiada para redes sociales
+
+Genera solo la descripción, sin explicaciones adicionales.`;
+
+    const aiResult = await model.generateContent(prompt);
+    const response = await aiResult.response;
+    const caption = response.text();
+
+    res.json({ caption });
+
+  } catch (error) {
+    console.error("Error generating caption:", error);
+    res.status(500).json({
+      error: "Failed to generate caption",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
   }
 });
 

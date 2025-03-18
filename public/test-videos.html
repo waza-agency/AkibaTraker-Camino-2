@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .video-container {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        video {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Test Page</h1>
+    <p>This page tests if the videos can be played directly.</p>
+
+    <div class="video-container">
+        <h2>Video 17: una fuente con personas al rededor</h2>
+        <video controls src="/generated-videos/648ab2ea-cc74-41b0-9906-976430108534.mp4"></video>
+        <div id="status-17">Loading...</div>
+    </div>
+
+    <div class="video-container">
+        <h2>Video 18: un volcan exhaviendo erupcion y un esquadron de ninjas</h2>
+        <video controls src="/generated-videos/4abe06f8-22e1-4f3c-8b66-fe236f7c4a9f.mp4"></video>
+        <div id="status-18">Loading...</div>
+    </div>
+
+    <div class="video-container">
+        <h2>Reference Video (Known Working)</h2>
+        <video controls src="/generated-videos/06f82c0d-d325-4260-8658-2c6cb2d32709.mp4"></video>
+        <div id="status-ref">Loading...</div>
+    </div>
+
+    <script>
+        // Function to check if a video can be played
+        function checkVideo(videoElement, statusElement) {
+            videoElement.addEventListener('loadeddata', function() {
+                statusElement.textContent = 'SUCCESS: Video loaded successfully';
+                statusElement.className = 'success';
+            });
+
+            videoElement.addEventListener('error', function(e) {
+                statusElement.textContent = 'ERROR: ' + (videoElement.error ? videoElement.error.message : 'Unknown error');
+                statusElement.className = 'error';
+                console.error('Video error:', videoElement.error);
+            });
+        }
+
+        // Check all videos
+        document.addEventListener('DOMContentLoaded', function() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(function(video) {
+                const container = video.closest('.video-container');
+                const statusElement = container.querySelector('div[id^="status-"]');
+                checkVideo(video, statusElement);
+            });
+        });
+    </script>
+</body>
+</html> 
