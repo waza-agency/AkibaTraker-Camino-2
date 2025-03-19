@@ -3,10 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import VideoPreviewThumbnail from "./video-preview-thumbnail";
-import ShareButton from "./share-button";
 import CaptionGenerator from "./caption-generator";
 import { translations } from "@/lib/translations";
 import React from "react";
@@ -219,10 +218,14 @@ export default function VideoGallery() {
                     src={getVideoUrl(video.videoUrl)}
                     className="w-full rounded-lg aspect-video"
                   />
-                  <ShareButton 
-                    url={getVideoUrl(video.videoUrl)} 
-                    title={video.prompt}
-                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                    onClick={() => window.open(getVideoUrl(video.videoUrl), '_blank')}
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
                   <div className="absolute top-2 right-2 flex gap-2">
                     <Button
                       variant="ghost"
