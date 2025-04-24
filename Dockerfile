@@ -12,7 +12,7 @@ RUN npm install
 
 # Install FFmpeg with ffprobe - Ubuntu/Debian based image
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
+    apt-get install -y ffmpeg curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -21,6 +21,10 @@ COPY . .
 
 # Expose the application port
 EXPOSE 3000
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
 # Command to run the application
 CMD ["npm", "run", "dev"]

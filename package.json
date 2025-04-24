@@ -12,7 +12,10 @@
     "check": "tsc",
     "db:push": "tsx db/init.ts",
     "seed:music": "tsx seed-music.ts",
-    "seed-music": "ts-node seed-music.ts"
+    "seed-music": "ts-node seed-music.ts",
+    "check-videos": "tsx scripts/check-all-videos.ts",
+    "docker:build": "docker build -t akiba-app .",
+    "docker:start": "docker run -p 3000:3000 --restart=unless-stopped --name akiba-server akiba-app"
   },
   "dependencies": {
     "@fal-ai/client": "^1.2.2",
