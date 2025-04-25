@@ -9,7 +9,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  plugins: [react(), runtimeErrorOverlay(), themePlugin()],
+  plugins: [
+    {
+      name: 'handle-uri-malformed',
+      configureServer(server) {
+        // Add middleware to handle malformed URIs before they reach Vite's middleware
+        server.middlewares.use((req, res, next) => {
+          try {
+            // Check if the URL is potentially problematic
+            if (req.url && req.url.includes('%')) {
+              // Try to safely decode it, if it fails, use the raw URL
+              try {
+                decodeURI(req.url);
+              } catch (e) {
+                console.warn(`URI malformed detected: ${req.url}. Using raw URL instead.`);
+                // If decoding fails, modify the URL to prevent errors
+                req.url = req.url.replace(/%(?![0-9A-Fa-f]{2})/g, '%25');
+              }
+            }
+            next();
+          } catch (err) {
+            console.error('URI middleware error:', err);
+            next();
+          }
+        });
+      }
+    },
+    react(),
+    runtimeErrorOverlay(),
+    themePlugin()
+  ],
   server: {
     host: true,
     port: 3000,
