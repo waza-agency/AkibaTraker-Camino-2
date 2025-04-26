@@ -1,5 +1,6 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { normalizeUrl } from "@/lib/uri-utils";
 
 interface VideoPreviewThumbnailProps {
   src: string;
@@ -12,6 +13,33 @@ const VideoPreviewThumbnail: FC<VideoPreviewThumbnailProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sanitizedSrc, setSanitizedSrc] = useState<string>('');
+
+  useEffect(() => {
+    try {
+      // Sanitize URL to prevent malformed URI issues
+      if (!src) {
+        setSanitizedSrc('');
+        setError("No video source provided");
+        setIsLoading(false);
+        return;
+      }
+
+      // Use our utility function to normalize the URL
+      const normalizedUrl = normalizeUrl(src);
+      
+      if (normalizedUrl) {
+        setSanitizedSrc(normalizedUrl);
+      } else {
+        setError("Invalid video URL");
+        setIsLoading(false);
+      }
+    } catch (e) {
+      console.error("Error sanitizing video URL:", e, src);
+      setError("Invalid video URL");
+      setIsLoading(false);
+    }
+  }, [src]);
 
   return (
     <div className={`relative group ${className}`}>
@@ -27,18 +55,21 @@ const VideoPreviewThumbnail: FC<VideoPreviewThumbnailProps> = ({
         </div>
       )}
       
-      <video 
-        src={src}
-        className="w-full h-full object-cover"
-        controls
-        muted
-        playsInline
-        onLoadedData={() => setIsLoading(false)}
-        onError={() => {
-          setIsLoading(false);
-          setError("Failed to load video");
-        }}
-      />
+      {sanitizedSrc && (
+        <video 
+          src={sanitizedSrc}
+          className="w-full h-full object-cover"
+          controls
+          muted
+          playsInline
+          onLoadedData={() => setIsLoading(false)}
+          onError={(e) => {
+            console.error("Video load error:", e);
+            setIsLoading(false);
+            setError("Failed to load video");
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -9,6 +9,7 @@ import VideoPreviewThumbnail from "./video-preview-thumbnail";
 import CaptionGenerator from "./caption-generator";
 import { translations } from "@/lib/translations";
 import React from "react";
+import { normalizeUrl } from "@/lib/uri-utils";
 
 interface VideoMetadata {
   error?: string;
@@ -142,8 +143,9 @@ export default function VideoGallery() {
       console.log("Empty video URL");
       return '';
     }
+    
     console.log("Processing video URL:", url);
-    return url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    return normalizeUrl(url);
   };
 
   return (
